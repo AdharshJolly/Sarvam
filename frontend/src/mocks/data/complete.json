@@ -1,0 +1,3737 @@
+[
+  {
+    "id": 1,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:00.000Z",
+    "round": 0,
+    "type": "run.started",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "question": "Should a company launch an electric scooter subscription service in Bengaluru in 2027?",
+      "mode": "LIVE",
+      "budget": {
+        "max_searches": 30,
+        "max_fetches": 60,
+        "max_llm_calls": 80,
+        "max_cost_usd": 2,
+        "max_wall_seconds_soft": 240,
+        "max_wall_seconds_hard": 300,
+        "max_followup_rounds": 1
+      }
+    }
+  },
+  {
+    "id": 2,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:01.200Z",
+    "round": 0,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "PLAN",
+      "reason": "Breaking the question into 5 dimensions and 10 evidence slots"
+    }
+  },
+  {
+    "id": 3,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:02.400Z",
+    "round": 0,
+    "type": "plan.created",
+    "step_ms": 5200,
+    "tokens": 2400,
+    "cost_usd": 0.021,
+    "payload": {
+      "plan": {
+        "budget": {
+          "max_searches": 30,
+          "max_fetches": 60,
+          "max_llm_calls": 80,
+          "max_cost_usd": 2,
+          "max_wall_seconds_soft": 240,
+          "max_wall_seconds_hard": 300,
+          "max_followup_rounds": 1
+        },
+        "dimensions": [
+          {
+            "id": "D1",
+            "name": "Demand",
+            "description": "",
+            "critical": true,
+            "slots": [
+              {
+                "id": "D1S1",
+                "name": "Market size",
+                "description": "Size of the Bengaluru e-scooter rental market",
+                "critical": true,
+                "attributes": [
+                  "market_size"
+                ],
+                "min_independent": 2,
+                "primary_ok": false,
+                "tasks": [
+                  {
+                    "id": "T1",
+                    "query": "Bengaluru electric scooter rental market size 2025"
+                  }
+                ]
+              },
+              {
+                "id": "D1S2",
+                "name": "Rider willingness to subscribe",
+                "description": "Share of commuters open to subscriptions",
+                "critical": false,
+                "attributes": [
+                  "adoption"
+                ],
+                "min_independent": 2,
+                "primary_ok": false,
+                "tasks": [
+                  {
+                    "id": "T2",
+                    "query": "Bengaluru commuters shared scooter adoption survey"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "D2",
+            "name": "Pricing",
+            "description": "",
+            "critical": true,
+            "slots": [
+              {
+                "id": "D2S1",
+                "name": "Competitor subscription pricing",
+                "description": "Monthly prices charged by existing operators",
+                "critical": true,
+                "attributes": [
+                  "monthly_price"
+                ],
+                "min_independent": 2,
+                "primary_ok": false,
+                "tasks": [
+                  {
+                    "id": "T3",
+                    "query": "electric scooter subscription price per month Bengaluru"
+                  }
+                ]
+              },
+              {
+                "id": "D2S2",
+                "name": "Rider price sensitivity",
+                "description": "What riders say they would pay",
+                "critical": false,
+                "attributes": [
+                  "willingness_to_pay"
+                ],
+                "min_independent": 2,
+                "primary_ok": false,
+                "tasks": [
+                  {
+                    "id": "T4",
+                    "query": "Bengaluru scooter rental price sensitivity survey"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "D3",
+            "name": "Regulation",
+            "description": "",
+            "critical": true,
+            "slots": [
+              {
+                "id": "D3S1",
+                "name": "Operating permit rules",
+                "description": "Licences needed to operate rentals",
+                "critical": true,
+                "attributes": [
+                  "permit"
+                ],
+                "min_independent": 2,
+                "primary_ok": true,
+                "tasks": [
+                  {
+                    "id": "T5",
+                    "query": "Karnataka aggregator licence electric scooter rental rules"
+                  }
+                ]
+              },
+              {
+                "id": "D3S2",
+                "name": "Parking and zone restrictions",
+                "description": "Where scooters may be parked or ridden",
+                "critical": false,
+                "attributes": [
+                  "zones"
+                ],
+                "min_independent": 2,
+                "primary_ok": false,
+                "tasks": [
+                  {
+                    "id": "T6",
+                    "query": "Bengaluru scooter parking zone restrictions"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "D4",
+            "name": "Unit economics",
+            "description": "",
+            "critical": true,
+            "slots": [
+              {
+                "id": "D4S1",
+                "name": "Vehicle and battery cost",
+                "description": "Capital cost per scooter",
+                "critical": true,
+                "attributes": [
+                  "capex"
+                ],
+                "min_independent": 2,
+                "primary_ok": false,
+                "tasks": [
+                  {
+                    "id": "T7",
+                    "query": "electric scooter ex-showroom price battery replacement cost"
+                  }
+                ]
+              },
+              {
+                "id": "D4S2",
+                "name": "Charging and maintenance cost",
+                "description": "Running cost per scooter",
+                "critical": true,
+                "attributes": [
+                  "opex"
+                ],
+                "min_independent": 2,
+                "primary_ok": false,
+                "tasks": [
+                  {
+                    "id": "T8",
+                    "query": "electric scooter fleet charging cost per day"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "D5",
+            "name": "Competition",
+            "description": "",
+            "critical": false,
+            "slots": [
+              {
+                "id": "D5S1",
+                "name": "Incumbent operators",
+                "description": "Who operates shared scooters today",
+                "critical": false,
+                "attributes": [
+                  "share"
+                ],
+                "min_independent": 2,
+                "primary_ok": false,
+                "tasks": [
+                  {
+                    "id": "T9",
+                    "query": "Bengaluru shared scooter operators market share"
+                  }
+                ]
+              },
+              {
+                "id": "D5S2",
+                "name": "Substitutes",
+                "description": "Alternatives such as autos and metro",
+                "critical": false,
+                "attributes": [
+                  "substitutes"
+                ],
+                "min_independent": 2,
+                "primary_ok": false,
+                "tasks": [
+                  {
+                    "id": "T10",
+                    "query": "Bengaluru last mile alternatives scooter rental"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": 4,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:03.600Z",
+    "round": 0,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "DISCOVER",
+      "reason": "Searching for each evidence slot"
+    }
+  },
+  {
+    "id": 5,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:04.800Z",
+    "round": 0,
+    "type": "task.started",
+    "step_ms": 900,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "task_id": "T1",
+      "slot_id": "D1S1",
+      "query_text": "Bengaluru electric scooter rental market size 2025",
+      "kind": "initial",
+      "reason": "Initial search for Market size"
+    }
+  },
+  {
+    "id": 6,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:06.000Z",
+    "round": 0,
+    "type": "task.started",
+    "step_ms": 900,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "task_id": "T2",
+      "slot_id": "D1S2",
+      "query_text": "Bengaluru commuters shared scooter adoption survey",
+      "kind": "initial",
+      "reason": "Initial search for Rider willingness to subscribe"
+    }
+  },
+  {
+    "id": 7,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:07.200Z",
+    "round": 0,
+    "type": "task.started",
+    "step_ms": 900,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "task_id": "T3",
+      "slot_id": "D2S1",
+      "query_text": "electric scooter subscription price per month Bengaluru",
+      "kind": "initial",
+      "reason": "Initial search for Competitor subscription pricing"
+    }
+  },
+  {
+    "id": 8,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:08.400Z",
+    "round": 0,
+    "type": "task.started",
+    "step_ms": 900,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "task_id": "T4",
+      "slot_id": "D2S2",
+      "query_text": "Bengaluru scooter rental price sensitivity survey",
+      "kind": "initial",
+      "reason": "Initial search for Rider price sensitivity"
+    }
+  },
+  {
+    "id": 9,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:09.600Z",
+    "round": 0,
+    "type": "task.started",
+    "step_ms": 900,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "task_id": "T5",
+      "slot_id": "D3S1",
+      "query_text": "Karnataka aggregator licence electric scooter rental rules",
+      "kind": "initial",
+      "reason": "Initial search for Operating permit rules"
+    }
+  },
+  {
+    "id": 10,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:10.800Z",
+    "round": 0,
+    "type": "task.started",
+    "step_ms": 900,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "task_id": "T6",
+      "slot_id": "D3S2",
+      "query_text": "Bengaluru scooter parking zone restrictions",
+      "kind": "initial",
+      "reason": "Initial search for Parking and zone restrictions"
+    }
+  },
+  {
+    "id": 11,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:12.000Z",
+    "round": 0,
+    "type": "task.started",
+    "step_ms": 900,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "task_id": "T7",
+      "slot_id": "D4S1",
+      "query_text": "electric scooter ex-showroom price battery replacement cost",
+      "kind": "initial",
+      "reason": "Initial search for Vehicle and battery cost"
+    }
+  },
+  {
+    "id": 12,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:13.200Z",
+    "round": 0,
+    "type": "task.started",
+    "step_ms": 900,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "task_id": "T8",
+      "slot_id": "D4S2",
+      "query_text": "electric scooter fleet charging cost per day",
+      "kind": "initial",
+      "reason": "Initial search for Charging and maintenance cost"
+    }
+  },
+  {
+    "id": 13,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:14.400Z",
+    "round": 0,
+    "type": "task.started",
+    "step_ms": 900,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "task_id": "T9",
+      "slot_id": "D5S1",
+      "query_text": "Bengaluru shared scooter operators market share",
+      "kind": "initial",
+      "reason": "Initial search for Incumbent operators"
+    }
+  },
+  {
+    "id": 14,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:15.600Z",
+    "round": 0,
+    "type": "task.started",
+    "step_ms": 900,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "task_id": "T10",
+      "slot_id": "D5S2",
+      "query_text": "Bengaluru last mile alternatives scooter rental",
+      "kind": "initial",
+      "reason": "Initial search for Substitutes"
+    }
+  },
+  {
+    "id": 15,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:16.800Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S1",
+        "run_id": "mock-complete-1",
+        "url": "https://news-a.example.invalid/s1",
+        "canonical_url": "https://news-a.example.invalid/s1",
+        "domain": "news-a.example.invalid",
+        "publisher": "news-a.example.invalid",
+        "source_type": "news",
+        "authority_tier": 2,
+        "published_at": "2026-03-15",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T3"
+      }
+    }
+  },
+  {
+    "id": 16,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:18.000Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S2",
+        "run_id": "mock-complete-1",
+        "url": "https://news-b.example.invalid/s2",
+        "canonical_url": "https://news-b.example.invalid/s2",
+        "domain": "news-b.example.invalid",
+        "publisher": "news-b.example.invalid",
+        "source_type": "news",
+        "authority_tier": 2,
+        "published_at": "2026-03-15",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T3"
+      }
+    }
+  },
+  {
+    "id": 17,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:19.200Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S3",
+        "run_id": "mock-complete-1",
+        "url": "https://news-c.example.invalid/s3",
+        "canonical_url": "https://news-c.example.invalid/s3",
+        "domain": "news-c.example.invalid",
+        "publisher": "news-c.example.invalid",
+        "source_type": "news",
+        "authority_tier": 2,
+        "published_at": "2026-03-15",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T3"
+      }
+    }
+  },
+  {
+    "id": 18,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:20.400Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S4",
+        "run_id": "mock-complete-1",
+        "url": "https://news-d.example.invalid/s4",
+        "canonical_url": "https://news-d.example.invalid/s4",
+        "domain": "news-d.example.invalid",
+        "publisher": "news-d.example.invalid",
+        "source_type": "news",
+        "authority_tier": 2,
+        "published_at": "2026-03-15",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T3"
+      }
+    }
+  },
+  {
+    "id": 19,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:21.600Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S5",
+        "run_id": "mock-complete-1",
+        "url": "https://scooterblog.example.invalid/s5",
+        "canonical_url": "https://scooterblog.example.invalid/s5",
+        "domain": "scooterblog.example.invalid",
+        "publisher": "scooterblog.example.invalid",
+        "source_type": "blog",
+        "authority_tier": 3,
+        "published_at": "2026-03-15",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T3"
+      }
+    }
+  },
+  {
+    "id": 20,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:22.800Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S6",
+        "run_id": "mock-complete-1",
+        "url": "https://ridenow.example.invalid/s6",
+        "canonical_url": "https://ridenow.example.invalid/s6",
+        "domain": "ridenow.example.invalid",
+        "publisher": "ridenow.example.invalid",
+        "source_type": "company_primary",
+        "authority_tier": 1,
+        "published_at": "2026-03-15",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T3"
+      }
+    }
+  },
+  {
+    "id": 21,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:24.000Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S7",
+        "run_id": "mock-complete-1",
+        "url": "https://forum-digest.example.invalid/s7",
+        "canonical_url": "https://forum-digest.example.invalid/s7",
+        "domain": "forum-digest.example.invalid",
+        "publisher": "forum-digest.example.invalid",
+        "source_type": "news",
+        "authority_tier": 2,
+        "published_at": null,
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T3"
+      }
+    }
+  },
+  {
+    "id": 22,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:25.200Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S8",
+        "run_id": "mock-complete-1",
+        "url": "https://transport.gov.example.invalid/s8",
+        "canonical_url": "https://transport.gov.example.invalid/s8",
+        "domain": "transport.gov.example.invalid",
+        "publisher": "transport.gov.example.invalid",
+        "source_type": "regulator",
+        "authority_tier": 1,
+        "published_at": "2025-11-02",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T5"
+      }
+    }
+  },
+  {
+    "id": 23,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:26.400Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S9",
+        "run_id": "mock-complete-1",
+        "url": "https://paywalled-news.example.invalid/s9",
+        "canonical_url": "https://paywalled-news.example.invalid/s9",
+        "domain": "paywalled-news.example.invalid",
+        "publisher": "paywalled-news.example.invalid",
+        "source_type": "news",
+        "authority_tier": 2,
+        "published_at": "2026-03-15",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "SOURCE_UNAVAILABLE",
+        "fail_reason": "HTTP 403 Forbidden",
+        "origin_id": null,
+        "task_id": "T1"
+      }
+    }
+  },
+  {
+    "id": 24,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:27.600Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S10",
+        "run_id": "mock-complete-1",
+        "url": "https://spa-report.example.invalid/s10",
+        "canonical_url": "https://spa-report.example.invalid/s10",
+        "domain": "spa-report.example.invalid",
+        "publisher": "spa-report.example.invalid",
+        "source_type": "unknown",
+        "authority_tier": 3,
+        "published_at": "2026-03-15",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "SOURCE_EMPTY",
+        "fail_reason": "Page requires JavaScript; no text extracted",
+        "origin_id": null,
+        "task_id": "T2"
+      }
+    }
+  },
+  {
+    "id": 25,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:28.800Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S11",
+        "run_id": "mock-complete-1",
+        "url": "https://marketlens.example.invalid/s11",
+        "canonical_url": "https://marketlens.example.invalid/s11",
+        "domain": "marketlens.example.invalid",
+        "publisher": "marketlens.example.invalid",
+        "source_type": "blog",
+        "authority_tier": 3,
+        "published_at": "2025-08-20",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T1"
+      }
+    }
+  },
+  {
+    "id": 26,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:30.000Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S12",
+        "run_id": "mock-complete-1",
+        "url": "https://economy-daily.example.invalid/s12",
+        "canonical_url": "https://economy-daily.example.invalid/s12",
+        "domain": "economy-daily.example.invalid",
+        "publisher": "economy-daily.example.invalid",
+        "source_type": "news",
+        "authority_tier": 2,
+        "published_at": "2022-01-10",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T1"
+      }
+    }
+  },
+  {
+    "id": 27,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:31.200Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S13",
+        "run_id": "mock-complete-1",
+        "url": "https://commute-survey.example.invalid/s13",
+        "canonical_url": "https://commute-survey.example.invalid/s13",
+        "domain": "commute-survey.example.invalid",
+        "publisher": "commute-survey.example.invalid",
+        "source_type": "blog",
+        "authority_tier": 3,
+        "published_at": "2026-03-15",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T2"
+      }
+    }
+  },
+  {
+    "id": 28,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:32.400Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S14",
+        "run_id": "mock-complete-1",
+        "url": "https://voltride.example.invalid/s14",
+        "canonical_url": "https://voltride.example.invalid/s14",
+        "domain": "voltride.example.invalid",
+        "publisher": "voltride.example.invalid",
+        "source_type": "company_primary",
+        "authority_tier": 1,
+        "published_at": "2026-03-15",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T7"
+      }
+    }
+  },
+  {
+    "id": 29,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:33.600Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S15",
+        "run_id": "mock-complete-1",
+        "url": "https://city-desk.example.invalid/s15",
+        "canonical_url": "https://city-desk.example.invalid/s15",
+        "domain": "city-desk.example.invalid",
+        "publisher": "city-desk.example.invalid",
+        "source_type": "news",
+        "authority_tier": 2,
+        "published_at": "2026-03-15",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T9"
+      }
+    }
+  },
+  {
+    "id": 30,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:34.800Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S16",
+        "run_id": "mock-complete-1",
+        "url": "https://riderpoll.example.invalid/s16",
+        "canonical_url": "https://riderpoll.example.invalid/s16",
+        "domain": "riderpoll.example.invalid",
+        "publisher": "riderpoll.example.invalid",
+        "source_type": "blog",
+        "authority_tier": 3,
+        "published_at": "2026-03-15",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T4"
+      }
+    }
+  },
+  {
+    "id": 31,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:36.000Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S17",
+        "run_id": "mock-complete-1",
+        "url": "https://fleetops.example.invalid/s17",
+        "canonical_url": "https://fleetops.example.invalid/s17",
+        "domain": "fleetops.example.invalid",
+        "publisher": "fleetops.example.invalid",
+        "source_type": "blog",
+        "authority_tier": 3,
+        "published_at": "2026-03-15",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T8"
+      }
+    }
+  },
+  {
+    "id": 32,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:37.200Z",
+    "round": 0,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S18",
+        "run_id": "mock-complete-1",
+        "url": "https://energy-weekly.example.invalid/s18",
+        "canonical_url": "https://energy-weekly.example.invalid/s18",
+        "domain": "energy-weekly.example.invalid",
+        "publisher": "energy-weekly.example.invalid",
+        "source_type": "news",
+        "authority_tier": 2,
+        "published_at": "2026-03-15",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T8"
+      }
+    }
+  },
+  {
+    "id": 33,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:38.400Z",
+    "round": 0,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "ACQUIRE",
+      "reason": "Fetching found pages"
+    }
+  },
+  {
+    "id": 34,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:39.600Z",
+    "round": 0,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S1",
+      "chars": 4200,
+      "content_hash": "h-S1"
+    }
+  },
+  {
+    "id": 35,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:40.800Z",
+    "round": 0,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S2",
+      "chars": 4200,
+      "content_hash": "h-S2"
+    }
+  },
+  {
+    "id": 36,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:42.000Z",
+    "round": 0,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S3",
+      "chars": 4200,
+      "content_hash": "h-S3"
+    }
+  },
+  {
+    "id": 37,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:43.200Z",
+    "round": 0,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S4",
+      "chars": 4200,
+      "content_hash": "h-S4"
+    }
+  },
+  {
+    "id": 38,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:44.400Z",
+    "round": 0,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S5",
+      "chars": 4200,
+      "content_hash": "h-S5"
+    }
+  },
+  {
+    "id": 39,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:45.600Z",
+    "round": 0,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S6",
+      "chars": 4200,
+      "content_hash": "h-S6"
+    }
+  },
+  {
+    "id": 40,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:46.800Z",
+    "round": 0,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S7",
+      "chars": 4200,
+      "content_hash": "h-S7"
+    }
+  },
+  {
+    "id": 41,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:48.000Z",
+    "round": 0,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S8",
+      "chars": 4200,
+      "content_hash": "h-S8"
+    }
+  },
+  {
+    "id": 42,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:49.200Z",
+    "round": 0,
+    "type": "source.failed",
+    "step_ms": 700,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S9",
+      "failure": "SOURCE_UNAVAILABLE",
+      "reason": "HTTP 403 Forbidden"
+    }
+  },
+  {
+    "id": 43,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:50.400Z",
+    "round": 0,
+    "type": "source.failed",
+    "step_ms": 700,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S10",
+      "failure": "SOURCE_EMPTY",
+      "reason": "Page requires JavaScript; no text extracted"
+    }
+  },
+  {
+    "id": 44,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:51.600Z",
+    "round": 0,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S11",
+      "chars": 4200,
+      "content_hash": "h-S11"
+    }
+  },
+  {
+    "id": 45,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:52.800Z",
+    "round": 0,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S12",
+      "chars": 4200,
+      "content_hash": "h-S12"
+    }
+  },
+  {
+    "id": 46,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:54.000Z",
+    "round": 0,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S13",
+      "chars": 4200,
+      "content_hash": "h-S13"
+    }
+  },
+  {
+    "id": 47,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:55.200Z",
+    "round": 0,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S14",
+      "chars": 4200,
+      "content_hash": "h-S14"
+    }
+  },
+  {
+    "id": 48,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:56.400Z",
+    "round": 0,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S15",
+      "chars": 4200,
+      "content_hash": "h-S15"
+    }
+  },
+  {
+    "id": 49,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:57.600Z",
+    "round": 0,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S16",
+      "chars": 4200,
+      "content_hash": "h-S16"
+    }
+  },
+  {
+    "id": 50,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:00:58.800Z",
+    "round": 0,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S17",
+      "chars": 4200,
+      "content_hash": "h-S17"
+    }
+  },
+  {
+    "id": 51,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:00.000Z",
+    "round": 0,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S18",
+      "chars": 4200,
+      "content_hash": "h-S18"
+    }
+  },
+  {
+    "id": 52,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:01.200Z",
+    "round": 0,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "EXTRACT",
+      "reason": "Splitting fetched pages into stored passages"
+    }
+  },
+  {
+    "id": 53,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:02.400Z",
+    "round": 0,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S1",
+      "count": 1
+    }
+  },
+  {
+    "id": 54,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:03.600Z",
+    "round": 0,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S2",
+      "count": 1
+    }
+  },
+  {
+    "id": 55,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:04.800Z",
+    "round": 0,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S3",
+      "count": 1
+    }
+  },
+  {
+    "id": 56,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:06.000Z",
+    "round": 0,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S4",
+      "count": 1
+    }
+  },
+  {
+    "id": 57,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:07.200Z",
+    "round": 0,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S5",
+      "count": 1
+    }
+  },
+  {
+    "id": 58,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:08.400Z",
+    "round": 0,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S6",
+      "count": 1
+    }
+  },
+  {
+    "id": 59,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:09.600Z",
+    "round": 0,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S7",
+      "count": 1
+    }
+  },
+  {
+    "id": 60,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:10.800Z",
+    "round": 0,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S8",
+      "count": 2
+    }
+  },
+  {
+    "id": 61,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:12.000Z",
+    "round": 0,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S11",
+      "count": 2
+    }
+  },
+  {
+    "id": 62,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:13.200Z",
+    "round": 0,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S12",
+      "count": 1
+    }
+  },
+  {
+    "id": 63,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:14.400Z",
+    "round": 0,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S13",
+      "count": 1
+    }
+  },
+  {
+    "id": 64,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:15.600Z",
+    "round": 0,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S14",
+      "count": 1
+    }
+  },
+  {
+    "id": 65,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:16.800Z",
+    "round": 0,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S15",
+      "count": 1
+    }
+  },
+  {
+    "id": 66,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:18.000Z",
+    "round": 0,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S16",
+      "count": 1
+    }
+  },
+  {
+    "id": 67,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:19.200Z",
+    "round": 0,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S17",
+      "count": 1
+    }
+  },
+  {
+    "id": 68,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:20.400Z",
+    "round": 0,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S18",
+      "count": 1
+    }
+  },
+  {
+    "id": 69,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:21.600Z",
+    "round": 0,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "CLAIMS",
+      "reason": "Extracting quote-checked claims"
+    }
+  },
+  {
+    "id": 70,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:22.800Z",
+    "round": 0,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C1",
+        "run_id": "mock-complete-1",
+        "slot_id": "D2S1",
+        "round": 0,
+        "text": "RideNow subscription costs Rs 1,499 per month (news-a).",
+        "entity": "RideNow",
+        "attribute": "monthly_price",
+        "value_num": 1499,
+        "unit": "INR",
+        "period": "month",
+        "quote": "subscription at Rs 1,499 per month",
+        "passage_id": "P1",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 71,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:24.000Z",
+    "round": 0,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C2",
+        "run_id": "mock-complete-1",
+        "slot_id": "D2S1",
+        "round": 0,
+        "text": "RideNow subscription costs Rs 1,499 per month (news-b).",
+        "entity": "RideNow",
+        "attribute": "monthly_price",
+        "value_num": 1499,
+        "unit": "INR",
+        "period": "month",
+        "quote": "subscription at Rs 1,499 per month",
+        "passage_id": "P2",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 72,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:25.200Z",
+    "round": 0,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C3",
+        "run_id": "mock-complete-1",
+        "slot_id": "D2S1",
+        "round": 0,
+        "text": "RideNow subscription costs Rs 1,499 per month (news-c).",
+        "entity": "RideNow",
+        "attribute": "monthly_price",
+        "value_num": 1499,
+        "unit": "INR",
+        "period": "month",
+        "quote": "subscription at Rs 1,499 per month",
+        "passage_id": "P3",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 73,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:26.400Z",
+    "round": 0,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C4",
+        "run_id": "mock-complete-1",
+        "slot_id": "D2S1",
+        "round": 0,
+        "text": "RideNow subscription costs Rs 1,499 per month (news-d).",
+        "entity": "RideNow",
+        "attribute": "monthly_price",
+        "value_num": 1499,
+        "unit": "INR",
+        "period": "month",
+        "quote": "subscription at Rs 1,499 per month",
+        "passage_id": "P4",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 74,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:27.600Z",
+    "round": 0,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C5",
+        "run_id": "mock-complete-1",
+        "slot_id": "D2S1",
+        "round": 0,
+        "text": "A blog repeats the Rs 1,499 per month price from the press release.",
+        "entity": "RideNow",
+        "attribute": "monthly_price",
+        "value_num": 1499,
+        "unit": "INR",
+        "period": "month",
+        "quote": "the plan costs Rs 1,499 per month",
+        "passage_id": "P5",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 75,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:28.800Z",
+    "round": 0,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C6",
+        "run_id": "mock-complete-1",
+        "slot_id": "D2S1",
+        "round": 0,
+        "text": "RideNow's own page lists Rs 1,799 per month including insurance.",
+        "entity": "RideNow",
+        "attribute": "monthly_price",
+        "value_num": 1799,
+        "unit": "INR",
+        "period": "month",
+        "quote": "Monthly plan: Rs 1,799 per month including insurance",
+        "passage_id": "P6",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 76,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:30.000Z",
+    "round": 0,
+    "type": "claim.rejected",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "slot_id": "D2S1",
+      "passage_id": "P6",
+      "quote": "Rs 999 per month introductory offer",
+      "failure": "CLAIM_REJECTED",
+      "reason": "Quote not found in passage P6"
+    }
+  },
+  {
+    "id": 77,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:31.200Z",
+    "round": 0,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C7",
+        "run_id": "mock-complete-1",
+        "slot_id": "D2S1",
+        "round": 0,
+        "text": "Forum posters say riders pay about Rs 1,500 monthly.",
+        "entity": "riders",
+        "attribute": "monthly_price",
+        "value_num": 1500,
+        "unit": "INR",
+        "period": "month",
+        "quote": "pay around Rs 1,500 monthly for scooter rentals",
+        "passage_id": "P7",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 78,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:32.400Z",
+    "round": 0,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C8",
+        "run_id": "mock-complete-1",
+        "slot_id": "D3S1",
+        "round": 0,
+        "text": "Operators need an aggregator licence before offering rentals.",
+        "entity": null,
+        "attribute": null,
+        "value_num": null,
+        "unit": null,
+        "period": null,
+        "quote": "Operators must hold a valid aggregator licence",
+        "passage_id": "P8",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 79,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:33.600Z",
+    "round": 0,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C9",
+        "run_id": "mock-complete-1",
+        "slot_id": "D1S1",
+        "round": 0,
+        "text": "The Bengaluru e-scooter rental market was worth USD 120 million in 2025.",
+        "entity": "e-scooter rental market",
+        "attribute": "market_size",
+        "value_num": 120,
+        "unit": "USD million",
+        "period": "2025",
+        "quote": "worth USD 120 million in 2025",
+        "passage_id": "P9",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 80,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:34.800Z",
+    "round": 0,
+    "type": "claim.rejected",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "slot_id": "D1S1",
+      "passage_id": "P9",
+      "quote": "the market will triple by 2028",
+      "failure": "CLAIM_REJECTED",
+      "reason": "Quote not found in passage P9"
+    }
+  },
+  {
+    "id": 81,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:36.000Z",
+    "round": 0,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C10",
+        "run_id": "mock-complete-1",
+        "slot_id": "D1S1",
+        "round": 0,
+        "text": "Bengaluru shared micro-mobility revenue reached USD 350 million in 2025.",
+        "entity": "shared micro-mobility",
+        "attribute": "market_size",
+        "value_num": 350,
+        "unit": "USD million",
+        "period": "2025",
+        "quote": "revenue reached USD 350 million in 2025",
+        "passage_id": "P10",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 82,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:37.200Z",
+    "round": 0,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C11",
+        "run_id": "mock-complete-1",
+        "slot_id": "D4S2",
+        "round": 0,
+        "text": "Charging costs about Rs 40 per day per scooter.",
+        "entity": "scooter",
+        "attribute": "charging_cost",
+        "value_num": 40,
+        "unit": "INR",
+        "period": "day",
+        "quote": "Charging costs about Rs 40 per day per scooter",
+        "passage_id": "P11",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 83,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:38.400Z",
+    "round": 0,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C12",
+        "run_id": "mock-complete-1",
+        "slot_id": "D4S2",
+        "round": 0,
+        "text": "Energy and swapping costs average Rs 1,200 per month per scooter.",
+        "entity": "scooter",
+        "attribute": "charging_cost",
+        "value_num": 1200,
+        "unit": "INR",
+        "period": "month",
+        "quote": "average Rs 1,200 per month per scooter",
+        "passage_id": "P12",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 84,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:39.600Z",
+    "round": 0,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C13",
+        "run_id": "mock-complete-1",
+        "slot_id": "D4S1",
+        "round": 0,
+        "text": "The V1 scooter costs Rs 92,000 ex-showroom.",
+        "entity": "V1 scooter",
+        "attribute": "vehicle_cost",
+        "value_num": 92000,
+        "unit": "INR",
+        "period": null,
+        "quote": "costs Rs 92,000 ex-showroom",
+        "passage_id": "P13",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 85,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:40.800Z",
+    "round": 0,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C14",
+        "run_id": "mock-complete-1",
+        "slot_id": "D5S1",
+        "round": 0,
+        "text": "Two operators carry over half of shared scooter trips.",
+        "entity": null,
+        "attribute": null,
+        "value_num": null,
+        "unit": null,
+        "period": null,
+        "quote": "Two operators account for over half of shared scooter trips",
+        "passage_id": "P14",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 86,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:42.000Z",
+    "round": 0,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C15",
+        "run_id": "mock-complete-1",
+        "slot_id": "D1S2",
+        "round": 0,
+        "text": "Only one in five commuters has tried a shared scooter.",
+        "entity": null,
+        "attribute": "trial_rate",
+        "value_num": 20,
+        "unit": "percent",
+        "period": null,
+        "quote": "Only 1 in 5 commuters has tried a shared scooter",
+        "passage_id": "P15",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 87,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:43.200Z",
+    "round": 0,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C16",
+        "run_id": "mock-complete-1",
+        "slot_id": "D2S2",
+        "round": 0,
+        "text": "Surveyed riders would pay up to Rs 1,200 per month.",
+        "entity": null,
+        "attribute": "willingness_to_pay",
+        "value_num": 1200,
+        "unit": "INR",
+        "period": "month",
+        "quote": "would pay up to Rs 1,200 per month",
+        "passage_id": "P16",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 88,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:44.400Z",
+    "round": 0,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "VERIFY",
+      "reason": "Checking that each quote supports its claim"
+    }
+  },
+  {
+    "id": 89,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:45.600Z",
+    "round": 0,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C1",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 90,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:46.800Z",
+    "round": 0,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C2",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 91,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:48.000Z",
+    "round": 0,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C3",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 92,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:49.200Z",
+    "round": 0,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C4",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 93,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:50.400Z",
+    "round": 0,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C5",
+      "verdict": "partial",
+      "rationale": "Repeats the press release; not an independent confirmation."
+    }
+  },
+  {
+    "id": 94,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:51.600Z",
+    "round": 0,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C6",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 95,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:52.800Z",
+    "round": 0,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C7",
+      "verdict": "partial",
+      "rationale": "Loose figure from forum posters."
+    }
+  },
+  {
+    "id": 96,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:54.000Z",
+    "round": 0,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C8",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 97,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:55.200Z",
+    "round": 0,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C9",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 98,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:56.400Z",
+    "round": 0,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C10",
+      "verdict": "partial",
+      "rationale": "Covers a broader market than e-scooters."
+    }
+  },
+  {
+    "id": 99,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:57.600Z",
+    "round": 0,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C11",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 100,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:01:58.800Z",
+    "round": 0,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C12",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 101,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:00.000Z",
+    "round": 0,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C13",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 102,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:01.200Z",
+    "round": 0,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C14",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 103,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:02.400Z",
+    "round": 0,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C15",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 104,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:03.600Z",
+    "round": 0,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C16",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 105,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:04.800Z",
+    "round": 0,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "ANALYZE",
+      "reason": "Grouping sources by independent origin and checking conflicts"
+    }
+  },
+  {
+    "id": 106,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:06.000Z",
+    "round": 0,
+    "type": "origin.updated",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "origin": {
+        "id": "O1",
+        "run_id": "mock-complete-1",
+        "label": "RideNow press release",
+        "method": "near_duplicate",
+        "member_source_ids": [
+          "S1",
+          "S2",
+          "S3",
+          "S4",
+          "S5"
+        ]
+      }
+    }
+  },
+  {
+    "id": 107,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:07.200Z",
+    "round": 0,
+    "type": "origin.updated",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "origin": {
+        "id": "O2",
+        "run_id": "mock-complete-1",
+        "label": "ridenow.example.invalid",
+        "method": "domain",
+        "member_source_ids": [
+          "S6"
+        ]
+      }
+    }
+  },
+  {
+    "id": 108,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:08.400Z",
+    "round": 0,
+    "type": "origin.updated",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "origin": {
+        "id": "O3",
+        "run_id": "mock-complete-1",
+        "label": "forum-digest.example.invalid",
+        "method": "none",
+        "member_source_ids": [
+          "S7"
+        ]
+      }
+    }
+  },
+  {
+    "id": 109,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:09.600Z",
+    "round": 0,
+    "type": "origin.updated",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "origin": {
+        "id": "O4",
+        "run_id": "mock-complete-1",
+        "label": "transport.gov.example.invalid",
+        "method": "domain",
+        "member_source_ids": [
+          "S8"
+        ]
+      }
+    }
+  },
+  {
+    "id": 110,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:10.800Z",
+    "round": 0,
+    "type": "origin.updated",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "origin": {
+        "id": "O5",
+        "run_id": "mock-complete-1",
+        "label": "marketlens.example.invalid",
+        "method": "domain",
+        "member_source_ids": [
+          "S11"
+        ]
+      }
+    }
+  },
+  {
+    "id": 111,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:12.000Z",
+    "round": 0,
+    "type": "origin.updated",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "origin": {
+        "id": "O6",
+        "run_id": "mock-complete-1",
+        "label": "economy-daily.example.invalid",
+        "method": "domain",
+        "member_source_ids": [
+          "S12"
+        ]
+      }
+    }
+  },
+  {
+    "id": 112,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:13.200Z",
+    "round": 0,
+    "type": "origin.updated",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "origin": {
+        "id": "O7",
+        "run_id": "mock-complete-1",
+        "label": "commute-survey.example.invalid",
+        "method": "domain",
+        "member_source_ids": [
+          "S13"
+        ]
+      }
+    }
+  },
+  {
+    "id": 113,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:14.400Z",
+    "round": 0,
+    "type": "origin.updated",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "origin": {
+        "id": "O8",
+        "run_id": "mock-complete-1",
+        "label": "voltride.example.invalid",
+        "method": "domain",
+        "member_source_ids": [
+          "S14"
+        ]
+      }
+    }
+  },
+  {
+    "id": 114,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:15.600Z",
+    "round": 0,
+    "type": "origin.updated",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "origin": {
+        "id": "O9",
+        "run_id": "mock-complete-1",
+        "label": "fleetops.example.invalid",
+        "method": "domain",
+        "member_source_ids": [
+          "S17"
+        ]
+      }
+    }
+  },
+  {
+    "id": 115,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:16.800Z",
+    "round": 0,
+    "type": "origin.updated",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "origin": {
+        "id": "O10",
+        "run_id": "mock-complete-1",
+        "label": "energy-weekly.example.invalid",
+        "method": "domain",
+        "member_source_ids": [
+          "S18"
+        ]
+      }
+    }
+  },
+  {
+    "id": 116,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:18.000Z",
+    "round": 0,
+    "type": "origin.updated",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "origin": {
+        "id": "O11",
+        "run_id": "mock-complete-1",
+        "label": "city-desk.example.invalid",
+        "method": "domain",
+        "member_source_ids": [
+          "S15"
+        ]
+      }
+    }
+  },
+  {
+    "id": 117,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:19.200Z",
+    "round": 0,
+    "type": "origin.updated",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "origin": {
+        "id": "O12",
+        "run_id": "mock-complete-1",
+        "label": "riderpoll.example.invalid",
+        "method": "domain",
+        "member_source_ids": [
+          "S16"
+        ]
+      }
+    }
+  },
+  {
+    "id": 118,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:20.400Z",
+    "round": 0,
+    "type": "conflict.detected",
+    "step_ms": 1800,
+    "tokens": 700,
+    "cost_usd": 0.004,
+    "payload": {
+      "conflict": {
+        "id": "X1",
+        "run_id": "mock-complete-1",
+        "slot_id": "D2S1",
+        "claim_a": "C1",
+        "claim_b": "C6",
+        "delta_pct": 20,
+        "kind": "genuine",
+        "status": "open",
+        "explanation": null
+      }
+    }
+  },
+  {
+    "id": 119,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:21.600Z",
+    "round": 0,
+    "type": "conflict.detected",
+    "step_ms": 1800,
+    "tokens": 700,
+    "cost_usd": 0.004,
+    "payload": {
+      "conflict": {
+        "id": "X2",
+        "run_id": "mock-complete-1",
+        "slot_id": "D4S2",
+        "claim_a": "C11",
+        "claim_b": "C12",
+        "delta_pct": 96.7,
+        "kind": "unit_error",
+        "status": "open",
+        "explanation": null
+      }
+    }
+  },
+  {
+    "id": 120,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:22.800Z",
+    "round": 0,
+    "type": "conflict.detected",
+    "step_ms": 1800,
+    "tokens": 700,
+    "cost_usd": 0.004,
+    "payload": {
+      "conflict": {
+        "id": "X3",
+        "run_id": "mock-complete-1",
+        "slot_id": "D1S1",
+        "claim_a": "C9",
+        "claim_b": "C10",
+        "delta_pct": 191.7,
+        "kind": "definition",
+        "status": "open",
+        "explanation": null
+      }
+    }
+  },
+  {
+    "id": 121,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:24.000Z",
+    "round": 0,
+    "type": "coverage.updated",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "round": 0,
+      "cells": [
+        {
+          "id": "V-0-D1S1",
+          "run_id": "mock-complete-1",
+          "round": 0,
+          "slot_id": "D1S1",
+          "state": "AMBER",
+          "independent_origins": 2,
+          "supporting_claims": 2,
+          "open_conflicts": 1,
+          "reason": "2 sources, 2 origins, but the market-size definitions differ and are not yet explained; S9 was unavailable."
+        },
+        {
+          "id": "V-0-D1S2",
+          "run_id": "mock-complete-1",
+          "round": 0,
+          "slot_id": "D1S2",
+          "state": "RED",
+          "independent_origins": 1,
+          "supporting_claims": 1,
+          "open_conflicts": 0,
+          "reason": "1 source, 1 origin; S10 returned no content."
+        },
+        {
+          "id": "V-0-D2S1",
+          "run_id": "mock-complete-1",
+          "round": 0,
+          "slot_id": "D2S1",
+          "state": "AMBER",
+          "independent_origins": 3,
+          "supporting_claims": 6,
+          "open_conflicts": 1,
+          "reason": "7 sources, 3 origins: 5 pages repeat one press release; 1 open price conflict (Rs 1,499 vs Rs 1,799)."
+        },
+        {
+          "id": "V-0-D2S2",
+          "run_id": "mock-complete-1",
+          "round": 0,
+          "slot_id": "D2S2",
+          "state": "RED",
+          "independent_origins": 1,
+          "supporting_claims": 1,
+          "open_conflicts": 0,
+          "reason": "1 source, 1 origin; 2 independent origins needed."
+        },
+        {
+          "id": "V-0-D3S1",
+          "run_id": "mock-complete-1",
+          "round": 0,
+          "slot_id": "D3S1",
+          "state": "GREEN",
+          "independent_origins": 1,
+          "supporting_claims": 1,
+          "open_conflicts": 0,
+          "reason": "1 regulator source; this slot accepts a primary source."
+        },
+        {
+          "id": "V-0-D3S2",
+          "run_id": "mock-complete-1",
+          "round": 0,
+          "slot_id": "D3S2",
+          "state": "RED",
+          "independent_origins": 0,
+          "supporting_claims": 0,
+          "open_conflicts": 0,
+          "reason": "No sources found for this slot."
+        },
+        {
+          "id": "V-0-D4S1",
+          "run_id": "mock-complete-1",
+          "round": 0,
+          "slot_id": "D4S1",
+          "state": "AMBER",
+          "independent_origins": 1,
+          "supporting_claims": 1,
+          "open_conflicts": 0,
+          "reason": "1 source, 1 origin (company page); 2 needed."
+        },
+        {
+          "id": "V-0-D4S2",
+          "run_id": "mock-complete-1",
+          "round": 0,
+          "slot_id": "D4S2",
+          "state": "AMBER",
+          "independent_origins": 2,
+          "supporting_claims": 2,
+          "open_conflicts": 1,
+          "reason": "2 origins, but a per-day vs per-month conflict is not yet explained."
+        },
+        {
+          "id": "V-0-D5S1",
+          "run_id": "mock-complete-1",
+          "round": 0,
+          "slot_id": "D5S1",
+          "state": "AMBER",
+          "independent_origins": 1,
+          "supporting_claims": 1,
+          "open_conflicts": 0,
+          "reason": "1 source, 1 origin; 2 needed."
+        },
+        {
+          "id": "V-0-D5S2",
+          "run_id": "mock-complete-1",
+          "round": 0,
+          "slot_id": "D5S2",
+          "state": "RED",
+          "independent_origins": 0,
+          "supporting_claims": 0,
+          "open_conflicts": 0,
+          "reason": "No sources found for this slot."
+        }
+      ],
+      "rollups": [
+        {
+          "dimension_id": "D1",
+          "state": "AMBER",
+          "reason": "1 slot(s) below green."
+        },
+        {
+          "dimension_id": "D2",
+          "state": "AMBER",
+          "reason": "1 slot(s) below green."
+        },
+        {
+          "dimension_id": "D3",
+          "state": "GREEN",
+          "reason": "All critical slots in this dimension are green."
+        },
+        {
+          "dimension_id": "D4",
+          "state": "AMBER",
+          "reason": "2 slot(s) below green."
+        },
+        {
+          "dimension_id": "D5",
+          "state": "RED",
+          "reason": "2 slot(s) below green."
+        }
+      ]
+    }
+  },
+  {
+    "id": 122,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:25.200Z",
+    "round": 0,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "CHALLENGE",
+      "reason": "Attacking the strongest conclusions"
+    }
+  },
+  {
+    "id": 123,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:26.400Z",
+    "round": 1,
+    "type": "challenge.created",
+    "step_ms": 2500,
+    "tokens": 800,
+    "cost_usd": 0.005,
+    "payload": {
+      "challenge": {
+        "id": "H1",
+        "round": 1,
+        "attack": "The Rs 1,499 monthly price is one press release repeated by five pages, not five confirmations.",
+        "target_slot": "D2S1",
+        "target_claim": "C1",
+        "required_evidence": "A price from a source that does not cite the RideNow press release.",
+        "would_change_if": "An independent listing shows most operators charge above Rs 1,800 per month.",
+        "followup_task_ids": [
+          "T13"
+        ],
+        "outcome": null,
+        "run_id": "mock-complete-1"
+      }
+    }
+  },
+  {
+    "id": 124,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:27.600Z",
+    "round": 1,
+    "type": "challenge.created",
+    "step_ms": 2500,
+    "tokens": 800,
+    "cost_usd": 0.005,
+    "payload": {
+      "challenge": {
+        "id": "H2",
+        "round": 1,
+        "attack": "The regulator's permit rules may have been superseded by a newer draft.",
+        "target_slot": "D3S1",
+        "target_claim": "C8",
+        "required_evidence": "A second official source dated after the licence rule.",
+        "would_change_if": "A newer notification changes the licence category or fee for e-scooter subscriptions.",
+        "followup_task_ids": [
+          "T14"
+        ],
+        "outcome": null,
+        "run_id": "mock-complete-1"
+      }
+    }
+  },
+  {
+    "id": 125,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:28.800Z",
+    "round": 1,
+    "type": "challenge.created",
+    "step_ms": 2500,
+    "tokens": 800,
+    "cost_usd": 0.005,
+    "payload": {
+      "challenge": {
+        "id": "H3",
+        "round": 1,
+        "attack": "The USD 120 million market size may come from a vendor with an interest in a high number.",
+        "target_slot": "D1S1",
+        "target_claim": "C9",
+        "required_evidence": "A market estimate from a neutral analyst.",
+        "would_change_if": "A neutral estimate is less than half of USD 120 million.",
+        "followup_task_ids": [],
+        "outcome": null,
+        "run_id": "mock-complete-1"
+      }
+    }
+  },
+  {
+    "id": 126,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:30.000Z",
+    "round": 1,
+    "type": "round.started",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "round": 1,
+      "reason": "Re-searching: slot Competitor subscription pricing has 1 open conflict; challenges H1 to H3 need evidence",
+      "task_ids": [
+        "T11",
+        "T12",
+        "T13",
+        "T14"
+      ]
+    }
+  },
+  {
+    "id": 127,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:31.200Z",
+    "round": 1,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "DISCOVER",
+      "reason": "Follow-up searches for gaps and challenges"
+    }
+  },
+  {
+    "id": 128,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:32.400Z",
+    "round": 1,
+    "type": "task.started",
+    "step_ms": 900,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "task_id": "T11",
+      "slot_id": "D2S1",
+      "query_text": "independent electric scooter rental price survey Bengaluru",
+      "kind": "gap",
+      "reason": "Gap: pricing has only one press-release origin"
+    }
+  },
+  {
+    "id": 129,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:33.600Z",
+    "round": 1,
+    "type": "task.started",
+    "step_ms": 900,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "task_id": "T12",
+      "slot_id": "D4S1",
+      "query_text": "V1 scooter battery replacement price list",
+      "kind": "gap",
+      "reason": "Gap: vehicle cost has 1 origin"
+    }
+  },
+  {
+    "id": 130,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:34.800Z",
+    "round": 1,
+    "type": "task.started",
+    "step_ms": 900,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "task_id": "T13",
+      "slot_id": "D2S1",
+      "query_text": "electric scooter rental prices above Rs 1,800 Bengaluru",
+      "kind": "challenge",
+      "reason": "Challenge H1 follow-up"
+    }
+  },
+  {
+    "id": 131,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:36.000Z",
+    "round": 1,
+    "type": "task.started",
+    "step_ms": 900,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "task_id": "T14",
+      "slot_id": "D3S1",
+      "query_text": "Karnataka aggregator rules amendment 2026",
+      "kind": "challenge",
+      "reason": "Challenge H2 follow-up"
+    }
+  },
+  {
+    "id": 132,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:37.200Z",
+    "round": 1,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S19",
+        "run_id": "mock-complete-1",
+        "url": "https://consumer-report.example.invalid/s19",
+        "canonical_url": "https://consumer-report.example.invalid/s19",
+        "domain": "consumer-report.example.invalid",
+        "publisher": "consumer-report.example.invalid",
+        "source_type": "news",
+        "authority_tier": 2,
+        "published_at": "2026-03-15",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T11"
+      }
+    }
+  },
+  {
+    "id": 133,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:38.400Z",
+    "round": 1,
+    "type": "source.found",
+    "step_ms": 300,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source": {
+        "id": "S20",
+        "run_id": "mock-complete-1",
+        "url": "https://voltride-service.example.invalid/s20",
+        "canonical_url": "https://voltride-service.example.invalid/s20",
+        "domain": "voltride-service.example.invalid",
+        "publisher": "voltride-service.example.invalid",
+        "source_type": "company_primary",
+        "authority_tier": 1,
+        "published_at": "2026-03-15",
+        "retrieved_at": "2026-06-01T10:00:00Z",
+        "content_hash": "",
+        "status": "found",
+        "fail_reason": null,
+        "origin_id": null,
+        "task_id": "T12"
+      }
+    }
+  },
+  {
+    "id": 134,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:39.600Z",
+    "round": 1,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "ACQUIRE",
+      "reason": "Fetching new pages"
+    }
+  },
+  {
+    "id": 135,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:40.800Z",
+    "round": 1,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S19",
+      "chars": 3100,
+      "content_hash": "h-S19"
+    }
+  },
+  {
+    "id": 136,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:42.000Z",
+    "round": 1,
+    "type": "source.fetched",
+    "step_ms": 800,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S20",
+      "chars": 3100,
+      "content_hash": "h-S20"
+    }
+  },
+  {
+    "id": 137,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:43.200Z",
+    "round": 1,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "EXTRACT",
+      "reason": "Splitting new pages into passages"
+    }
+  },
+  {
+    "id": 138,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:44.400Z",
+    "round": 1,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S19",
+      "count": 1
+    }
+  },
+  {
+    "id": 139,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:45.600Z",
+    "round": 1,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S20",
+      "count": 1
+    }
+  },
+  {
+    "id": 140,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:46.800Z",
+    "round": 1,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S11",
+      "count": 2
+    }
+  },
+  {
+    "id": 141,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:48.000Z",
+    "round": 1,
+    "type": "passages.created",
+    "step_ms": 120,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "source_id": "S8",
+      "count": 2
+    }
+  },
+  {
+    "id": 142,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:49.200Z",
+    "round": 1,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "CLAIMS",
+      "reason": "Extracting claims from new passages"
+    }
+  },
+  {
+    "id": 143,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:50.400Z",
+    "round": 1,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C17",
+        "run_id": "mock-complete-1",
+        "slot_id": "D2S1",
+        "round": 1,
+        "text": "An independent report lists monthly prices from Rs 1,400 to Rs 1,800.",
+        "entity": null,
+        "attribute": "monthly_price",
+        "value_num": null,
+        "unit": "INR",
+        "period": "month",
+        "quote": "range between Rs 1,400 and Rs 1,800",
+        "passage_id": "P17",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 144,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:51.600Z",
+    "round": 1,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C18",
+        "run_id": "mock-complete-1",
+        "slot_id": "D4S1",
+        "round": 1,
+        "text": "Battery pack replacement costs Rs 28,000.",
+        "entity": "V1 scooter",
+        "attribute": "battery_cost",
+        "value_num": 28000,
+        "unit": "INR",
+        "period": null,
+        "quote": "Battery pack replacement costs Rs 28,000",
+        "passage_id": "P18",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 145,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:52.800Z",
+    "round": 1,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C19",
+        "run_id": "mock-complete-1",
+        "slot_id": "D1S1",
+        "round": 1,
+        "text": "Analysts expect 18% annual growth through 2030.",
+        "entity": null,
+        "attribute": "growth",
+        "value_num": 18,
+        "unit": "percent",
+        "period": "annual",
+        "quote": "Analysts expect 18% annual growth through 2030",
+        "passage_id": "P19",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 146,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:54.000Z",
+    "round": 1,
+    "type": "claim.created",
+    "step_ms": 2100,
+    "tokens": 900,
+    "cost_usd": 0.006,
+    "payload": {
+      "claim": {
+        "id": "C20",
+        "run_id": "mock-complete-1",
+        "slot_id": "D3S1",
+        "round": 1,
+        "text": "Permits are issued within 30 days of application.",
+        "entity": null,
+        "attribute": "permit_time",
+        "value_num": 30,
+        "unit": "days",
+        "period": null,
+        "quote": "Permits are issued within 30 days of application",
+        "passage_id": "P20",
+        "quote_verified": true,
+        "status": "pending"
+      }
+    }
+  },
+  {
+    "id": 147,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:55.200Z",
+    "round": 1,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "VERIFY",
+      "reason": "Checking new claims"
+    }
+  },
+  {
+    "id": 148,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:56.400Z",
+    "round": 1,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C17",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 149,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:57.600Z",
+    "round": 1,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C18",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 150,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:02:58.800Z",
+    "round": 1,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C19",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 151,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:00.000Z",
+    "round": 1,
+    "type": "claim.verified",
+    "step_ms": 1500,
+    "tokens": 500,
+    "cost_usd": 0.003,
+    "payload": {
+      "claim_id": "C20",
+      "verdict": "supports",
+      "rationale": "Quote states the claim."
+    }
+  },
+  {
+    "id": 152,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:01.200Z",
+    "round": 1,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "ANALYZE",
+      "reason": "Re-grouping origins and re-checking conflicts"
+    }
+  },
+  {
+    "id": 153,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:02.400Z",
+    "round": 1,
+    "type": "origin.updated",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "origin": {
+        "id": "O13",
+        "run_id": "mock-complete-1",
+        "label": "consumer-report.example.invalid",
+        "method": "domain",
+        "member_source_ids": [
+          "S19"
+        ]
+      }
+    }
+  },
+  {
+    "id": 154,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:03.600Z",
+    "round": 1,
+    "type": "origin.updated",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "origin": {
+        "id": "O14",
+        "run_id": "mock-complete-1",
+        "label": "voltride-service.example.invalid",
+        "method": "domain",
+        "member_source_ids": [
+          "S20"
+        ]
+      }
+    }
+  },
+  {
+    "id": 155,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:04.800Z",
+    "round": 1,
+    "type": "conflict.detected",
+    "step_ms": 1800,
+    "tokens": 700,
+    "cost_usd": 0.004,
+    "payload": {
+      "conflict": {
+        "id": "X1",
+        "run_id": "mock-complete-1",
+        "slot_id": "D2S1",
+        "claim_a": "C1",
+        "claim_b": "C6",
+        "delta_pct": 20,
+        "kind": "genuine",
+        "status": "open",
+        "explanation": null
+      }
+    }
+  },
+  {
+    "id": 156,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:06.000Z",
+    "round": 1,
+    "type": "conflict.detected",
+    "step_ms": 1800,
+    "tokens": 700,
+    "cost_usd": 0.004,
+    "payload": {
+      "conflict": {
+        "id": "X2",
+        "run_id": "mock-complete-1",
+        "slot_id": "D4S2",
+        "claim_a": "C11",
+        "claim_b": "C12",
+        "delta_pct": 96.7,
+        "kind": "unit_error",
+        "status": "explained",
+        "explanation": "C11 is per day and C12 is per month: Rs 40 per day is about Rs 1,200 per month. Same figure once units are normalised."
+      }
+    }
+  },
+  {
+    "id": 157,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:07.200Z",
+    "round": 1,
+    "type": "conflict.detected",
+    "step_ms": 1800,
+    "tokens": 700,
+    "cost_usd": 0.004,
+    "payload": {
+      "conflict": {
+        "id": "X3",
+        "run_id": "mock-complete-1",
+        "slot_id": "D1S1",
+        "claim_a": "C9",
+        "claim_b": "C10",
+        "delta_pct": 191.7,
+        "kind": "definition",
+        "status": "explained",
+        "explanation": "C10 counts all shared micro-mobility (scooters, bikes, e-cycles); C9 counts e-scooter rentals only."
+      }
+    }
+  },
+  {
+    "id": 158,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:08.400Z",
+    "round": 1,
+    "type": "coverage.updated",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "round": 1,
+      "cells": [
+        {
+          "id": "V-1-D1S1",
+          "run_id": "mock-complete-1",
+          "round": 1,
+          "slot_id": "D1S1",
+          "state": "GREEN",
+          "independent_origins": 2,
+          "supporting_claims": 3,
+          "open_conflicts": 0,
+          "reason": "2 origins; the definition conflict is explained (scooters only vs all micro-mobility)."
+        },
+        {
+          "id": "V-1-D1S2",
+          "run_id": "mock-complete-1",
+          "round": 1,
+          "slot_id": "D1S2",
+          "state": "RED",
+          "independent_origins": 1,
+          "supporting_claims": 1,
+          "open_conflicts": 0,
+          "reason": "1 source, 1 origin; S10 returned no content."
+        },
+        {
+          "id": "V-1-D2S1",
+          "run_id": "mock-complete-1",
+          "round": 1,
+          "slot_id": "D2S1",
+          "state": "AMBER",
+          "independent_origins": 4,
+          "supporting_claims": 7,
+          "open_conflicts": 1,
+          "reason": "8 sources, 4 origins: 5 pages repeat one press release; 1 genuine price conflict remains open."
+        },
+        {
+          "id": "V-1-D2S2",
+          "run_id": "mock-complete-1",
+          "round": 1,
+          "slot_id": "D2S2",
+          "state": "RED",
+          "independent_origins": 1,
+          "supporting_claims": 1,
+          "open_conflicts": 0,
+          "reason": "1 source, 1 origin; 2 independent origins needed."
+        },
+        {
+          "id": "V-1-D3S1",
+          "run_id": "mock-complete-1",
+          "round": 1,
+          "slot_id": "D3S1",
+          "state": "AMBER",
+          "independent_origins": 1,
+          "supporting_claims": 2,
+          "open_conflicts": 0,
+          "reason": "Challenge H2 found the permit rules may have changed; the regulator page is the only origin."
+        },
+        {
+          "id": "V-1-D3S2",
+          "run_id": "mock-complete-1",
+          "round": 1,
+          "slot_id": "D3S2",
+          "state": "RED",
+          "independent_origins": 0,
+          "supporting_claims": 0,
+          "open_conflicts": 0,
+          "reason": "No sources found for this slot."
+        },
+        {
+          "id": "V-1-D4S1",
+          "run_id": "mock-complete-1",
+          "round": 1,
+          "slot_id": "D4S1",
+          "state": "GREEN",
+          "independent_origins": 2,
+          "supporting_claims": 2,
+          "open_conflicts": 0,
+          "reason": "2 origins: the manufacturer spec page and a service price list."
+        },
+        {
+          "id": "V-1-D4S2",
+          "run_id": "mock-complete-1",
+          "round": 1,
+          "slot_id": "D4S2",
+          "state": "GREEN",
+          "independent_origins": 2,
+          "supporting_claims": 2,
+          "open_conflicts": 0,
+          "reason": "2 origins; the per-day vs per-month conflict is explained."
+        },
+        {
+          "id": "V-1-D5S1",
+          "run_id": "mock-complete-1",
+          "round": 1,
+          "slot_id": "D5S1",
+          "state": "AMBER",
+          "independent_origins": 1,
+          "supporting_claims": 1,
+          "open_conflicts": 0,
+          "reason": "1 source, 1 origin; 2 needed."
+        },
+        {
+          "id": "V-1-D5S2",
+          "run_id": "mock-complete-1",
+          "round": 1,
+          "slot_id": "D5S2",
+          "state": "RED",
+          "independent_origins": 0,
+          "supporting_claims": 0,
+          "open_conflicts": 0,
+          "reason": "No sources found for this slot."
+        }
+      ],
+      "rollups": [
+        {
+          "dimension_id": "D1",
+          "state": "GREEN",
+          "reason": "All critical slots in this dimension are green."
+        },
+        {
+          "dimension_id": "D2",
+          "state": "AMBER",
+          "reason": "1 slot(s) below green."
+        },
+        {
+          "dimension_id": "D3",
+          "state": "AMBER",
+          "reason": "1 slot(s) below green."
+        },
+        {
+          "dimension_id": "D4",
+          "state": "GREEN",
+          "reason": "All critical slots in this dimension are green."
+        },
+        {
+          "dimension_id": "D5",
+          "state": "RED",
+          "reason": "2 slot(s) below green."
+        }
+      ]
+    }
+  },
+  {
+    "id": 159,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:09.600Z",
+    "round": 1,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "CHALLENGE",
+      "reason": "Scoring challenge outcomes"
+    }
+  },
+  {
+    "id": 160,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:10.800Z",
+    "round": 1,
+    "type": "challenge.outcome",
+    "step_ms": 1200,
+    "tokens": 400,
+    "cost_usd": 0.003,
+    "payload": {
+      "challenge_id": "H1",
+      "outcome": "strengthened"
+    }
+  },
+  {
+    "id": 161,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:12.000Z",
+    "round": 1,
+    "type": "challenge.outcome",
+    "step_ms": 1200,
+    "tokens": 400,
+    "cost_usd": 0.003,
+    "payload": {
+      "challenge_id": "H2",
+      "outcome": "weakened"
+    }
+  },
+  {
+    "id": 162,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:13.200Z",
+    "round": 1,
+    "type": "challenge.outcome",
+    "step_ms": 1200,
+    "tokens": 400,
+    "cost_usd": 0.003,
+    "payload": {
+      "challenge_id": "H3",
+      "outcome": "unresolved"
+    }
+  },
+  {
+    "id": 163,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:14.400Z",
+    "round": 1,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "STOP_POLICY",
+      "reason": "Applying the stop policy to stored coverage, conflicts and challenges"
+    }
+  },
+  {
+    "id": 164,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:15.600Z",
+    "round": 1,
+    "type": "stop.decided",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "decision": {
+        "state": "SUFFICIENT_WITH_CAVEATS",
+        "termination_reason": "max_rounds",
+        "critical_slots": {
+          "green": 3,
+          "amber": 2,
+          "red": 0
+        },
+        "open_conflicts": 1,
+        "challenge_rounds_completed": 1,
+        "caveats": [
+          "Competitor pricing has one unresolved conflict (Rs 1,499 vs Rs 1,799).",
+          "Permit rules rest on a single regulator source."
+        ]
+      }
+    }
+  },
+  {
+    "id": 165,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:16.800Z",
+    "round": 1,
+    "type": "phase.entered",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "phase": "SYNTHESIZE",
+      "reason": "Writing the report from stored evidence"
+    }
+  },
+  {
+    "id": 166,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:18.000Z",
+    "round": 1,
+    "type": "report.draft",
+    "step_ms": 6000,
+    "tokens": 3000,
+    "cost_usd": 0.03,
+    "payload": {
+      "version": 1
+    }
+  },
+  {
+    "id": 167,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:19.200Z",
+    "round": 1,
+    "type": "report.verified",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "version": 1,
+      "dropped_count": 1,
+      "certainty_state": "SUFFICIENT_WITH_CAVEATS"
+    }
+  },
+  {
+    "id": 168,
+    "run_id": "mock-complete-1",
+    "ts": "2026-06-01T10:03:20.400Z",
+    "round": 1,
+    "type": "run.completed",
+    "step_ms": null,
+    "tokens": null,
+    "cost_usd": null,
+    "payload": {
+      "stop_state": "SUFFICIENT_WITH_CAVEATS",
+      "termination_reason": "max_rounds"
+    }
+  }
+]
