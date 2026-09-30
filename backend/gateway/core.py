@@ -21,8 +21,10 @@ from backend.gateway.fetch import Fetcher, FetchResult
 from backend.gateway.llm import (
     ROLE_SETTINGS,
     LLMRole,
+    LLMTier,
     build_messages,
     correction_message,
+    max_tokens_for,
     model_for,
     parse_structured,
 )
@@ -41,6 +43,35 @@ LLM_RATE_LIMIT_BACKOFF = (5.0, 15.0, 30.0)
 LLM_RATE_LIMIT_MAX_WAIT = 60.0  # seconds; provider hints are honoured up to this cap
 LLM_MAX_ATTEMPTS = 3  # first try plus 2 validation retries (SSOT 10)
 WARN_FRACTION = 0.8
+
+
+@dataclass
+class LLMOpStats:
+    """One logical LLM operation (a gateway.llm call); validation attempts and provider requests
+    are kept distinct. `max_llm_calls` counts validation_attempts (see ToolGateway.llm)."""
+
+    run_id: str | None
+    role: str
+    prompt_id: str
+    model: str
+    provider: str = "llm"
+    validation_attempts: int = 0  # each consumes max_llm_calls
+    provider_requests: int = 0  # provider requests incl. 429/5xx retries
+    provider_retries: int = 0  # provider requests beyond one per validation attempt
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    total_tokens: int | None = None
+    cost_usd: float | None = None  # reported or estimated, per cost_source
+    cost_source: str = "unavailable"  # "reported" | "estimated" | "unavailable"
+    latency_ms: int = 0
+    status: str = "ok"  # "ok" or the typed failure value
+
+
+@dataclass(frozen=True)
+class CostBreakdown:
+    reported_usd: float
+    estimated_usd: float
+    unavailable_ops: int  # operations with neither provider cost nor a configured price
 
 
 @dataclass(frozen=True)
@@ -64,8 +95,14 @@ class ToolGateway:
         on_warning: Callable[[BudgetWarning], None] | None = None,
         clock: Callable[[], float] = time.monotonic,
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
+        run_id: str | None = None,
     ) -> None:
         self.settings = settings
+        self.run_id = run_id
+        self.llm_ops: list[LLMOpStats] = []
+        self._cost_reported = 0.0
+        self._cost_estimated = 0.0
+        self._cost_unavailable = 0
         self.budget = budget
         self.mode = mode
         self._search = search
@@ -104,6 +141,20 @@ class ToolGateway:
             cost_usd=round(self._cost, 6),
             elapsed_seconds=round(self.elapsed(), 3),
         )
+
+    def cost_breakdown(self) -> CostBreakdown:
+        return CostBreakdown(
+            round(self._cost_reported, 6), round(self._cost_estimated, 6), self._cost_unavailable
+        )
+
+    def _estimate_cost(self, role: LLMRole, tin: int | None, tout: int | None) -> float | None:
+        """Local estimate from token usage and configured USD-per-1M prices; None if impossible."""
+        st = self.settings
+        strong = ROLE_SETTINGS[role].tier is LLMTier.STRONG
+        price = st.llm_price_strong if strong else st.llm_price_fast
+        if price is None or tin is None or tout is None:
+            return None
+        return (tin * price[0] + tout * price[1]) / 1_000_000
 
     def _warn(self, limit: str, used: float, maximum: float) -> None:
         if maximum > 0 and used >= WARN_FRACTION * maximum and limit not in self._warned:
@@ -231,57 +282,114 @@ class ToolGateway:
     async def llm(
         self, role: LLMRole, prompt_id: str, schema: type[BaseModel] | Any, payload: dict[str, Any]
     ) -> GatewayResult[Any]:
-        """Structured LLM call: validate against `schema`, retry twice with the error appended."""
+        """Structured LLM call: validate against `schema`, retry twice with the error appended.
+
+        Budget semantics: every validation attempt passes `_before` and consumes one max_llm_calls.
+        Provider-level 429/5xx retries inside one attempt are not counted there (see LLMOpStats).
+        """
         cfg = ROLE_SETTINGS[role]
         model = model_for(role, self.settings)
-        messages = build_messages(prompt_id, schema, payload)
-        latency, tokens, cost, provider = 0, None, None, "llm"
-        last_error: Exception | None = None
-        for _ in range(LLM_MAX_ATTEMPTS):
-            self._before("max_llm_calls", self._llm_calls, self.budget.max_llm_calls)
-            self._llm_calls += 1
-            raw = await self._llm_attempt(model, messages, cfg.temperature, cfg.max_tokens)
-            m = raw["metrics"]
-            provider = m["provider"]
-            latency += m["latency_ms"]
-            if m["tokens"] is not None:
-                tokens = (tokens or 0) + m["tokens"]
-            if m["cost_usd"] is not None:
-                cost = (cost or 0.0) + m["cost_usd"]
-                self._cost += m["cost_usd"]
-            try:
-                value = parse_structured(raw["text"], schema)
-            except ValueError as exc:  # pydantic.ValidationError is a ValueError
-                last_error = exc
-                messages = [
-                    *messages,
-                    {"role": "assistant", "content": raw["text"]},
-                    {"role": "user", "content": correction_message(exc)},
-                ]
-                continue
-            metrics = CallMetrics(
-                "llm",
-                provider,
-                m["model"],
-                latency,
-                tokens=tokens,
-                cost_usd=cost,
-                role=role.value,
-                prompt_id=prompt_id,
-            )
-            return GatewayResult(value, metrics)
-        raise GatewayError(
-            FailureType.STEP_FAILED,
-            f"{role.value} output failed validation after {LLM_MAX_ATTEMPTS} attempts: "
-            f"{str(last_error)[:300]}",
+        messages = build_messages(
+            prompt_id, schema, payload, compact=self.settings.llm_compact_json
         )
+        op = LLMOpStats(self.run_id, role.value, prompt_id, model)
+        self.llm_ops.append(op)
+        last_error: Exception | None = None
+        try:
+            for _ in range(LLM_MAX_ATTEMPTS):
+                self._before("max_llm_calls", self._llm_calls, self.budget.max_llm_calls)
+                self._llm_calls += 1
+                op.validation_attempts += 1
+                raw = await self._llm_attempt(
+                    model, messages, cfg.temperature, max_tokens_for(role, self.settings), op
+                )
+                m = raw["metrics"]
+                op.provider = m["provider"]
+                op.latency_ms += m["latency_ms"]
+                tin, tout = m.get("input_tokens"), m.get("output_tokens")
+                if m["tokens"] is not None:
+                    op.total_tokens = (op.total_tokens or 0) + m["tokens"]
+                if tin is not None:
+                    op.input_tokens = (op.input_tokens or 0) + tin
+                if tout is not None:
+                    op.output_tokens = (op.output_tokens or 0) + tout
+                self._account_cost(op, role, m["cost_usd"], tin, tout)
+                try:
+                    value = parse_structured(raw["text"], schema)
+                except ValueError as exc:  # pydantic.ValidationError is a ValueError
+                    last_error = exc
+                    messages = [
+                        *messages,
+                        {"role": "assistant", "content": raw["text"]},
+                        {"role": "user", "content": correction_message(exc)},
+                    ]
+                    continue
+                metrics = CallMetrics(
+                    "llm",
+                    op.provider,
+                    m["model"],
+                    op.latency_ms,
+                    tokens=op.total_tokens,
+                    cost_usd=op.cost_usd,
+                    role=role.value,
+                    prompt_id=prompt_id,
+                    input_tokens=op.input_tokens,
+                    output_tokens=op.output_tokens,
+                )
+                return GatewayResult(value, metrics)
+            raise GatewayError(
+                FailureType.STEP_FAILED,
+                f"{role.value} output failed validation after {LLM_MAX_ATTEMPTS} attempts: "
+                f"{str(last_error)[:300]}",
+            )
+        except GatewayError as exc:
+            op.status = "BUDGET" if isinstance(exc, BudgetExceeded) else exc.failure.value
+            raise
+
+    def _account_cost(
+        self,
+        op: LLMOpStats,
+        role: LLMRole,
+        reported: float | None,
+        tin: int | None,
+        tout: int | None,
+    ) -> None:
+        """Reported cost wins; else a local estimate from configured prices; else unavailable.
+        Only reported and estimated cost count against MAX_COST_USD."""
+        if reported is not None:
+            self._cost_reported += reported
+            self._cost += reported
+            op.cost_usd = (op.cost_usd or 0.0) + reported
+            op.cost_source = "reported"
+            return
+        est = self._estimate_cost(role, tin, tout)
+        if est is not None:
+            self._cost_estimated += est
+            self._cost += est
+            op.cost_usd = (op.cost_usd or 0.0) + est
+            if op.cost_source != "reported":
+                op.cost_source = "estimated"
+            return
+        if op.validation_attempts == 1:
+            self._cost_unavailable += 1  # once per operation
+        if self._on_warning and "cost_unavailable" not in self._warned:
+            self._warned.add("cost_unavailable")
+            self._on_warning(BudgetWarning("cost_unavailable", float(self._cost_unavailable), 0.0))
 
     async def _llm_attempt(
-        self, model: str, messages: list[dict[str, str]], temperature: float, max_tokens: int
+        self,
+        model: str,
+        messages: list[dict[str, str]],
+        temperature: float,
+        max_tokens: int,
+        op: LLMOpStats,
     ) -> dict[str, Any]:
         async def live() -> dict[str, Any]:
             llm = self._need("LLM client", self._llm)
             for attempt in range(LLM_RATE_LIMIT_RETRIES + 1):
+                op.provider_requests += 1
+                if attempt:
+                    op.provider_retries += 1
                 try:
                     comp = await llm.complete(
                         model, messages, temperature=temperature, max_tokens=max_tokens
@@ -305,6 +413,8 @@ class ToolGateway:
                     "latency_ms": m.latency_ms,
                     "tokens": m.tokens,
                     "cost_usd": m.cost_usd,
+                    "input_tokens": m.input_tokens,
+                    "output_tokens": m.output_tokens,
                 },
             }
 

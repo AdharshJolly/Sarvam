@@ -107,7 +107,8 @@ async def run_verify(
         round=round,
     )
     todo = _pairs(conn, repo.list_unverified_claims(conn, run_id))
-    batches = [todo[i : i + BATCH_SIZE] for i in range(0, len(todo), BATCH_SIZE)]
+    size = getattr(settings, "verifier_batch_size", BATCH_SIZE)
+    batches = [todo[i : i + size] for i in range(0, len(todo), size)]
     stored = 0
     fatal: GatewayError | None = None
 

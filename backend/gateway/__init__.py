@@ -57,6 +57,10 @@ class CallMetrics:
     cost_usd: float | None = None
     role: str | None = None  # LLM calls: planner, extractor, ...
     prompt_id: str | None = None  # LLM calls: e.g. planner.v1
+    input_tokens: int | None = (
+        None  # LLM calls: prompt tokens, where the provider reports the split
+    )
+    output_tokens: int | None = None  # LLM calls: completion tokens
 
 
 @dataclass(frozen=True)

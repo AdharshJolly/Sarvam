@@ -64,7 +64,9 @@ def test_injected_runner_plans_and_completes(tmp_path):
         report = c.get(f"/api/runs/{rid}/report").json()
         assert "no findings" in report["markdown"] and report["citations"] == []
         types = event_types(c, rid)
-        assert types[:3] == ["run.started", "phase.entered", "plan.created"]
+        # the fake LLM reports no cost and no price is configured: the first call raises the
+        # one-time cost_unavailable budget.warning (MAX_COST_USD cannot be enforced honestly)
+        assert types[:4] == ["run.started", "phase.entered", "budget.warning", "plan.created"]
         assert types[-1] == "run.completed"
         plan = c.get(f"/api/runs/{rid}/state").json()["plan"]
         assert len(plan["dimensions"]) == 4

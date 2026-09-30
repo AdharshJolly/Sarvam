@@ -1,0 +1,137 @@
+{
+ "label": "exp_tokens_lowceil",
+ "question": "Should a company launch an electric scooter subscription service in Bengaluru in 2027?",
+ "knobs": {
+  "max_tokens": {
+   "planner": 1800,
+   "extractor": 1200,
+   "verifier": 800,
+   "challenger": 1800,
+   "writer": 2500,
+   "explainer": 700
+  },
+  "compact_json": false,
+  "passages_per_slot": 6,
+  "verifier_batch": 5,
+  "llm_concurrency": 2,
+  "models": [
+   "gemini-3.1-flash-lite",
+   "gemini-3.6-flash"
+  ],
+  "budget": {
+   "max_searches": 24,
+   "max_fetches": 40,
+   "max_llm_calls": 250,
+   "max_cost_usd": 3.0,
+   "max_wall_seconds_soft": 480,
+   "max_wall_seconds_hard": 600,
+   "max_followup_rounds": 2
+  }
+ },
+ "runs": [
+  {
+   "run_id": "R_BENCH_exp_tokens_lowceil_1_595e",
+   "wall_seconds": 31.7,
+   "status": "failed",
+   "stop_state": null,
+   "termination_reason": null,
+   "searches": 0,
+   "fetches": 0,
+   "llm_calls_budget_counter": 3,
+   "llm_operations": 1,
+   "validation_retries": 2,
+   "provider_requests": 3,
+   "provider_retries": 0,
+   "input_tokens": 6385,
+   "output_tokens": 2396,
+   "total_tokens": 11773,
+   "cost_reported_usd": 0.0,
+   "cost_estimated_usd": 0.0,
+   "cost_unavailable_ops": 1,
+   "claims": {},
+   "coverage_last_round": {},
+   "rounds": 0,
+   "conflicts": {},
+   "challenges": {},
+   "events": {
+    "budget.warning": 1,
+    "phase.entered": 1,
+    "run.failed": 1
+   },
+   "report_verified": null,
+   "by_role": {
+    "planner": {
+     "ops": 1,
+     "validation_attempts": 3,
+     "provider_requests": 3,
+     "provider_retries": 0,
+     "input_tokens": 6385,
+     "output_tokens": 2396,
+     "total_tokens": 11773,
+     "cost_usd": 0.0,
+     "latency_ms": 31644,
+     "failed": 1
+    }
+   },
+   "failed_ops": [
+    [
+     "planner",
+     "STEP_FAILED"
+    ]
+   ],
+   "harness_error": null
+  },
+  {
+   "run_id": "R_BENCH_exp_tokens_lowceil_2_6b28",
+   "wall_seconds": 31.7,
+   "status": "failed",
+   "stop_state": null,
+   "termination_reason": null,
+   "searches": 0,
+   "fetches": 0,
+   "llm_calls_budget_counter": 3,
+   "llm_operations": 1,
+   "validation_retries": 2,
+   "provider_requests": 3,
+   "provider_retries": 0,
+   "input_tokens": 4516,
+   "output_tokens": 513,
+   "total_tokens": 9904,
+   "cost_reported_usd": 0.0,
+   "cost_estimated_usd": 0.0,
+   "cost_unavailable_ops": 1,
+   "claims": {},
+   "coverage_last_round": {},
+   "rounds": 0,
+   "conflicts": {},
+   "challenges": {},
+   "events": {
+    "budget.warning": 1,
+    "phase.entered": 1,
+    "run.failed": 1
+   },
+   "report_verified": null,
+   "by_role": {
+    "planner": {
+     "ops": 1,
+     "validation_attempts": 3,
+     "provider_requests": 3,
+     "provider_retries": 0,
+     "input_tokens": 4516,
+     "output_tokens": 513,
+     "total_tokens": 9904,
+     "cost_usd": 0.0,
+     "latency_ms": 31712,
+     "failed": 1
+    }
+   },
+   "failed_ops": [
+    [
+     "planner",
+     "STEP_FAILED"
+    ]
+   ],
+   "harness_error": null
+  }
+ ]
+}

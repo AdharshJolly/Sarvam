@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -98,6 +99,7 @@ def build_gateway(settings: Settings, run: Run, deps: RunnerDeps | None, on_warn
             mode=Mode.REPLAY,
             recorder=RecordReplay(settings.record_dir, RecordMode.REPLAY),
             on_warning=on_warning,
+            run_id=run.id,
             **kwargs,
         )
     llm = deps.llm or llm_from_settings(settings)
@@ -112,7 +114,13 @@ def build_gateway(settings: Settings, run: Run, deps: RunnerDeps | None, on_warn
         fallback_search=fallback,
         fetcher=fetcher,
         llm=llm,
+        recorder=(
+            RecordReplay(settings.record_dir, RecordMode.RECORD)
+            if os.environ.get("SARVAM_RECORD") == "1"
+            else None
+        ),
         on_warning=on_warning,
+        run_id=run.id,
         **kwargs,
     )
 

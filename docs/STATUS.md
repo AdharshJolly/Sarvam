@@ -1,6 +1,6 @@
 # Sarvam build status and next plan
 
-Snapshot of 30 September 2026, after gate G3 (offline). Task IDs and gates are from SSOT sections 14 and
+Snapshot of 30 September 2026, after gate G3 (offline) and the LLM optimisation pass (`docs/LLM_OPTIMIZATION_REPORT.md`). Task IDs and gates are from SSOT sections 14 and
 13.3. The SSOT wins if this file disagrees; update this file whenever a task lands.
 
 ## Gate status
@@ -10,7 +10,7 @@ Snapshot of 30 September 2026, after gate G3 (offline). Task IDs and gates are f
 | G0 | Done | `tests/gates/g0` (live cases need provider keys) |
 | G1 | Done | `tests/gates/g1/test_g1.py` (offline); `test_g1_live*.py` need keys |
 | G2 | Done | `tests/gates/g2/test_g2.py`, `tests/fixtures/*` |
-| G3 | Done, offline only | `tests/gates/g3/test_g3.py`: fake search, fetcher and LLM over the fixture corpus. Not yet run against real providers. |
+| G3 | Done, offline only | `tests/gates/g3/test_g3.py`: fake search, fetcher and LLM over the fixture corpus. Offline gate only; 9 valid live runs of the canonical question were measured separately (report), they are not a gate. |
 | G4 | Not started | `tests/gates/g4/` is empty |
 
 ## Task cards
@@ -33,10 +33,10 @@ Snapshot of 30 September 2026, after gate G3 (offline). Task IDs and gates are f
 | T14 controller rounds, wrap-up, stop policy | Done | `backend/controller.py` (`run_research`), `backend/intel/stop.py`, `tests/unit/test_stop.py` |
 | T15 report verifier and certainty labels | Done | `backend/synth/report_verify.py`, `render.py`, `tests/unit/test_report_verify.py` |
 | T16-T21 frontend (shell, plan/sources, matrix, drawer, conflicts/challenge/stop, report) | Done | `frontend/src/`. Built against mocks and REST/SSE contracts; not yet watched against a real multi-round run. The commit "T22: UI/UX overhaul" is a UI polish pass, not the SSOT T22 harness. |
-| T22 test harness (unit, fixture, gate suites under `make check`) | Partly | `make check`, `make fixtures`, `make gates` exist; `make gates` does not yet list G3 |
-| T23 golden questions and audit sheet | Partly | `fixtures/questions.yaml` exists; audit CSV template and sampler script do not |
+| T22 test harness (unit, fixture, gate suites under `make check`) | Partly | `make check`, `make fixtures`, `make gates` (lists G1, G2, G3), `make benchmark-llm` exist. `make check` is red on lint in untracked scripts (OP-07). |
+| T23 golden questions and audit sheet | Partly | `fixtures/questions.yaml`, `docs/audit/audit_sheet.csv` and `scripts/sampler.py` exist (untracked, sampler not reviewed) |
 | T24 failure states end to end | Not started | Typed failures exist in the backend; UI coverage of all SSOT 18 states not verified |
-| T25 record 3 canonical runs, offline replay | Not started | Record/replay exists in the gateway (T02); no `make record` / `make replay`, `cache/recorded/` empty |
+| T25 record 3 canonical runs, offline replay | Partly | Gateway record/replay (T02); `SARVAM_RECORD=1` now enables recording for LIVE runs (CL-07); `scripts/record_runs.py` and `replay_runs.py` exist (untracked, lint-red, unreviewed); `cache/recorded/` holds files that do not replay faithfully (OP-01). No `make record` / `make replay`. |
 | T26 README, one-command run, clean checkout | Not started | |
 
 ## How a run works now
@@ -64,13 +64,11 @@ back so a follow-up round changes the matrix and adds a conflict; wrap-up on a f
 user stop; the stop decision recomputed from the stored tables equals the stored one; every report citation
 resolves to a stored passage containing its quote.
 
-Not tested: any real provider (search, fetch, LLM) through the round loop; cost and latency of a multi-round run
-against NFR-01 and NFR-02; the frontend against a real multi-round event stream; the REPLAY path.
+Measured live (not a gate): the round loop against Tavily and Gemini, 9 valid runs, 150 to 220 s wall, about 100 to 135 LLM attempts, every run ending on the search budget (OP-03). Not tested: cost against NFR (unavailable, OP-02); the frontend against a real multi-round event stream; faithful REPLAY of a live run (OP-01).
 
 ## Next flow
 
-1. **Measure a live run** (needs keys): run the canonical question, note searches, fetches, LLM calls, cost and
-   wall time per round. Round 0 uses 16 to 20 of 24 searches (B-12), so follow-up rounds get about 2 to 4 tasks;
+1. **Measure a live run**: done for wall time, searches, fetches, calls and tokens (report); cost is unavailable (OP-02). Round 0 uses 16 to 20 of 24 searches (B-12), so follow-up rounds get about 2 to 4 tasks;
    decide whether to raise `MAX_SEARCHES` or cut round-0 tasks. Fix whatever the real corpus breaks (prompts,
    thresholds) with fixtures first.
 2. **Watch the UI on a live multi-round run**: matrix round selector, challenge panel outcomes, stop card,
@@ -89,7 +87,7 @@ against NFR-01 and NFR-02; the frontend against a real multi-round event stream;
 
 | Risk | Note |
 | --- | --- |
-| Free-tier LLM limits | Gemini 429 and 503 handling is in the gateway (B-19, B-20). Challenge rounds add LLM calls; check `MAX_LLM_CALLS=250` and cost against the 3 USD cap on a live run. |
+| Free-tier LLM limits | Gemini 429 and 503 handling is in the gateway (B-19, B-20). Measured: about 100 to 135 attempts per run against `MAX_LLM_CALLS=250`, no provider retries observed, 230k to 320k tokens per run; provider quota use is the real constraint. |
 | Search budget | Follow-up tasks are paced to the remaining searches (B-28); a run that exhausts them ends `budget` with the challenge not completed. |
 | One search phrasing per challenge | Each attack searches its first query plus discover's rephrasing (B-29). |
 | `assumed` label and "System inference" | Not produced; needs a writer contract change (B-31). |

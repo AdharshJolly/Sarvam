@@ -1,0 +1,305 @@
+{
+ "label": "exp_compact_json",
+ "question": "Should a company launch an electric scooter subscription service in Bengaluru in 2027?",
+ "knobs": {
+  "max_tokens": {},
+  "compact_json": true,
+  "passages_per_slot": 6,
+  "verifier_batch": 5,
+  "llm_concurrency": 2,
+  "models": [
+   "gemini-3.1-flash-lite",
+   "gemini-3.6-flash"
+  ],
+  "budget": {
+   "max_searches": 24,
+   "max_fetches": 40,
+   "max_llm_calls": 250,
+   "max_cost_usd": 3.0,
+   "max_wall_seconds_soft": 480,
+   "max_wall_seconds_hard": 600,
+   "max_followup_rounds": 2
+  }
+ },
+ "runs": [
+  {
+   "run_id": "R_BENCH_exp_compact_json_1_2666",
+   "wall_seconds": 203.0,
+   "status": "completed",
+   "stop_state": "SUFFICIENT_WITH_CAVEATS",
+   "termination_reason": "budget",
+   "searches": 20,
+   "fetches": 40,
+   "llm_calls_budget_counter": 103,
+   "llm_operations": 101,
+   "validation_retries": 2,
+   "provider_requests": 103,
+   "provider_retries": 0,
+   "input_tokens": 215988,
+   "output_tokens": 13365,
+   "total_tokens": 242850,
+   "cost_reported_usd": 0.0,
+   "cost_estimated_usd": 0.0,
+   "cost_unavailable_ops": 101,
+   "claims": {
+    "partial": 1,
+    "supported": 45
+   },
+   "coverage_last_round": {
+    "AMBER": 1,
+    "GREEN": 6,
+    "RED": 1
+   },
+   "rounds": 1,
+   "conflicts": {
+    "explained": 4
+   },
+   "challenges": {
+    "none": 2
+   },
+   "events": {
+    "budget.warning": 3,
+    "challenge.created": 2,
+    "claim.created": 46,
+    "claim.rejected": 4,
+    "claim.verified": 46,
+    "conflict.detected": 4,
+    "coverage.updated": 2,
+    "origin.updated": 24,
+    "passages.created": 28,
+    "phase.entered": 13,
+    "plan.created": 1,
+    "report.draft": 1,
+    "report.verified": 1,
+    "round.started": 1,
+    "run.completed": 1,
+    "source.failed": 4,
+    "source.fetched": 35,
+    "source.found": 40,
+    "stop.decided": 1,
+    "task.started": 10
+   },
+   "report_verified": {
+    "version": 1,
+    "dropped_count": 0,
+    "certainty_state": "SUFFICIENT_WITH_CAVEATS"
+   },
+   "by_role": {
+    "planner": {
+     "ops": 1,
+     "validation_attempts": 2,
+     "provider_requests": 2,
+     "provider_retries": 0,
+     "input_tokens": 4342,
+     "output_tokens": 3229,
+     "total_tokens": 10828,
+     "cost_usd": 0.0,
+     "latency_ms": 32008,
+     "failed": 0
+    },
+    "extractor": {
+     "ops": 84,
+     "validation_attempts": 84,
+     "provider_requests": 84,
+     "provider_retries": 0,
+     "input_tokens": 178102,
+     "output_tokens": 4980,
+     "total_tokens": 183082,
+     "cost_usd": 0.0,
+     "latency_ms": 122525,
+     "failed": 0
+    },
+    "verifier": {
+     "ops": 10,
+     "validation_attempts": 10,
+     "provider_requests": 10,
+     "provider_retries": 0,
+     "input_tokens": 17152,
+     "output_tokens": 2730,
+     "total_tokens": 19882,
+     "cost_usd": 0.0,
+     "latency_ms": 19975,
+     "failed": 0
+    },
+    "explainer": {
+     "ops": 4,
+     "validation_attempts": 4,
+     "provider_requests": 4,
+     "provider_retries": 0,
+     "input_tokens": 5723,
+     "output_tokens": 212,
+     "total_tokens": 5935,
+     "cost_usd": 0.0,
+     "latency_ms": 6041,
+     "failed": 0
+    },
+    "challenger": {
+     "ops": 1,
+     "validation_attempts": 1,
+     "provider_requests": 1,
+     "provider_retries": 0,
+     "input_tokens": 3247,
+     "output_tokens": 518,
+     "total_tokens": 5555,
+     "cost_usd": 0.0,
+     "latency_ms": 13687,
+     "failed": 0
+    },
+    "writer": {
+     "ops": 1,
+     "validation_attempts": 2,
+     "provider_requests": 2,
+     "provider_retries": 0,
+     "input_tokens": 7422,
+     "output_tokens": 1696,
+     "total_tokens": 17568,
+     "cost_usd": 0.0,
+     "latency_ms": 46853,
+     "failed": 0
+    }
+   },
+   "failed_ops": [],
+   "harness_error": null
+  },
+  {
+   "run_id": "R_BENCH_exp_compact_json_2_30ca",
+   "wall_seconds": 193.2,
+   "status": "completed",
+   "stop_state": "INSUFFICIENT",
+   "termination_reason": "budget",
+   "searches": 24,
+   "fetches": 40,
+   "llm_calls_budget_counter": 125,
+   "llm_operations": 123,
+   "validation_retries": 2,
+   "provider_requests": 125,
+   "provider_retries": 0,
+   "input_tokens": 267228,
+   "output_tokens": 12269,
+   "total_tokens": 292053,
+   "cost_reported_usd": 0.0,
+   "cost_estimated_usd": 0.0,
+   "cost_unavailable_ops": 123,
+   "claims": {
+    "partial": 1,
+    "rejected": 2,
+    "supported": 41
+   },
+   "coverage_last_round": {
+    "AMBER": 4,
+    "GREEN": 4,
+    "RED": 2
+   },
+   "rounds": 1,
+   "conflicts": {
+    "explained": 6
+   },
+   "challenges": {
+    "none": 1
+   },
+   "events": {
+    "budget.warning": 3,
+    "challenge.created": 1,
+    "claim.created": 44,
+    "claim.rejected": 2,
+    "claim.verified": 44,
+    "conflict.detected": 6,
+    "coverage.updated": 2,
+    "origin.updated": 27,
+    "passages.created": 35,
+    "phase.entered": 13,
+    "plan.created": 1,
+    "report.draft": 1,
+    "report.verified": 1,
+    "round.started": 1,
+    "run.completed": 1,
+    "source.failed": 5,
+    "source.fetched": 35,
+    "source.found": 48,
+    "stop.decided": 1,
+    "task.started": 12
+   },
+   "report_verified": {
+    "version": 1,
+    "dropped_count": 0,
+    "certainty_state": "INSUFFICIENT"
+   },
+   "by_role": {
+    "planner": {
+     "ops": 1,
+     "validation_attempts": 2,
+     "provider_requests": 2,
+     "provider_retries": 0,
+     "input_tokens": 4008,
+     "output_tokens": 2490,
+     "total_tokens": 10465,
+     "cost_usd": 0.0,
+     "latency_ms": 31536,
+     "failed": 0
+    },
+    "extractor": {
+     "ops": 105,
+     "validation_attempts": 105,
+     "provider_requests": 105,
+     "provider_retries": 0,
+     "input_tokens": 226575,
+     "output_tokens": 5130,
+     "total_tokens": 231705,
+     "cost_usd": 0.0,
+     "latency_ms": 153035,
+     "failed": 0
+    },
+    "verifier": {
+     "ops": 9,
+     "validation_attempts": 9,
+     "provider_requests": 9,
+     "provider_retries": 0,
+     "input_tokens": 17179,
+     "output_tokens": 2587,
+     "total_tokens": 19766,
+     "cost_usd": 0.0,
+     "latency_ms": 17553,
+     "failed": 0
+    },
+    "explainer": {
+     "ops": 6,
+     "validation_attempts": 6,
+     "provider_requests": 6,
+     "provider_retries": 0,
+     "input_tokens": 8624,
+     "output_tokens": 260,
+     "total_tokens": 8884,
+     "cost_usd": 0.0,
+     "latency_ms": 9515,
+     "failed": 0
+    },
+    "challenger": {
+     "ops": 1,
+     "validation_attempts": 1,
+     "provider_requests": 1,
+     "provider_retries": 0,
+     "input_tokens": 3480,
+     "output_tokens": 446,
+     "total_tokens": 5277,
+     "cost_usd": 0.0,
+     "latency_ms": 10134,
+     "failed": 0
+    },
+    "writer": {
+     "ops": 1,
+     "validation_attempts": 2,
+     "provider_requests": 2,
+     "provider_retries": 0,
+     "input_tokens": 7362,
+     "output_tokens": 1356,
+     "total_tokens": 15956,
+     "cost_usd": 0.0,
+     "latency_ms": 37751,
+     "failed": 0
+    }
+   },
+   "failed_ops": [],
+   "harness_error": null
+  }
+ ]
+}
