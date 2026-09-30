@@ -42,3 +42,13 @@ export function stateStyle(state: CoverageState): { icon: string; label: string;
       return { icon: "✓", label: "GREEN", colorVar: "var(--ok)" };
   }
 }
+
+/** Only http(s) URLs may become links; anything else (javascript:, data:) is rendered as plain text. */
+export function safeHref(url: string): string | undefined {
+  try {
+    const u = new URL(url);
+    return u.protocol === "http:" || u.protocol === "https:" ? u.href : undefined;
+  } catch {
+    return undefined;
+  }
+}
