@@ -23,6 +23,7 @@ from fastapi.responses import StreamingResponse
 
 from backend import __version__
 from backend.controller import RunHandle, run_m0
+from backend.pipeline.claims import locate_quote
 from backend.store import repo
 from backend.store.db import connect, init_db
 from backend.store.emit import Emitter
@@ -192,7 +193,7 @@ def create_app(settings: Settings | None = None, *, runner: Runner | None = None
     def get_claim(run_id: str, claim_id: str, request: Request) -> ClaimEvidence:
         conn = request.app.state.db
         require_run(conn, run_id)
-        evidence = repo.build_claim_evidence(conn, run_id, claim_id)
+        evidence = repo.build_claim_evidence(conn, run_id, claim_id, locate_quote)
         if evidence is None:
             raise HTTPException(status_code=404, detail=f"claim {claim_id} not found")
         return evidence

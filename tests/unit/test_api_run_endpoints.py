@@ -79,6 +79,8 @@ def test_claim_evidence_drawer(client):
     ev = ClaimEvidence.model_validate(body)
     assert ev.claim.id == claim.id and ev.passage.id == psg.id and ev.source.id == src.id
     assert ev.independence == "unestablished" and ev.verdict is None
+    assert (ev.quote_start, ev.quote_end) == (13, 31)  # offsets of the quote inside the passage
+    assert psg.text[ev.quote_start : ev.quote_end] == claim.quote
     assert client.get(f"/api/runs/{rid}/claims/C9999").status_code == 404
     other = new_run(client)  # a claim id from another run must not leak
     assert client.get(f"/api/runs/{other}/claims/{claim.id}").status_code == 404
