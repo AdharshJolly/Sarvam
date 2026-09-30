@@ -6,6 +6,7 @@ import { EmptyState } from "./ui/EmptyState";
 import { Icon } from "./ui/Icon";
 import { StateChip } from "./ui/StateChip";
 import { sourceStatusChip } from "./ui/chips";
+import { termTitle } from "../lib/terms";
 
 export type SortKey = "id" | "domain" | "type" | "tier" | "status" | "freshness" | "origin" | "passages";
 export type SortDir = "asc" | "desc";
@@ -17,7 +18,7 @@ const COLUMNS: Array<{ key: SortKey; label: string }> = [
   { key: "tier", label: "Tier" },
   { key: "status", label: "Status" },
   { key: "freshness", label: "Freshness" },
-  { key: "origin", label: "Origin" },
+  { key: "origin", label: termTitle("origin") },
   { key: "passages", label: "Passages" },
 ];
 

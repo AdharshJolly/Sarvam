@@ -9,12 +9,13 @@ import { conflictKindText, conflictStatusChip } from "./ui/chips";
 import { Icon } from "./ui/Icon";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
+import { term } from "../lib/terms";
 
 const whyItMatters: Record<ConflictKind, string> = {
   genuine: "Different values are reported for the same thing and period. Sarvam cannot pick a winner from the evidence it has.",
   unit_error: "The figures look far apart only because they use different units or periods. Once normalised they agree.",
-  scope_difference: "The claims describe different scopes, so both can be right.",
-  temporal: "The claims describe different time periods, so both can be right.",
+  scope_difference: "The two statements describe different scopes, so both can be right.",
+  temporal: "The two statements describe different time periods, so both can be right.",
   definition: "The sources define the measured thing differently, so the numbers are not directly comparable.",
 };
 
@@ -36,7 +37,7 @@ export function Side({ side, claimId, claim }: { side: "A" | "B"; claimId: strin
       <p className="mono text-2xl font-bold leading-tight">
         {valueText(claim)}
       </p>
-      <p className="mt-1 text-base">{claim?.text ?? "(claim text not loaded)"}</p>
+      <p className="mt-1 text-base">{claim?.text ?? "(statement text not loaded)"}</p>
       <div className="mt-2 text-sm text-text-muted">
         {load.status === "loading" ? (
           <Skeleton className="h-4 w-2/3" />
@@ -69,8 +70,8 @@ export function ConflictList({
     return (
       <EmptyState
         icon="Zap"
-        title="No conflicts detected in the claims collected so far"
-        why="Conflicts appear after the analysis pass compares numeric claims within a slot. Explained conflicts stay visible too."
+        title={`No disagreements found in the ${term("claim", 2)} collected so far`}
+        why="Conflicts appear after the analysis pass compares figures within one key point. Explained disagreements stay visible too."
       />
     );
   }

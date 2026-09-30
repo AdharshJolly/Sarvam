@@ -3,6 +3,7 @@ import { Card } from "./ui/Card";
 import { EmptyState } from "./ui/EmptyState";
 import { StateChip } from "./ui/StateChip";
 import { verdictChip } from "./ui/chips";
+import { term, termTitle } from "../lib/terms";
 
 export function ClaimList({
   claims,
@@ -24,10 +25,10 @@ export function ClaimList({
   return (
     <div className="flex flex-col gap-4">
       {claims.length === 0 ? (
-        <EmptyState title="No verified claims yet" why="Claims appear once extraction finds quotes that exist in a stored passage." />
+        <EmptyState title={`No verified ${term("claim", 2)} yet`} why="Statements appear once extraction finds quotes that exist in a stored passage." />
       ) : null}
       {[...bySlot.entries()].map(([slotId, list]) => (
-        <section key={slotId} aria-label={`Claims for ${slotNames.get(slotId) ?? slotId}`}>
+        <section key={slotId} aria-label={`${termTitle("claim", 2)} for ${slotNames.get(slotId) ?? slotId}`}>
           <h4 className="font-semibold mb-2">
             {slotNames.get(slotId) ?? slotId} <span className="text-text-muted font-normal">({list.length})</span>
           </h4>

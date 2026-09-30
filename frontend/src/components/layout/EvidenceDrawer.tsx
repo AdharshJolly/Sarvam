@@ -13,6 +13,7 @@ import { sourceStatusChip, verdictChip } from "../ui/chips";
 import { Dialog } from "../ui/Dialog";
 import { Icon } from "../ui/Icon";
 import { Card } from "../ui/Card";
+import { termTitle } from "../../lib/terms";
 
 function ClaimEvidenceView({ runId, claimId }: { runId: string; claimId: string }) {
   const { load, retry } = useClaimEvidence(runId, claimId);
@@ -47,7 +48,7 @@ function ClaimEvidenceView({ runId, claimId }: { runId: string; claimId: string 
   return (
     <Card as="article" pad="md" className="flex flex-col gap-4">
       <header>
-        <p className="label mb-1">Claim {claim.id}</p>
+        <p className="label mb-1">{termTitle("claim")} {claim.id}</p>
         <h3 className="font-display text-xl font-semibold leading-snug">{claim.text}</h3>
         {claim.value_num != null ? (
           <p className="text-base text-text-muted">
@@ -91,18 +92,18 @@ function ClaimEvidenceView({ runId, claimId }: { runId: string; claimId: string 
           </p>
         ) : null}
       </section>
-      <section aria-label="Origin">
-        <h4 className="label mb-1">Origin</h4>
+      <section aria-label={termTitle("origin")}>
+        <h4 className="label mb-1">{termTitle("origin")}</h4>
         {origin ? (
           <p>
             {origin.label} <Badge>{methodText[origin.method ?? "none"]}</Badge>
           </p>
         ) : (
-          <p className="text-text-muted">Origin not yet assigned.</p>
+          <p className="text-text-muted">Independent source not yet assigned.</p>
         )}
         {unestablished ? (
           <p className="mt-1">
-            <Badge title="Counts as one origin for coverage.">{"? independence not established"}</Badge>
+            <Badge title="Counts as one independent source for coverage.">{"? independence not established"}</Badge>
           </p>
         ) : null}
       </section>
@@ -157,7 +158,7 @@ export function EvidenceDrawer() {
           ))}
         </div>
       ) : (
-        <p className="text-text-muted">Select a claim or citation to see its stored passage, verdict, origin and source.</p>
+        <p className="text-text-muted">Select a statement or citation to see its stored passage, verdict, independent source and source.</p>
       )}
     </Dialog>
   );

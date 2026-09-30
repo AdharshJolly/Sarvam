@@ -339,8 +339,8 @@ function buildReport(runId: string, variant: Variant): ReportView {
     "",
     "## Verdict",
     insufficient
-      ? "**Insufficient evidence.** Running costs cannot be established from independent sources. {{certainty:single-origin}}"
-      : "**Sufficient with caveats.** Demand and regulation look workable, but competitor pricing contains one unresolved conflict. {{certainty:contested}}",
+      ? "**Not enough to answer yet.** Running costs cannot be established from independent sources. {{certainty:single-origin}}"
+      : "**Answer is solid, with caveats.** Demand and regulation look workable, but competitor pricing contains one unresolved conflict. {{certainty:contested}}",
     "",
     "## Findings",
     "### Market size",
@@ -359,11 +359,11 @@ function buildReport(runId: string, variant: Variant): ReportView {
     "- Break-even is likely within two years at moderate utilisation. {{certainty:assumed}}",
     "",
     "## Evidence summary",
-    "| Dimension | State | Note |",
+    "| Topic | Status | Note |",
     "|---|---|---|",
-    "| Pricing | AMBER | One genuine conflict open |",
-    "| Regulation | AMBER | Single regulator origin |",
-    "| Unit economics | " + (insufficient ? "RED" : "GREEN") + " | Units normalised |",
+    "| Pricing | Partly supported | One real disagreement is not yet explained |",
+    "| Regulation | Partly supported | Only one independent source (the regulator) |",
+    "| Unit economics | " + (insufficient ? "Not enough evidence" : "Well supported") + " | Units normalised |",
   ].join("\n");
   const cited = md.match(/\[C\d+\]/g)?.map((s) => s.slice(1, -1)) ?? [];
   const data = buildData(runId);

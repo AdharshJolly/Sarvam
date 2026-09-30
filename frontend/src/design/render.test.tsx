@@ -244,22 +244,22 @@ describe("coverage matrix", () => {
 
   test("every cell states its state in words, counts and conflicts (never colour alone)", () => {
     const out = html(<CoverageMatrix {...props} />);
-    expect(out).toContain("Demand size: GREEN. 4 sources, 1 independent origin.");
-    expect(out).toContain("Competitor pricing: RED. 1 source, 1 independent origin, 2 open conflicts.");
-    for (const word of ["GREEN", "AMBER", "RED"]) expect(out).toContain(word);
+    expect(out).toContain("Demand size: Well supported. 4 sources, 1 independent origin.");
+    expect(out).toContain("Competitor pricing: Not enough evidence. 1 source, 1 independent origin, 2 unexplained disagreements.");
+    for (const word of ["Well supported", "Partly supported", "Not enough evidence"]) expect(out).toContain(word);
     expect(out).toContain("<svg");
   });
 
   test("a slot with no analysis yet says so", () => {
     const out = html(<CoverageMatrix {...props} cells={[]} />);
-    expect(out).toContain("NO DATA");
+    expect(out).toContain("No data yet");
     expect(out).toContain("Awaiting coverage analysis.");
   });
 
   test("the table version has column headers, a caption and one row per slot", () => {
     const out = html(<MatrixTable {...props} />);
     expect(out).toContain("<caption");
-    for (const h of ["Dimension", "Slot", "State", "Sources", "Origins", "Conflicts", "Reason"]) expect(out).toContain(h);
+    for (const h of ["Dimension", "Key point", "State", "Sources", "Independent sources", "Disagreements", "Reason"]) expect(out).toContain(h);
     expect(out.match(/<th scope="col"/g)?.length).toBe(7);
     expect(out.match(/<tr/g)?.length).toBe(1 + 3); // header row plus a row per slot
     expect(out).toContain("reason for D2S1");
@@ -300,7 +300,7 @@ describe("origin groups (the independence collapse)", () => {
   test("a multi-page origin shows its brace and page count; the others do not", () => {
     const out = html(<OriginGroupView slotName="Pricing" groups={groups} />);
     expect(out.match(/border-r-4/g)?.length).toBe(1);
-    expect(out).toContain("3 pages, 1 origin");
+    expect(out).toContain("3 pages, 1 independent source");
     expect(out).toContain("near-identical text");
   });
 
@@ -346,9 +346,9 @@ describe("stop card (the verdict)", () => {
 
   test("the final state is a headline in words, with an icon, announced politely", () => {
     const heads = {
-      SUFFICIENT: "Sufficient",
-      SUFFICIENT_WITH_CAVEATS: "Sufficient, with caveats",
-      INSUFFICIENT: "Insufficient",
+      SUFFICIENT: "Answer is solid",
+      SUFFICIENT_WITH_CAVEATS: "Answer is solid, with caveats",
+      INSUFFICIENT: "Not enough to answer yet",
     } as const;
     for (const [state, text] of Object.entries(heads)) {
       const out = render(stop({ state }));
@@ -371,18 +371,19 @@ describe("stop card (the verdict)", () => {
 
   test("critical slots show count, icon and word for each colour", () => {
     const out = render(stop({ critical_slots: { green: 4, amber: 1, red: 2 } }));
-    for (const word of ["green", "amber", "red"]) expect(out).toContain(word);
+    for (const word of ["Well supported", "Partly supported", "Not enough evidence"]) expect(out).toContain(word);
     expect(out).toContain(">4<");
     expect(out).toContain(">2<");
   });
 
   test("gaps, caveats and what could change the conclusion are listed and linked", () => {
     const out = render(stop(), {
-      gaps: [{ slotId: "D2S1", name: "Competitor pricing", reason: "one origin only" }],
+      gaps: [{ slotId: "D2S1", name: "Competitor pricing", reason: "only one independent source, so it is partly supported", nextStep: "Find a second independent source before relying on it." }],
       challenges: [{ id: "H1", would_change_if: "Consumer share is below 10 percent", outcome: "weakened" }],
     });
     expect(out).toContain("Competitor pricing");
-    expect(out).toContain("one origin only");
+    expect(out).toContain("only one independent source, so it is partly supported");
+    expect(out).toContain("Find a second independent source before relying on it.");
     expect(out).toContain("Regulation slot rests on a single origin");
     expect(out).toContain("Consumer share is below 10 percent");
     expect(out).toContain("1 conclusion weakened");
@@ -394,8 +395,8 @@ describe("stop card (the verdict)", () => {
 
   test("open conflicts are a control that opens the conflicts view", () => {
     const out = render(stop({ open_conflicts: 3 }));
-    expect(out).toContain("3 open conflicts");
-    expect(render(stop({ open_conflicts: 1 }))).toContain("1 open conflict<");
+    expect(out).toContain("3 disagreements between sources not yet explained");
+    expect(render(stop({ open_conflicts: 1 }))).toContain("1 disagreement between sources not yet explained<");
   });
 
   test("critical slots tiles are links to the matrix", () => {

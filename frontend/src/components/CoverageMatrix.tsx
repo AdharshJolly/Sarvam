@@ -5,7 +5,9 @@ import { Badge } from "./ui/Badge";
 import { Card } from "./ui/Card";
 import { Icon } from "./ui/Icon";
 import { StateChip } from "./ui/StateChip";
+import { useReadingMode } from "../lib/readingMode";
 import { coverageChip } from "./ui/chips";
+import { term, termTitle } from "../lib/terms";
 
 export interface SlotStats {
   sources: number;
@@ -74,6 +76,7 @@ export function CoverageMatrix(p: CoverageMatrixProps) {
   const cellBySlot = new Map(p.cells.map((c) => [c.slot_id, c]));
   const rollupByDim = new Map(p.rollups.map((r) => [r.dimension_id, r]));
   const flashing = useFlashing(p.cells);
+  const detailed = useReadingMode() === "detailed";
 
   const rows = useMemo(
     () => p.dimensions.map((dim) => ({ dim, slots: p.slots.filter((s) => s.dimension_id === dim.id) })),
@@ -155,10 +158,10 @@ export function CoverageMatrix(p: CoverageMatrixProps) {
                       type="button"
                       tabIndex={isStop ? 0 : -1}
                       aria-pressed={selected}
-                      aria-label={`${s.name}: ${cell ? cell.state : "no data yet"}. ${plural(st.sources, "source")}, ${plural(
+                      aria-label={`${s.name}: ${cell ? coverageChip(cell.state).label : "no data yet"}. ${plural(st.sources, "source")}, ${plural(
                         st.origins,
                         "independent origin",
-                      )}${conflicts > 0 ? `, ${plural(conflicts, "open conflict")}` : ""}. Open details.`}
+                      )}${conflicts > 0 ? `, ${plural(conflicts, "unexplained disagreement")}` : ""}. Open details.`}
                       onClick={() => p.onSelect(selected ? null : s.id)}
                       onFocus={() => setActive({ row, col })}
                       onKeyDown={(e) => onKeyDown(e, { row, col })}
@@ -171,7 +174,8 @@ export function CoverageMatrix(p: CoverageMatrixProps) {
                       <div className="flex items-center justify-between gap-2 w-full">
                         <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-sm font-mono font-medium ${BADGE_STYLE[tone]}`}>
                           <Icon name={cell ? coverageChip(cell.state).icon : "Circle"} size={13} aria-hidden />
-                          <span>{cell ? cell.state : "NO DATA"}</span>
+                          <span>{cell ? coverageChip(cell.state).label : "No data yet"}</span>
+                          {detailed && cell ? <span className="opacity-70">({cell.state})</span> : null}
                         </span>
 
                         {change ? (
@@ -193,7 +197,7 @@ export function CoverageMatrix(p: CoverageMatrixProps) {
                         </span>
                         <span className="text-border-hairline">/</span>
                         <span>
-                          <strong className="text-text font-semibold">{st.origins}</strong> {st.origins === 1 ? "origin" : "origins"}
+                          <strong className="text-text font-semibold">{st.origins}</strong> {term("origin", st.origins)}
                         </span>
                         {conflicts > 0 ? (
                           <span className="inline-flex items-center gap-1 font-semibold text-bad-fg ml-auto">
@@ -226,10 +230,10 @@ export function MatrixTable(p: CoverageMatrixProps) {
   return (
     <Card className="overflow-x-auto">
       <table className="w-full min-w-[40rem] text-left text-base">
-        <caption className="sr-only">Coverage by evidence slot</caption>
+        <caption className="sr-only">Coverage by key point</caption>
         <thead>
           <tr className="border-b border-border-hairline text-text-muted">
-            {["Dimension", "Slot", "State", "Sources", "Origins", "Conflicts", "Reason"].map((h) => (
+            {["Dimension", termTitle("slot"), "State", "Sources", termTitle("origin", 2), "Disagreements", "Reason"].map((h) => (
               <th key={h} scope="col" className="label p-2.5">
                 {h}
               </th>

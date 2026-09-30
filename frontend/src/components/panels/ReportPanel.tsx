@@ -1,3 +1,4 @@
+import { termTitle } from "../../lib/terms";
 import type { ReportView } from "@contracts/types";
 import { useEffect, useMemo, useState } from "react";
 import { runApi } from "../../api";
@@ -92,8 +93,8 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
         ["Report version", String(report.version)],
         ["Started", view.run?.started_at ?? "unknown"],
         ["Sources", <a href={buildHash(report.run_id, "evidence")} className="underline hover:text-brand transition-colors">{Object.keys(view.sources).length}</a>],
-        ["Independent origins", Object.keys(view.origins).length], // no list exists
-        ["Verified claims", <a href={buildHash(report.run_id, "evidence")} className="underline hover:text-brand transition-colors">{Object.keys(view.claims).length}</a>],
+        [termTitle("origin", 2), Object.keys(view.origins).length], // no list exists
+        ["Verified statements", <a href={buildHash(report.run_id, "evidence")} className="underline hover:text-brand transition-colors">{Object.keys(view.claims).length}</a>],
         ["Rejected by quote guard", <a href={buildHash(report.run_id, "evidence")} className="underline hover:text-brand transition-colors">{view.rejectedClaims.length}</a>],
         ["Conflicts (open / total)", <a href={buildHash(report.run_id, "conflicts")} className="underline hover:text-brand transition-colors">{openConflictCount(view)} / {Object.keys(view.conflicts).length}</a>],
         ["Challenges", <a href={buildHash(report.run_id, "challenge")} className="underline hover:text-brand transition-colors">{Object.keys(view.challenges).length}</a>],
@@ -156,7 +157,7 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
               {dropped.length > 0 ? (
                 <details className="mt-6 rounded-md bg-surface-2 p-3">
                   <summary className="cursor-pointer font-semibold">Removed by the report verifier ({dropped.length})</summary>
-                  <p className="mt-1 text-sm text-text-muted">These sentences had no stored claim behind them, so they were left out of the report.</p>
+                  <p className="mt-1 text-sm text-text-muted">These sentences had no stored statement behind them, so they were left out of the report.</p>
                   <ul className="mt-2 list-disc pl-6 text-base">
                     {dropped.map((s, i) => (
                       <li key={i}>{s}</li>

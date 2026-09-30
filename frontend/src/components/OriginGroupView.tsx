@@ -5,6 +5,7 @@ import { Badge } from "./ui/Badge";
 import { Card } from "./ui/Card";
 import { Icon } from "./ui/Icon";
 import type { Tone } from "./ui/chips";
+import { term, termTitle } from "../lib/terms";
 
 export const methodText: Record<OriginMethod, string> = {
   domain: "same publisher",
@@ -64,7 +65,7 @@ export function OriginGroupView({
           <Icon name="ArrowRight" size={20} className="text-brand shrink-0" aria-hidden />
           <div className="px-3 py-1.5 rounded-xl bg-accent text-center border border-border-hairline">
             <p className="text-3xl font-bold leading-none text-brand">{groups.length}</p>
-            <p className="label text-sm text-brand-secondary mt-0.5">independent {plural(groups.length, "origin")}</p>
+            <p className="label text-sm text-brand-secondary mt-0.5">{term("origin", groups.length)}</p>
           </div>
         </div>
         <p className="sr-only">
@@ -123,13 +124,13 @@ export function OriginGroupView({
                 <Icon name="ArrowRight" size={20} className="hidden text-text-muted md:block" aria-hidden />
 
                 <div className="flex flex-col gap-1.5">
-                  <p className="label">Origin {letter}</p>
-                  <p className="font-semibold">{g.origin?.label ?? "Origin not yet assigned"}</p>
+                  <p className="label">{termTitle("origin")} {letter}</p>
+                  <p className="font-semibold">{g.origin?.label ?? `${termTitle("origin")} not yet assigned`}</p>
                   <div className="flex flex-wrap items-center gap-1.5">
-                    {collapsed ? <Badge>{`${g.sources.length} pages, 1 origin`}</Badge> : null}
+                    {collapsed ? <Badge>{`${g.sources.length} pages, 1 ${term("origin")}`}</Badge> : null}
                     {g.origin ? <Badge>{methodText[g.origin.method ?? "none"]}</Badge> : null}
                     {unestablished ? (
-                      <Badge title="Counted as one origin for coverage, but its independence could not be established.">
+                      <Badge title="Counted as one independent source for coverage, but its independence could not be established.">
                         {"? independence not established"}
                       </Badge>
                     ) : null}
