@@ -1,47 +1,67 @@
 @import "tailwindcss";
 
-/* Theme tokens. Dark follows the OS unless the user forces a theme via data-theme. */
+/* Theme tokens. Dark follows the OS unless the user forces a theme via data-theme.
+   Colour is reserved for semantic state (ok / warn / bad) and the single accent; state is always colour + icon + text. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  --bg: #f7f7f5;
+  --bg: #f4f4f1;
   --surface: #ffffff;
-  --surface-2: #efefeb;
+  --surface-2: #eeeeea;
   --border: #d6d6cf;
+  --border-strong: #b9b9b0;
   --text: #16181d;
   --text-muted: #565b66;
   --accent: #0b5cad;
   --ok: #17693a;
   --warn: #8a5a00;
   --bad: #a3231f;
+  --accent-bg: #e4eefa;
+  --ok-bg: #e5f2ea;
+  --warn-bg: #f8efd6;
+  --bad-bg: #f8e3e1;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 16px rgb(0 0 0 / 0.06);
+  --mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f1216;
-    --surface: #171b21;
-    --surface-2: #1f242c;
-    --border: #2f3640;
+    --bg: #0d1014;
+    --surface: #151a20;
+    --surface-2: #1c2229;
+    --border: #2a323c;
+    --border-strong: #3d4855;
     --text: #e8eaee;
-    --text-muted: #9aa1ad;
+    --text-muted: #98a0ac;
     --accent: #6cb0f2;
     --ok: #5ec98a;
     --warn: #e0b04a;
     --bad: #f0857f;
+    --accent-bg: #12253a;
+    --ok-bg: #11271a;
+    --warn-bg: #2b230f;
+    --bad-bg: #2d1615;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.35);
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #0f1216;
-  --surface: #171b21;
-  --surface-2: #1f242c;
-  --border: #2f3640;
+  --bg: #0d1014;
+  --surface: #151a20;
+  --surface-2: #1c2229;
+  --border: #2a323c;
+  --border-strong: #3d4855;
   --text: #e8eaee;
-  --text-muted: #9aa1ad;
+  --text-muted: #98a0ac;
   --accent: #6cb0f2;
   --ok: #5ec98a;
   --warn: #e0b04a;
   --bad: #f0857f;
+  --accent-bg: #12253a;
+  --ok-bg: #11271a;
+  --warn-bg: #2b230f;
+  --bad-bg: #2d1615;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.35);
 }
 
 html {
@@ -54,6 +74,68 @@ body {
   color: var(--text);
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+
+.mono {
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  letter-spacing: -0.01em;
+}
+
+.card {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 8px;
+}
+.card-hover {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.card-hover:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow);
+}
+
+.label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.btn {
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.btn:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent);
+  filter: brightness(1.08);
+}
+
+label:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 :focus-visible {
@@ -61,9 +143,100 @@ body {
   outline-offset: 2px;
 }
 
-/* Coverage cells recolour with a short, non-essential transition. */
+/* ---------- Motion: communicates state change, never decoration ---------- */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.skeleton {
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 37%, var(--surface-2) 63%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.anim-in {
+  animation: fade-up 0.25s ease-out both;
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.anim-drawer {
+  animation: slide-in-right 0.22s ease-out both;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 currentColor;
+    opacity: 1;
+  }
+  70% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+
+/* A cell whose state just changed flashes once. */
+@keyframes flash {
+  0% {
+    box-shadow: 0 0 0 3px var(--accent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+.anim-flash {
+  animation: flash 1.2s ease-out both;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+.blink {
+  animation: blink 1.4s ease-in-out infinite;
+}
+
 .matrix-cell {
-  transition: background-color 0.4s ease, border-color 0.4s ease;
+  transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.15s ease;
+}
+
+.progress-fill {
+  transition: width 0.5s ease, background-color 0.3s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {

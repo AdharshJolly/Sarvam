@@ -56,6 +56,13 @@ export function slotsOf(v: RunView): EvidenceSlot[] {
   );
 }
 
+/** slot id -> "Dimension → Slot" for orientation in panels that reference a slot. */
+export function slotPathMap(v: RunView): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const d of v.plan?.dimensions ?? []) for (const s of d.slots ?? []) out.set(s.id, `${d.name} → ${s.name}`);
+  return out;
+}
+
 export function slotNameMap(v: RunView): Map<string, string> {
   return new Map(slotsOf(v).map((s) => [s.id, s.name]));
 }

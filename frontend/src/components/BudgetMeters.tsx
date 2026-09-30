@@ -30,7 +30,7 @@ export function BudgetMeters({
   if (!usage || !budget) {
     return (
       <section aria-labelledby="budget-h">
-        <h2 id="budget-h" className="mb-1 text-sm font-semibold uppercase tracking-wide">
+        <h2 id="budget-h" className="label mb-2">
           Budget
         </h2>
         <p style={{ color: "var(--text-muted)" }}>Budget appears when a run starts.</p>
@@ -47,7 +47,7 @@ export function BudgetMeters({
   ];
   return (
     <section aria-labelledby="budget-h">
-      <h2 id="budget-h" className="mb-1 text-sm font-semibold uppercase tracking-wide">
+      <h2 id="budget-h" className="label mb-2">
         Budget
       </h2>
       <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1">
@@ -57,15 +57,15 @@ export function BudgetMeters({
           const pct = m.max ? Math.min(100, (m.used / m.max) * 100) : 0;
           return (
             <div key={m.kind} className="contents">
-              <dt style={{ color: "var(--text-muted)" }}>{m.label}</dt>
+              <dt className="text-base" style={{ color: "var(--text-muted)" }}>{m.label}</dt>
               <dd className="text-right" style={{ color }}>
-                <button type="button" className="underline" onClick={() => onOpenKind?.(m.kind)}>
+                <button type="button" className="mono underline" onClick={() => onOpenKind?.(m.kind)}>
                   {m.fmt(m.used)} of {m.max !== undefined ? m.fmt(m.max) : "n/a"}
                 </button>
                 {level === "limit" ? <strong> {"✕"} LIMIT</strong> : level === "warn" ? <span> {"▲"} 80%+</span> : null}
               </dd>
               <div aria-hidden="true" className="col-span-2 h-1 rounded" style={{ background: "var(--surface-2)" }}>
-                <div className="h-1 rounded" style={{ width: `${pct}%`, background: color }} />
+                <div className="progress-fill h-1 rounded" style={{ width: `${pct}%`, background: color }} />
               </div>
             </div>
           );

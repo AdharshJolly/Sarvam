@@ -17,6 +17,14 @@ export interface ChipSpec {
   tone: Tone;
 }
 
+export const toneBg: Record<Tone, string> = {
+  ok: "var(--ok-bg)",
+  warn: "var(--warn-bg)",
+  bad: "var(--bad-bg)",
+  info: "var(--accent-bg)",
+  muted: "var(--surface-2)",
+};
+
 export const toneVar: Record<Tone, string> = {
   ok: "var(--ok)",
   warn: "var(--warn)",

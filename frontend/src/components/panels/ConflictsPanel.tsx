@@ -1,5 +1,5 @@
 import { useEvidence } from "../../state/EvidenceContext";
-import { slotNameMap } from "../../state/selectors";
+import { slotPathMap } from "../../state/selectors";
 import { useSession } from "../../state/useRunSession";
 import { ConflictList } from "../ConflictList";
 
@@ -10,7 +10,7 @@ export function ConflictsPanel() {
     <ConflictList
       conflicts={Object.values(view.conflicts)}
       claims={new Map(Object.entries(view.claims))}
-      slotNames={slotNameMap(view)}
+      slotNames={slotPathMap(view)}
       onCompare={ev.open}
     />
   );
