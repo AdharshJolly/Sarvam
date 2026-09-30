@@ -288,10 +288,8 @@ class ToolGateway:
                     )
                     break
                 except GatewayError as exc:
-                    if (
-                        exc.failure is not FailureType.RATE_LIMITED
-                        or attempt == LLM_RATE_LIMIT_RETRIES
-                    ):
+                    retryable = exc.failure is FailureType.RATE_LIMITED or exc.transient
+                    if not retryable or attempt == LLM_RATE_LIMIT_RETRIES:
                         raise
                     wait = min(
                         max(exc.retry_after or 0.0, LLM_RATE_LIMIT_BACKOFF[min(attempt, 2)]),

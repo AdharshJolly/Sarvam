@@ -150,3 +150,28 @@ def test_llm_rate_limit_without_a_hint_uses_the_longer_default_backoff():
     )
     assert asyncio.run(gateway.llm(LLMRole.PLANNER, "planner.v1", Pong, {})).value.ok is True
     assert sleeps == [5.0, 15.0, 30.0]
+
+
+def test_llm_provider_overload_503_is_retried_but_other_errors_are_not():
+    sleeps: list[float] = []
+
+    async def sleep(seconds):
+        sleeps.append(seconds)
+
+    def gateway_for(llm):
+        return ToolGateway(
+            settings=Settings(env="test", llm_model_fast="f", llm_model_strong="s"),
+            budget=Budget(),
+            mode=Mode.LIVE,
+            llm=llm,
+            sleep=sleep,
+        )
+
+    overload = GatewayError(FailureType.STEP_FAILED, "HTTP 503", transient=True)
+    llm = FakeLLM({"planner.v1": [overload, '{"ok": true}']})
+    assert asyncio.run(gateway_for(llm).llm(LLMRole.PLANNER, "planner.v1", Pong, {})).value.ok
+    assert sleeps == [5.0] and len(llm.calls) == 2
+    hard = FakeLLM({"planner.v1": GatewayError(FailureType.STEP_FAILED, "HTTP 400")})
+    with pytest.raises(GatewayError):
+        asyncio.run(gateway_for(hard).llm(LLMRole.PLANNER, "planner.v1", Pong, {}))
+    assert len(hard.calls) == 1  # a non-transient failure is not retried

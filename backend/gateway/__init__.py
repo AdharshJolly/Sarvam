@@ -20,12 +20,18 @@ class GatewayError(Exception):
     """Typed gateway failure (SSOT section 18). Never swallowed silently (NFR-04)."""
 
     def __init__(
-        self, failure: FailureType, message: str = "", *, retry_after: float | None = None
+        self,
+        failure: FailureType,
+        message: str = "",
+        *,
+        retry_after: float | None = None,
+        transient: bool = False,
     ) -> None:
         super().__init__(f"{failure.value}: {message}" if message else failure.value)
         self.failure = failure
         self.message = message
         self.retry_after = retry_after  # seconds the provider asked us to wait (HTTP 429)
+        self.transient = transient  # provider-side overload (HTTP 5xx): worth retrying
 
 
 class BudgetExceeded(GatewayError):
@@ -89,5 +95,9 @@ def http_failure(provider: str, exc: Exception) -> GatewayError:
             )
         if code in (401, 403):
             return GatewayError(FailureType.BLOCKED, f"{provider} rejected credentials ({code})")
-        return GatewayError(FailureType.STEP_FAILED, f"{provider} returned HTTP {code}")
+        return GatewayError(
+            FailureType.STEP_FAILED,
+            f"{provider} returned HTTP {code}",
+            transient=code in (500, 502, 503, 504),
+        )
     return GatewayError(FailureType.STEP_FAILED, f"{provider} request failed: {type(exc).__name__}")
