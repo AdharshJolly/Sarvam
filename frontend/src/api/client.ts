@@ -159,7 +159,7 @@ function qs(params: Record<string, string | number | boolean | undefined>): stri
   return s ? `?${s}` : "";
 }
 
-/** Operator console API (ADR B-32, B-33). The server enforces the admin role; 401/403 surface as ApiError. */
+/** Operator console API (ADR B-36, B-37). The server enforces the admin role; 401/403 surface as ApiError. */
 export const adminApi = {
   overview: () => request<AdminOverview>(routes.adminOverview()),
   runs: (q: AdminRunsQuery = {}) =>
