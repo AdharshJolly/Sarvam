@@ -11,6 +11,7 @@ import sqlite3
 from collections.abc import Callable
 from datetime import UTC, datetime
 
+from backend.intel.coverage import CoverageDimension, CoverageSlot, rollup_dimensions
 from backend.store.ids import next_id
 from contracts.config import Thresholds
 from contracts.events import EventType
@@ -23,7 +24,10 @@ from contracts.models import (
     ClaimEvidence,
     Conflict,
     CoverageCell,
+    CoverageState,
     Dimension,
+    DimensionRollup,
+    EvidenceLink,
     EvidenceSlot,
     Mode,
     Origin,
@@ -35,6 +39,7 @@ from contracts.models import (
     PlanTask,
     Report,
     ReportView,
+    RoundRollups,
     Run,
     RunState,
     RunSummary,
@@ -483,9 +488,86 @@ def get_claim(conn: sqlite3.Connection, claim_id: str) -> Claim | None:
     return _claim(row) if row else None
 
 
-def list_claims(conn: sqlite3.Connection, run_id: str) -> list[Claim]:
-    rows = conn.execute("SELECT * FROM claims WHERE run_id=? ORDER BY rowid", (run_id,))
+def list_claims(
+    conn: sqlite3.Connection, run_id: str, *, include_rejected: bool = True
+) -> list[Claim]:
+    sql = "SELECT * FROM claims WHERE run_id=?"
+    if not include_rejected:
+        sql += " AND status != 'rejected'"
+    return [_claim(r) for r in conn.execute(sql + " ORDER BY rowid", (run_id,))]
+
+
+# Verdict -> claim status (FR-10, decision B-21). Only supports and partial stay evidence; a claim
+# its own passage contradicts, or that is irrelevant to its slot, is dropped as `rejected`.
+# `contested` is never set here: it means "member of an open numeric conflict" (SSOT 9.11) and is
+# derived by the conflict detector.
+VERDICT_STATUS = {
+    Verdict.SUPPORTS: "supported",
+    Verdict.PARTIAL: "partial",
+    Verdict.CONTRADICTS: "rejected",
+    Verdict.IRRELEVANT: "rejected",
+}
+
+
+def record_verdict(
+    conn: sqlite3.Connection, claim_id: str, verdict: Verdict, rationale: str = ""
+) -> EvidenceLink:
+    """Store the judge's verdict for a claim-passage pair and update the claim status."""
+    claim = get_claim(conn, claim_id)
+    if claim is None:
+        raise ValueError(f"unknown claim {claim_id}")
+    lid = next_id(conn, "L")
+    conn.execute(
+        "INSERT INTO evidence_links (id, claim_id, passage_id, verdict, verdict_rationale)"
+        " VALUES (?,?,?,?,?)",
+        (lid, claim_id, claim.passage_id, verdict.value, rationale),
+    )
+    conn.execute("UPDATE claims SET status=? WHERE id=?", (VERDICT_STATUS[verdict], claim_id))
+    conn.commit()
+    return EvidenceLink(
+        id=lid,
+        claim_id=claim_id,
+        passage_id=claim.passage_id,
+        verdict=verdict,
+        verdict_rationale=rationale,
+    )
+
+
+def latest_verdicts(conn: sqlite3.Connection, run_id: str) -> dict[str, EvidenceLink]:
+    """Most recent evidence link per claim of the run."""
+    out: dict[str, EvidenceLink] = {}
+    rows = conn.execute(
+        "SELECT l.* FROM evidence_links l JOIN claims c ON c.id=l.claim_id"
+        " WHERE c.run_id=? ORDER BY l.rowid",
+        (run_id,),
+    )
+    for r in rows:
+        out[r["claim_id"]] = EvidenceLink(
+            id=r["id"],
+            claim_id=r["claim_id"],
+            passage_id=r["passage_id"],
+            verdict=r["verdict"],
+            verdict_rationale=r["verdict_rationale"],
+        )
+    return out
+
+
+def list_unverified_claims(conn: sqlite3.Connection, run_id: str) -> list[Claim]:
+    """Quote-verified claims that no judge has labelled yet (FR-10, delta-only per FR-16)."""
+    rows = conn.execute(
+        "SELECT * FROM claims WHERE run_id=? AND quote_verified=1 AND status='pending'"
+        " AND id NOT IN (SELECT claim_id FROM evidence_links) ORDER BY rowid",
+        (run_id,),
+    )
     return [_claim(r) for r in rows]
+
+
+def set_claim_statuses(conn: sqlite3.Connection, statuses: dict[str, str]) -> None:
+    """Bulk status update (used by conflict detection to mark/unmark `contested`)."""
+    conn.executemany(
+        "UPDATE claims SET status=? WHERE id=?", [(st, cid) for cid, st in statuses.items()]
+    )
+    conn.commit()
 
 
 # ---------------------------------------------------------------- reports
@@ -572,6 +654,27 @@ def _origins(conn: sqlite3.Connection, run_id: str) -> list[Origin]:
     ]
 
 
+def list_origins(conn: sqlite3.Connection, run_id: str) -> list[Origin]:
+    return _origins(conn, run_id)
+
+
+def replace_origins(conn: sqlite3.Connection, run_id: str, origins: list[Origin]) -> None:
+    """Replace the run's origin rows and point every member source at its origin (one
+    transaction). Origins are recomputed after every round; ids are kept stable by the caller."""
+    conn.execute("DELETE FROM origins WHERE run_id=?", (run_id,))
+    conn.execute("UPDATE sources SET origin_id=NULL WHERE run_id=?", (run_id,))
+    for o in origins:
+        conn.execute(
+            "INSERT INTO origins (id, run_id, label, method, members_json) VALUES (?,?,?,?,?)",
+            (o.id, run_id, o.label, o.method.value, json.dumps(o.member_source_ids)),
+        )
+        conn.executemany(
+            "UPDATE sources SET origin_id=? WHERE id=?",
+            [(o.id, sid) for sid in o.member_source_ids],
+        )
+    conn.commit()
+
+
 def _conflicts(conn: sqlite3.Connection, run_id: str) -> list[Conflict]:
     return [
         Conflict(
@@ -589,6 +692,43 @@ def _conflicts(conn: sqlite3.Connection, run_id: str) -> list[Conflict]:
     ]
 
 
+def list_conflicts(conn: sqlite3.Connection, run_id: str) -> list[Conflict]:
+    return _conflicts(conn, run_id)
+
+
+def insert_conflict(
+    conn: sqlite3.Connection,
+    run_id: str,
+    *,
+    slot_id: str,
+    claim_a: str,
+    claim_b: str,
+    delta_pct: float,
+    kind: str,
+    status: str,
+    explanation: str | None,
+) -> Conflict:
+    cid = next_id(conn, "X")
+    conn.execute(
+        "INSERT INTO conflicts (id, run_id, slot_id, claim_a, claim_b, delta_pct, kind, status,"
+        " explanation) VALUES (?,?,?,?,?,?,?,?,?)",
+        (cid, run_id, slot_id, claim_a, claim_b, delta_pct, kind, status, explanation),
+    )
+    conn.commit()
+    return next(c for c in _conflicts(conn, run_id) if c.id == cid)
+
+
+def update_conflict(conn: sqlite3.Connection, conflict_id: str, **fields: object) -> None:
+    allowed = {"claim_a", "claim_b", "delta_pct", "kind", "status", "explanation"}
+    bad = set(fields) - allowed
+    if bad:
+        raise ValueError(f"cannot update conflict fields: {sorted(bad)}")
+    if fields:
+        cols = ", ".join(f"{k}=?" for k in fields)
+        conn.execute(f"UPDATE conflicts SET {cols} WHERE id=?", [*fields.values(), conflict_id])
+        conn.commit()
+
+
 def _coverage(conn: sqlite3.Connection, run_id: str) -> list[CoverageCell]:
     return [
         CoverageCell(
@@ -604,6 +744,58 @@ def _coverage(conn: sqlite3.Connection, run_id: str) -> list[CoverageCell]:
         )
         for r in conn.execute("SELECT * FROM coverage WHERE run_id=? ORDER BY rowid", (run_id,))
     ]
+
+
+def list_coverage(
+    conn: sqlite3.Connection, run_id: str, *, round: int | None = None
+) -> list[CoverageCell]:
+    cells = _coverage(conn, run_id)
+    return cells if round is None else [c for c in cells if c.round == round]
+
+
+def replace_coverage_round(
+    conn: sqlite3.Connection, run_id: str, round: int, cells: list[dict]
+) -> list[CoverageCell]:
+    """Store the coverage matrix of one round (idempotent: the round's rows are replaced).
+    `cells` hold slot_id, state, independent_origins, supporting_claims, open_conflicts, reason."""
+    conn.execute("DELETE FROM coverage WHERE run_id=? AND round=?", (run_id, round))
+    for cell in cells:
+        cid = next_id(conn, "V")
+        conn.execute(
+            "INSERT INTO coverage (id, run_id, round, slot_id, state, independent_origins,"
+            " supporting_claims, open_conflicts, reason) VALUES (?,?,?,?,?,?,?,?,?)",
+            (
+                cid,
+                run_id,
+                round,
+                cell["slot_id"],
+                cell["state"],
+                cell["independent_origins"],
+                cell["supporting_claims"],
+                cell["open_conflicts"],
+                cell["reason"],
+            ),
+        )
+    conn.commit()
+    return list_coverage(conn, run_id, round=round)
+
+
+def insert_task(
+    conn: sqlite3.Connection, run_id: str, *, slot_id: str, query: str, kind: str, round: int
+) -> Task:
+    """Add a follow-up task (gap or challenge). Task ids are per run: T1, T2, ..."""
+    row = conn.execute(
+        "SELECT COALESCE(MAX(CAST(SUBSTR(id, 2) AS INTEGER)), 0) + 1 FROM tasks WHERE run_id=?",
+        (run_id,),
+    ).fetchone()
+    tid = f"T{row[0]}"
+    conn.execute(
+        "INSERT INTO tasks (id, run_id, slot_id, query_text, kind, round, status)"
+        " VALUES (?,?,?,?,?,?, 'pending')",
+        (tid, run_id, slot_id, query, kind, round),
+    )
+    conn.commit()
+    return next(t for t in list_tasks(conn, run_id) if t.id == tid)
 
 
 def _challenges(conn: sqlite3.Connection, run_id: str) -> list[Challenge]:
@@ -648,6 +840,28 @@ def build_run_summary(
     )
 
 
+def build_rollups(conn: sqlite3.Connection, run_id: str) -> list[RoundRollups]:
+    """Dimension rollups per round, derived from the stored coverage cells (SSOT 9.8)."""
+    slots = [
+        CoverageSlot(s.id, s.dimension_id, s.name, s.critical, s.min_independent, s.primary_ok)
+        for s in list_slots(conn, run_id)
+    ]
+    dims = [CoverageDimension(d.id, d.name) for d in list_dimensions(conn, run_id)]
+    by_round: dict[int, dict[str, CoverageState]] = {}
+    for cell in _coverage(conn, run_id):
+        by_round.setdefault(cell.round, {})[cell.slot_id] = cell.state
+    return [
+        RoundRollups(
+            round=rnd,
+            rollups=[
+                DimensionRollup(dimension_id=r.dimension_id, state=r.state, reason=r.reason)
+                for r in rollup_dimensions(dims, slots, states)
+            ],
+        )
+        for rnd, states in sorted(by_round.items())
+    ]
+
+
 def build_run_state(conn: sqlite3.Connection, run_id: str) -> RunState | None:
     run = get_run(conn, run_id)
     if run is None:
@@ -662,9 +876,11 @@ def build_run_state(conn: sqlite3.Connection, run_id: str) -> RunState | None:
         tasks=list_tasks(conn, run_id),
         sources=list_sources(conn, run_id),
         origins=_origins(conn, run_id),
-        claims=list_claims(conn, run_id),  # rejected quotes are never stored (decision D6)
+        # Quote-guard rejects are events only (D6); claims the judge dropped are excluded here too.
+        claims=list_claims(conn, run_id, include_rejected=False),
         conflicts=_conflicts(conn, run_id),
         coverage=_coverage(conn, run_id),
+        rollups=build_rollups(conn, run_id),
         challenges=_challenges(conn, run_id),
         stop=_stop(conn, run_id),
         report_version=report,
