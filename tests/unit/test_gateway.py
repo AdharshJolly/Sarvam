@@ -178,3 +178,19 @@ def test_search_fallback_configuration():
                 {"SARVAM_SEARCH_FALLBACK_PROVIDER": "nope", "SARVAM_SEARCH_FALLBACK_API_KEY": KEY}
             )
         )
+
+
+def test_retry_hint_is_read_from_header_or_google_style_body():
+    from backend.gateway import http_failure
+
+    def failure(response):
+        exc = httpx.HTTPStatusError(
+            "x", request=httpx.Request("POST", "https://x"), response=response
+        )
+        return http_failure("gemini", exc)
+
+    assert failure(httpx.Response(429, headers={"retry-after": "7"})).retry_after == 7.0
+    body = {"error": {"status": "RESOURCE_EXHAUSTED", "details": [{"retryDelay": "23.5s"}]}}
+    assert failure(httpx.Response(429, json=body)).retry_after == 23.5
+    plain = failure(httpx.Response(429, text="slow down"))
+    assert plain.failure is FailureType.RATE_LIMITED and plain.retry_after is None

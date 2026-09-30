@@ -27,6 +27,7 @@ the same commit (SSOT section 21).
 | B-16 | A task whose searches all fail is marked `blocked` and a second `task.started` event carries the typed reason ("Task blocked (RATE_LIMITED): ..."). | No event type exists for task failure and none may be invented; reducers already key on task id. |
 | B-17 | If the writer fails or the budget is exhausted, the report is rendered evidence-only (each verified claim cites itself) and says why. With no eligible claims the writer is not called. | Wrap-up must still produce a cited report (SSOT 7.1). |
 | B-18 | M0 claims stay `pending` with `quote_verified=1`; the writer accepts them via `writer.eligible_statuses()`. Quote-guard rejects are events only. | No judge exists before M1 and `claims.passage_id` is NOT NULL (decision D6). |
+| B-19 | LLM 429s with no `Retry-After` wait 5, 15, 30 s (cap 60 s) and a Google-style `retryDelay` in the error body is honoured. The live setup uses Gemini through its OpenAI-compatible endpoint with `SARVAM_LLM_CONCURRENCY=2`. | Gemini free tiers limit requests per minute (10-15), so short retries would fail. No new environment variable. |
 
 ## Change log (SSOT section 21)
 

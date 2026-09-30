@@ -7,6 +7,7 @@ enforces budgets, the SSRF guard, concurrency limits, typed errors and record/re
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -64,16 +65,25 @@ class BudgetWarning:
 MetricsSink = Callable[[CallMetrics], None]
 
 
+def _retry_after_seconds(response: httpx.Response) -> float | None:
+    """Seconds the provider asked us to wait: Retry-After header, else a Google-style body hint
+    (`"retryDelay": "23s"`)."""
+    header = response.headers.get("retry-after", "")
+    try:
+        if header:
+            return float(header)
+    except ValueError:
+        pass
+    match = re.search(r'"retryDelay"\s*:\s*"([\d.]+)s"', response.text)
+    return float(match.group(1)) if match else None
+
+
 def http_failure(provider: str, exc: Exception) -> GatewayError:
     """Map an httpx failure to a typed GatewayError. Messages never include request headers."""
     if isinstance(exc, httpx.HTTPStatusError):
         code = exc.response.status_code
         if code == 429:
-            header = exc.response.headers.get("retry-after", "")
-            try:
-                wait = float(header) if header else None
-            except ValueError:
-                wait = None
+            wait = _retry_after_seconds(exc.response)
             return GatewayError(
                 FailureType.RATE_LIMITED, f"{provider} returned HTTP 429", retry_after=wait
             )
