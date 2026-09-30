@@ -24,8 +24,9 @@ SSOT_EVENT_TYPES = {
 }  # fmt: skip
 
 
-def test_event_types_match_ssot():
-    assert {t.value for t in EventType} == SSOT_EVENT_TYPES
+def test_event_types_match_ssot_plus_phase_entered():
+    # SSOT section 11 lists 22 types; CL-02 adds phase.entered (FR-22 transitions).
+    assert {t.value for t in EventType} == SSOT_EVENT_TYPES | {"phase.entered"}
 
 
 def test_event_envelope_validates():
@@ -35,7 +36,7 @@ def test_event_envelope_validates():
         ts=datetime.now(UTC),
         round=0,
         type=EventType.RUN_STARTED,
-        payload={"question": "q"},
+        payload={"question": "q", "mode": "LIVE", "budget": {}},
     )
     assert set(ev.model_dump()) == {
         "id", "run_id", "ts", "round", "type", "step_ms", "tokens", "cost_usd", "payload",
@@ -121,3 +122,68 @@ def test_invalid_config_fails_clearly_without_leaking_secrets():
     with pytest.raises(ValidationError) as ei:
         Settings.from_env({"SARVAM_MODE": "sideways", "SARVAM_LLM_API_KEY": "sk-secret"})
     assert "sk-secret" not in str(ei.value)
+
+
+def test_every_event_type_has_a_payload_model():
+    from contracts.events import EVENT_PAYLOADS
+
+    assert set(EVENT_PAYLOADS) == set(EventType)
+
+
+def test_new_contracts_round_trip_and_forbid_extras():
+    from contracts.models import (
+        Budget,
+        BudgetUsage,
+        ClaimEvidence,
+        Passage,
+        Phase,
+        Plan,
+        PlanDimension,
+        PlanSlot,
+        PlanTask,
+        ReportView,
+        RunCreate,
+        RunState,
+        RunSummary,
+        Source,
+    )
+
+    run = Run(id="R1", question="q", mode=Mode.LIVE, started_at=datetime.now(UTC))
+    plan = Plan(
+        dimensions=[
+            PlanDimension(
+                id="D1",
+                name="Demand",
+                critical=True,
+                slots=[
+                    PlanSlot(
+                        id="D1S1",
+                        name="n",
+                        description="d",
+                        critical=True,
+                        tasks=[PlanTask(id="T1", query="q")],
+                    )
+                ],
+            )
+        ],
+        budget=Budget(),
+    )
+    src = Source(
+        id="S1", run_id="R1", url="https://a.example", canonical_url="a.example", domain="a"
+    )
+    psg = Passage(id="P1", source_id="S1", idx=0, text="t", char_start=0, char_end=1)
+    claim = Claim(id="C1", run_id="R1", slot_id="D1S1", text="t", quote="q", passage_id="P1")
+    models = [
+        RunCreate(question="q"),
+        BudgetUsage(),
+        plan,
+        RunSummary(run=run, phase=Phase.PLAN),
+        RunState(run=run, plan=plan),
+        ClaimEvidence(claim=claim, passage=psg, source=src),
+        ReportView(run_id="R1", version=1, markdown="# x"),
+    ]
+    for m in models:
+        assert type(m).model_validate_json(m.model_dump_json()) == m
+        with pytest.raises(ValidationError):
+            type(m).model_validate({**m.model_dump(mode="json"), "surprise": 1})
+    assert Phase.STOP_POLICY.value == "STOP_POLICY"

@@ -16,23 +16,13 @@ from datetime import UTC, datetime
 
 from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import Field
 
 from backend import __version__
 from backend.store.db import init_db
 from backend.store.events import append_event
 from contracts.config import Settings
 from contracts.events import EventType
-from contracts.models import Budget, Contract, Mode, Run, Scope
-
-
-class RunCreate(Contract):
-    """POST /api/runs body (SSOT section 11): question, scope, mode, optional budget overrides."""
-
-    question: str = Field(min_length=1, max_length=2000)
-    scope: Scope = Field(default_factory=Scope)
-    mode: Mode = Mode.LIVE
-    budget: dict[str, int | float] | None = None
+from contracts.models import Budget, Run, RunCreate
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:

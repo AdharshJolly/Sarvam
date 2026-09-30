@@ -8,7 +8,7 @@ from collections.abc import Iterator
 from datetime import UTC, datetime
 from typing import Any
 
-from contracts.events import Event, EventType
+from contracts.events import EVENT_PAYLOADS, Event, EventType
 
 
 def append_event(
@@ -22,6 +22,9 @@ def append_event(
     tokens: int | None = None,
     cost_usd: float | None = None,
 ) -> Event:
+    payload = payload or {}
+    # Raises pydantic.ValidationError (a ValueError) for a payload that does not match its type.
+    EVENT_PAYLOADS[type].model_validate(payload)
     ts = datetime.now(UTC)
     cur = conn.execute(
         "INSERT INTO events (run_id, ts, round, type, step_ms, tokens, cost_usd, payload_json)"

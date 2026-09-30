@@ -5,11 +5,15 @@ import pytest
 from backend.store.db import SCHEMA_VERSION, SchemaVersionError, init_db
 from backend.store.events import append_event, read_events
 from contracts.events import EventType
+from contracts.models import Phase
 
 EXPECTED_TABLES = {
     "runs", "dimensions", "slots", "tasks", "sources", "passages", "claims", "evidence_links",
     "origins", "conflicts", "coverage", "challenges", "reports", "events",
 }  # fmt: skip
+
+
+_PHASE = {"phase": Phase.PLAN.value, "reason": "Planning the research."}
 
 
 def _run(conn, run_id="R1"):
@@ -47,18 +51,30 @@ def test_wrong_schema_version_fails_loudly(tmp_path):
 def test_foreign_keys_enforced(tmp_path):
     conn = init_db(tmp_path / "t.db")
     with pytest.raises(sqlite3.IntegrityError):
-        append_event(conn, "missing-run", EventType.RUN_STARTED)
+        append_event(conn, "missing-run", EventType.PHASE_ENTERED, payload=_PHASE)
 
 
 def test_append_and_read_events_with_resume(tmp_path):
     conn = init_db(tmp_path / "t.db")
     _run(conn)
-    e1 = append_event(conn, "R1", EventType.RUN_STARTED, payload={"a": 1})
-    e2 = append_event(conn, "R1", EventType.PLAN_CREATED, round=0, step_ms=12)
+    e1 = append_event(conn, "R1", EventType.PHASE_ENTERED, payload=_PHASE)
+    e2 = append_event(
+        conn, "R1", EventType.REPORT_DRAFT, round=0, step_ms=12, payload={"version": 1}
+    )
     assert e2.id > e1.id
     assert [e.type for e in read_events(conn, "R1")] == [
-        EventType.RUN_STARTED,
-        EventType.PLAN_CREATED,
+        EventType.PHASE_ENTERED,
+        EventType.REPORT_DRAFT,
     ]
     assert [e.id for e in read_events(conn, "R1", after_id=e1.id)] == [e2.id]
-    assert next(read_events(conn, "R1")).payload == {"a": 1}
+    assert next(read_events(conn, "R1")).payload == _PHASE
+
+
+def test_append_event_rejects_invalid_payload(tmp_path):
+    conn = init_db(tmp_path / "t.db")
+    _run(conn)
+    with pytest.raises(ValueError):
+        append_event(conn, "R1", EventType.PHASE_ENTERED, payload={"phase": "NOPE", "reason": "x"})
+    with pytest.raises(ValueError):
+        append_event(conn, "R1", EventType.RUN_COMPLETED, payload={"surprise": 1})
+    assert list(read_events(conn, "R1")) == []
