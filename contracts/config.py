@@ -16,6 +16,22 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr
 from contracts.models import Budget
 
 
+def read_env_file(path: str | Path = ".env") -> dict[str, str]:
+    """Parse a simple KEY=VALUE .env file (stdlib only). A missing file yields no values."""
+    file = Path(path)
+    if not file.is_file():
+        return {}
+    values: dict[str, str] = {}
+    for line in file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        value = value.split(" #", 1)[0].strip().strip("\"'")
+        values[key.strip()] = value
+    return values
+
+
 class Thresholds(BaseModel):
     """Algorithm thresholds (SSOT 9.x). Tuned on golden questions at hours 14-16."""
 
@@ -81,7 +97,8 @@ class Settings(BaseModel):
 
     @classmethod
     def from_env(cls, environ: Mapping[str, str] | None = None) -> Settings:
-        e = os.environ if environ is None else environ
+        # Real environment variables win over .env; an explicit mapping never reads the file.
+        e = {**read_env_file(), **os.environ} if environ is None else environ
 
         def get(name: str, default: str) -> str:
             return e.get(f"SARVAM_{name}", default)

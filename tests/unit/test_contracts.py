@@ -92,3 +92,32 @@ def test_settings_env_override_and_secret_not_leaked():
 def test_generated_schema_is_current():
     """Committed contracts/generated/schema.json must match the Pydantic models."""
     assert schema_export.SCHEMA_PATH.read_text(encoding="utf-8") == schema_export.render()
+
+
+def test_read_env_file_and_precedence(tmp_path, monkeypatch):
+    from contracts.config import read_env_file
+
+    f = tmp_path / ".env"
+    f.write_text(
+        "# c\nSARVAM_MODE=replay   # inline\nSARVAM_LLM_API_KEY=abc\nSARVAM_MAX_SEARCHES=7\n",
+        encoding="utf-8",
+    )
+    assert read_env_file(f) == {
+        "SARVAM_MODE": "replay",
+        "SARVAM_LLM_API_KEY": "abc",
+        "SARVAM_MAX_SEARCHES": "7",
+    }
+    assert read_env_file(tmp_path / "missing.env") == {}
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("SARVAM_MAX_SEARCHES", "9")  # real environment beats .env
+    s = Settings.from_env()
+    assert s.mode == "replay" and s.budget.max_searches == 9
+    assert s.llm_api_key.get_secret_value() == "abc"
+
+
+def test_invalid_config_fails_clearly_without_leaking_secrets():
+    with pytest.raises(ValueError):
+        Settings.from_env({"SARVAM_MAX_SEARCHES": "lots", "SARVAM_LLM_API_KEY": "sk-secret"})
+    with pytest.raises(ValidationError) as ei:
+        Settings.from_env({"SARVAM_MODE": "sideways", "SARVAM_LLM_API_KEY": "sk-secret"})
+    assert "sk-secret" not in str(ei.value)
