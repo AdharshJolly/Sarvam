@@ -1,5 +1,6 @@
 import { type KeyboardEvent, type MouseEvent, type ReactNode, type SyntheticEvent, useEffect, useRef } from "react";
 import { Button } from "./Button";
+import { getFocusableElements, nextFocusedElement, saveFocus, restoreFocus } from "../../lib/focus";
 
 export type DialogPlacement = "center" | "right" | "left" | "bottom";
 
@@ -27,6 +28,7 @@ export interface DialogProps {
  * Built on the native <dialog>. In modal mode (showModal) the browser provides the focus trap, an
  * inert background, Escape handling and focus return to the opener. Docked mode uses show(), which
  * has none of those, so Escape is handled here on the element itself.
+ * We supplement this with manual focus return to cover React unmount races.
  */
 export function Dialog({ isOpen, onClose, title, children, placement = "center", docked = false }: DialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -35,19 +37,23 @@ export function Dialog({ isOpen, onClose, title, children, placement = "center",
     const dialog = dialogRef.current;
     if (!dialog) return;
 
-    // Always start from closed, so a change of `docked` while open (a window resize) reopens the
-    // dialog in the right mode instead of leaving it stuck in the old one.
     if (dialog.open) dialog.close();
     if (isOpen) {
+      if (!docked) saveFocus(); // save focus before modal opens
+      
       if (docked) {
         dialog.show();
       } else {
         dialog.showModal();
         document.body.style.overflow = "hidden"; // scroll lock while modal
       }
+    } else {
+      if (!docked) restoreFocus();
     }
+    
     return () => {
       document.body.style.overflow = "";
+      if (isOpen && !docked) restoreFocus(); // cleanup if unmounted while open
     };
   }, [isOpen, docked]);
 
@@ -59,9 +65,22 @@ export function Dialog({ isOpen, onClose, title, children, placement = "center",
 
   // Docked dialogs get no native Escape handling; listen on the element (works while focus is inside).
   const onKeyDown = (e: KeyboardEvent) => {
-    if (docked && e.key === "Escape") {
-      e.stopPropagation();
-      onClose();
+    if (e.key === "Escape") {
+      if (docked) {
+        e.stopPropagation();
+        onClose();
+      }
+      return;
+    }
+    
+    // Manual focus trap fallback for modal, just to be sure it wraps correctly
+    if (!docked && e.key === "Tab" && dialogRef.current) {
+      const focusable = getFocusableElements(dialogRef.current);
+      const next = nextFocusedElement(document.activeElement, focusable, e.shiftKey);
+      if (next) {
+        e.preventDefault();
+        next.focus();
+      }
     }
   };
 
