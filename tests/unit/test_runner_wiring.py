@@ -56,8 +56,10 @@ def test_injected_runner_plans_and_completes(tmp_path):
     with TestClient(create_app(settings, runner=runner)) as c:
         rid = c.post("/api/runs", json={"question": "Should we launch X?"}).json()["id"]
         summary = wait_for_status(c, rid)
-        assert summary["run"]["status"] == "completed" and summary["phase"] == "PLAN"
-        assert summary["usage"]["llm_calls"] == 1
+        assert summary["run"]["status"] == "completed" and summary["phase"] == "SYNTHESIZE"
+        assert summary["usage"]["llm_calls"] == 1  # planner only: no claims, so no writer call
+        report = c.get(f"/api/runs/{rid}/report").json()
+        assert "no findings" in report["markdown"] and report["citations"] == []
         types = event_types(c, rid)
         assert types[:3] == ["run.started", "phase.entered", "plan.created"]
         assert types[-1] == "run.completed"

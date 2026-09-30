@@ -12,7 +12,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
-from backend.gateway import BudgetWarning, GatewayError
+from backend.gateway import BudgetExceeded, BudgetWarning, GatewayError
 from backend.gateway.core import ToolGateway
 from backend.gateway.fetch import Fetcher, HttpFetcher
 from backend.gateway.llm import llm_from_settings
@@ -23,18 +23,27 @@ from backend.gateway.search import (
     search_from_settings,
 )
 from backend.gateway.ssrf import DefaultSSRFGuard
+from backend.pipeline.acquire import run_acquire
+from backend.pipeline.claims import run_claims
+from backend.pipeline.discover import run_discover
+from backend.pipeline.extract import run_extract
 from backend.pipeline.plan import run_plan
 from backend.store import repo
 from backend.store.db import connect
 from backend.store.emit import Emitter
+from backend.synth.render import render_markdown, verify_citations
+from backend.synth.writer import eligible_claims, write_draft
 from contracts.config import Settings
 from contracts.events import (
     BudgetWarningPayload,
     EventType,
+    PhaseEnteredPayload,
+    ReportDraftPayload,
+    ReportVerifiedPayload,
     RunCompletedPayload,
     RunFailedPayload,
 )
-from contracts.models import FailureType, Mode, Run, TerminationReason
+from contracts.models import FailureType, Mode, Phase, Run, TerminationReason
 
 log = logging.getLogger("sarvam.controller")
 
@@ -96,6 +105,60 @@ def _fail(conn, em: Emitter, run_id: str, failure: FailureType, message: str) ->
     repo.set_run_status(conn, run_id, "failed", ended=True)
 
 
+def _wrapup_reason(gateway: ToolGateway) -> TerminationReason | None:
+    """Checked between stages: a stop request or the soft time limit triggers wrap-up."""
+    if gateway.stop_requested.is_set():
+        return TerminationReason.USER_STOPPED
+    if gateway.soft_time_exceeded():
+        return TerminationReason.TIMEOUT
+    return None
+
+
+def _budget_reason(exc: BudgetExceeded) -> TerminationReason:
+    return TerminationReason.TIMEOUT if exc.limit.startswith("wall") else TerminationReason.BUDGET
+
+
+async def synthesize(
+    gateway: ToolGateway,
+    conn,
+    em: Emitter,
+    settings: Settings,
+    run: Run,
+    termination: TerminationReason | None,
+) -> None:
+    """SYNTHESIZE: write, clean, render deterministically, prove every citation, store, emit."""
+    note = f"Wrap-up ({termination.value})." if termination else None
+    reason = (
+        f"Wrap-up ({termination.value}): writing the report from the evidence already stored."
+        if termination
+        else "Writing the report from the quote-verified claims."
+    )
+    em.emit(EventType.PHASE_ENTERED, PhaseEnteredPayload(phase=Phase.SYNTHESIZE, reason=reason))
+    claims = eligible_claims(conn, run.id)
+    result = await write_draft(gateway, conn, run, claims, wrap_up_note=note)
+    markdown = render_markdown(
+        conn,
+        run,
+        result.draft,
+        gateway.usage(),
+        settings,
+        claims,
+        termination_reason=termination.value if termination else None,
+        degraded_reason=result.degraded_reason,
+    )
+    verify_citations(conn, run.id, markdown)  # raises CitationError rather than ship a bad cite
+    report = repo.insert_report(conn, run.id, markdown=markdown, dropped_sentences=result.dropped)
+    em.emit(
+        EventType.REPORT_DRAFT, ReportDraftPayload(version=report.version), metrics=result.metrics
+    )
+    em.emit(
+        EventType.REPORT_VERIFIED,
+        ReportVerifiedPayload(
+            version=report.version, dropped_count=len(result.dropped), certainty_state=None
+        ),
+    )
+
+
 async def run_m0(
     run_id: str,
     *,
@@ -103,7 +166,12 @@ async def run_m0(
     handle: RunHandle | None = None,
     deps: RunnerDeps | None = None,
 ) -> None:
-    """Drive one run to a terminal event. Uses its own DB connection (decision B-10)."""
+    """Drive one run to a terminal event. Uses its own DB connection (decision B-10).
+
+    PLAN, DISCOVER, ACQUIRE, EXTRACT, CLAIMS, SYNTHESIZE in order. A stop request, the soft time
+    limit, a budget limit or a provider outage after planning takes the wrap-up path: skip the
+    remaining stages and synthesize from the evidence already stored (SSOT 7.1).
+    """
     conn = connect(settings.db_path)
     em = Emitter(conn, run_id)
     try:
@@ -123,19 +191,42 @@ async def run_m0(
             gateway.stop_requested = handle.stop_event
             handle.gateway = gateway
 
+        # Without a plan there is nothing to wrap up: a planner failure is an unrecoverable failure.
         await run_plan(gateway, conn, em, run_id, run.question, run.scope, run.budget)
 
-        # Interim M0 end state until the discover/acquire/extract/claims/synthesize stages land.
-        reason = TerminationReason.USER_STOPPED if gateway.stop_requested.is_set() else None
+        async def extract() -> None:
+            run_extract(conn, em, settings, run_id)
+
+        stages = (
+            lambda: run_discover(gateway, conn, em, settings, run_id, run.scope),
+            lambda: run_acquire(gateway, conn, em, settings, run_id),
+            extract,
+            lambda: run_claims(gateway, conn, em, settings, run_id),
+        )
+        termination: TerminationReason | None = None
+        for stage in stages:
+            termination = _wrapup_reason(gateway)
+            if termination:
+                break
+            try:
+                await stage()
+            except BudgetExceeded as exc:
+                termination = _budget_reason(exc)
+                break
+            except GatewayError:  # provider outage (BLOCKED): wrap up with current evidence
+                termination = TerminationReason.BLOCKED
+                break
+
+        await synthesize(gateway, conn, em, settings, run, termination)
         em.emit(
             EventType.RUN_COMPLETED,
-            RunCompletedPayload(stop_state=None, termination_reason=reason),
+            RunCompletedPayload(stop_state=None, termination_reason=termination),
         )
         repo.set_run_status(
             conn,
             run_id,
             "completed",
-            termination_reason=reason.value if reason else None,
+            termination_reason=termination.value if termination else None,
             ended=True,
         )
     except GatewayError as exc:
