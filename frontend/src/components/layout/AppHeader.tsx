@@ -40,7 +40,7 @@ export function AppHeader({
   onOpenActivity: () => void;
 }) {
   return (
-    <header className="app-header sticky top-0 z-20 flex min-h-14 items-center gap-3 border-b border-border-hairline bg-surface px-4 py-2">
+    <header className="app-header sticky top-0 z-20 flex min-h-14 flex-wrap items-center gap-x-3 gap-y-1 border-b border-border-hairline bg-surface px-4 py-2">
       {runId ? (
         <Button
           size="icon"
@@ -52,18 +52,17 @@ export function AppHeader({
         />
       ) : null}
 
-      <div className="flex min-w-0 flex-1 items-baseline gap-3">
-        <p className="shrink-0 text-xl font-bold tracking-tight text-brand">SARVAM</p>
-        {question ? (
-          <Tooltip text={question} className="min-w-0" focusable>
-            <h1 className="min-w-0 truncate text-base font-medium">{question}</h1>
-          </Tooltip>
-        ) : (
-          <p className="hidden text-sm text-text-muted sm:block">Research that knows when it isn&apos;t done.</p>
-        )}
-      </div>
+      <p className="shrink-0 text-xl font-bold tracking-tight text-brand">SARVAM</p>
+      {/* On a phone the question drops to its own row so it is never squeezed to nothing. */}
+      {question ? (
+        <Tooltip text={question} className="order-last min-w-0 max-w-full basis-full sm:order-none sm:flex-1 sm:basis-0" focusable>
+          <h1 className="min-w-0 truncate text-base font-medium">{question}</h1>
+        </Tooltip>
+      ) : (
+        <p className="hidden flex-1 text-sm text-text-muted sm:block">Research that knows when it isn&apos;t done.</p>
+      )}
 
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
         {runId && showMode ? <ModeBadge mode={mode} pulsing={running} /> : null}
         {runId ? (
           <div className="hidden items-center gap-5 md:flex" role="group" aria-label="Run totals">
@@ -83,8 +82,8 @@ export function AppHeader({
           />
         ) : null}
         {runId ? (
-          <Button size="sm" onClick={onNewRun}>
-            New run
+          <Button size="sm" icon={<Icon name="Plus" size={16} aria-hidden />} onClick={onNewRun}>
+            <span className="max-sm:sr-only">New run</span>
           </Button>
         ) : null}
         <ThemeToggle />

@@ -22,6 +22,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Play,
+  Plus,
   Quote,
   RefreshCw,
   RotateCcw,
@@ -67,6 +68,7 @@ const ICONS = {
   PanelLeftClose,
   PanelLeftOpen,
   Play,
+  Plus,
   Quote,
   RefreshCw,
   RotateCcw,
@@ -84,6 +86,9 @@ const ICONS = {
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;
+
+/** Every registered icon name (used by tests that render the whole set). */
+export const ICON_NAMES = Object.keys(ICONS) as IconName[];
 
 export interface IconProps extends Omit<LucideProps, "ref"> {
   name: IconName;

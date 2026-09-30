@@ -26,7 +26,7 @@ export function ThemeToggle() {
       title={`Theme: ${themeState}`}
       icon={<Icon name={getIcon()} size={16} aria-hidden />}
     >
-      <span className="label">{themeState}</span>
+      <span className="label max-sm:sr-only">{themeState}</span>
     </Button>
   );
 }
