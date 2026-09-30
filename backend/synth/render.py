@@ -15,6 +15,7 @@ from backend.pipeline.claims import quote_in_passage
 from backend.store import repo
 from backend.synth.report_verify import VerifiedReport
 from contracts.config import Settings
+from contracts.glossary import CHALLENGE_PENDING, READING_GUIDE, entry, gap_text
 from contracts.models import BudgetUsage, Claim, Run, StopDecision
 
 CITATION = re.compile(r"\[(C\d+)\]")
@@ -33,6 +34,15 @@ def _sentence(text: str) -> str:
     return re.sub(r"\s+", " ", CITATION.sub("", text)).strip()
 
 
+def _conflict_next_step(x) -> str:
+    """What a reader can do about a conflict: the kind's advice if it has any, else the status's."""
+    step = (
+        entry("conflict_kind", x.kind.value).next_step
+        or entry("conflict_status", x.status.value).next_step
+    )
+    return f" Next step: {step}" if step else ""
+
+
 def render_markdown(
     conn: sqlite3.Connection,
     run: Run,
@@ -49,6 +59,17 @@ def render_markdown(
     by_id = {c.id: c for c in claims}
     lines: list[str] = [f"# {_sentence(run.question)}", "", "## Decision summary", ""]
     lines += [_sentence(report.decision_summary) or "No summary was produced.", ""]
+    verdict = entry("final_state", decision.state.value)
+    stop_why = entry("termination_reason", decision.termination_reason.value)
+    lines += [
+        f"**{verdict.label}.** {verdict.meaning}",
+        "",
+        f"Why the research stopped: {stop_why.label}. {stop_why.meaning}",
+        "",
+    ]
+    if verdict.next_step:
+        lines += [verdict.next_step, ""]
+    # Technical state line: kept verbatim for tooling and the gates (B-36).
     lines += [
         f"**Assurance state: {decision.state.value}** ({decision.termination_reason.value})",
         "",
@@ -56,6 +77,10 @@ def render_markdown(
     lines += [f"- {_sentence(c)}" for c in decision.caveats]
     if decision.caveats:
         lines.append("")
+
+    lines += ["## How to read this report", ""]
+    lines += [f"- {text}" for text in READING_GUIDE]
+    lines.append("")
 
     lines += ["## Question and scope", "", f"- Question: {_sentence(run.question)}"]
     scope = {k: v for k, v in run.scope.model_dump().items() if v}
@@ -79,7 +104,8 @@ def render_markdown(
             dim = dims.get(slot.dimension_id) if slot else None
             lines.append(
                 f"| {_cell(dim.name if dim else '')} | {_cell(slot.name if slot else cell.slot_id)}"
-                f"{' (critical)' if slot and slot.critical else ''} | {cell.state.value} | "
+                f"{' (critical)' if slot and slot.critical else ''} | "
+                f"{entry('coverage_state', cell.state.value).label} ({cell.state.value}) | "
                 f"{cell.independent_origins} | {_cell(cell.reason)} |"
             )
     else:
@@ -112,26 +138,39 @@ def render_markdown(
         listed = True
         note = f" {_sentence(x.explanation)}" if x.explanation else ""
         lines.append(
-            f"- {x.kind.value.replace('_', ' ').capitalize()} conflict ({x.status.value}, "
+            f"- {entry('conflict_kind', x.kind.value).label} "
+            f"({entry('conflict_status', x.status.value).label.lower()}, "
             f"{x.delta_pct:.0%} apart) between [{x.claim_a}] and [{x.claim_b}].{note}"
+            f"{_conflict_next_step(x)}"
         )
         cited += [x.claim_a, x.claim_b]
     for cell in cells:
         slot = slots.get(cell.slot_id)
         if slot and slot.critical and cell.state.value != "GREEN":
             listed = True
+            gap = gap_text(
+                cell.state.value,
+                cell.independent_origins,
+                cell.supporting_claims,
+                cell.open_conflicts,
+            )
             lines.append(
-                f"- {_sentence(slot.name)} is {cell.state.value}: {_sentence(cell.reason)}"
+                f"- {_sentence(slot.name)}: {gap.reason} ({cell.state.value})."
+                f"{f' Next step: {gap.next_step}' if gap.next_step else ''}"
             )
     if not listed:
-        lines.append("- No open conflicts and no critical slot below GREEN.")
+        lines.append("- No open conflicts, and every critical point is well supported.")
     lines.append("")
 
     lines += ["## What could change the conclusion", ""]
     challenges = repo.list_challenges(conn, run.id)
     if challenges:
         for ch in challenges:
-            outcome = ch.outcome.value if ch.outcome else "not completed"
+            outcome = (
+                entry("challenge_outcome", ch.outcome.value).label
+                if ch.outcome
+                else entry("challenge_outcome", CHALLENGE_PENDING).label
+            ).lower()
             change = (
                 f" It would change the conclusion if: {_sentence(ch.would_change_if)}"
                 if ch.would_change_if

@@ -1,39 +1,55 @@
-import type { Challenge, FinalState, StopDecision, TerminationReason } from "@contracts/types";
+import type { Challenge, StopDecision, TerminationReason } from "@contracts/types";
 import { buildHash } from "../lib/route";
 import { Banner } from "./ui/Banner";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
 import { Icon } from "./ui/Icon";
-import { finalStateChip } from "./ui/chips";
+import { GLOSSARY } from "@contracts/glossary";
+import { ReadingGuide } from "./ReadingGuide";
+import { finalStateChip, gloss } from "./ui/chips";
 
-export const terminationText: Record<TerminationReason, string> = {
-  criteria_met: "All critical slots are green and a challenge round completed.",
-  no_marginal_gain: "Another round was not adding new evidence.",
-  max_rounds: "The follow-up round limit was reached.",
-  budget: "A budget limit was reached and the run wrapped up with the evidence in hand.",
-  timeout: "The time limit was reached and the run wrapped up with the evidence in hand.",
-  user_stopped: "The run was stopped by the user.",
-  blocked: "The run was blocked by a failure and wrapped up with the evidence in hand.",
-};
-
-const HEADLINE: Record<FinalState, string> = {
-  SUFFICIENT: "Sufficient",
-  SUFFICIENT_WITH_CAVEATS: "Sufficient, with caveats",
-  INSUFFICIENT: "Insufficient",
-};
-
-const meaning: Record<FinalState, string> = {
-  SUFFICIENT: "The evidence gathered is enough to answer the question.",
-  SUFFICIENT_WITH_CAVEATS: "The evidence is enough to answer, with the caveats listed below.",
-  INSUFFICIENT: "The evidence is not enough to answer with confidence. This is a valid outcome, not an error.",
-};
+/** Plain sentence for why the run stopped (contracts/glossary.py). */
+export const terminationText = Object.fromEntries(
+  (Object.keys(GLOSSARY.termination_reason) as TerminationReason[]).map((k) => {
+    const g = gloss("termination_reason", k);
+    return [k, `${g.label}. ${g.meaning}`];
+  }),
+) as Record<TerminationReason, string>;
 
 const stateTone = { SUFFICIENT: "ok", SUFFICIENT_WITH_CAVEATS: "warn", INSUFFICIENT: "bad" } as const;
 
 export interface StopGap {
   slotId: string;
   name: string;
+  /** Plain sentence (lib/gap.ts): what is missing and why. */
   reason: string;
+  /** What a reader can do about it. */
+  nextStep: string;
+}
+
+/** One line per gap: "Name: reason." then the next step. Shared by the stop card and the matrix summary. */
+export function GapList({ gaps, onOpenSlot }: { gaps: StopGap[]; onOpenSlot: (slotId: string) => void }) {
+  return (
+    <ul className="space-y-2">
+      {gaps.map((g) => (
+        <li key={g.slotId} className="leading-snug">
+          <button
+            type="button"
+            className="mr-1 text-left font-semibold text-brand hover:underline"
+            onClick={() => onOpenSlot(g.slotId)}
+          >
+            {g.name}
+          </button>
+          <span className="text-text-muted">: {g.reason}.</span>
+          {g.nextStep ? (
+            <span className="mt-0.5 block text-text">
+              <span className="font-semibold">Next step:</span> {g.nextStep}
+            </span>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 /** Reasons where the run was cut short, so "complete" would overstate it. */
@@ -137,10 +153,10 @@ export function StopCard({
               </span>
             </div>
             <h2 className={`font-display text-2xl sm:text-3xl font-bold leading-tight ${statusColor}`}>
-              {HEADLINE[stop.state]}
+              {gloss("final_state", stop.state).label}
             </h2>
             <p className="mt-1 text-sm sm:text-base text-text-muted leading-relaxed max-w-2xl font-normal">
-              {meaning[stop.state]}
+              {gloss("final_state", stop.state).meaning}
             </p>
           </div>
         </div>
@@ -159,10 +175,10 @@ export function StopCard({
 
       {/* 3 Balanced Columns */}
       <div className="grid gap-6 p-5 sm:p-6 md:grid-cols-2 xl:grid-cols-3">
-        {/* Column 1: Why we stopped */}
+        {/* Column 1: Why the research stopped */}
         <section aria-labelledby="stop-why" className="space-y-2">
           <h3 id="stop-why" className="font-mono text-sm tracking-wider uppercase text-text-muted">
-            Why we stopped
+            Why the research stopped
           </h3>
           <p className="text-sm sm:text-base text-text leading-relaxed font-normal">
             {terminationText[stop.termination_reason]}
@@ -182,26 +198,26 @@ export function StopCard({
         {/* Column 2: Critical slots */}
         <section aria-labelledby="stop-slots" className="space-y-2">
           <h3 id="stop-slots" className="font-mono text-sm tracking-wider uppercase text-text-muted">
-            Critical slots
+            Key points
           </h3>
           <div className="flex gap-2">
             <Tile
               count={crit.green ?? 0}
-              word="green"
+              word={gloss("coverage_state", "GREEN").label}
               icon="Check"
               tone="border-ok-border bg-ok-bg/50 text-ok-fg"
               href={buildHash(runId, "matrix")}
             />
             <Tile
               count={crit.amber ?? 0}
-              word="amber"
+              word={gloss("coverage_state", "AMBER").label}
               icon="AlertTriangle"
               tone="border-warn-border bg-warn-bg/50 text-warn-fg"
               href={buildHash(runId, "matrix")}
             />
             <Tile
               count={crit.red ?? 0}
-              word="red"
+              word={gloss("coverage_state", "RED").label}
               icon="XOctagon"
               tone="border-bad-border bg-bad-bg/50 text-bad-fg"
               href={buildHash(runId, "matrix")}
@@ -213,7 +229,7 @@ export function StopCard({
               className="text-text-muted hover:text-brand transition-colors underline font-medium"
               onClick={onOpenConflicts}
             >
-              {openConflicts} open {openConflicts === 1 ? "conflict" : "conflicts"}
+              {openConflicts} {openConflicts === 1 ? "disagreement" : "disagreements"} between sources not yet explained
             </button>
           </p>
         </section>
@@ -225,22 +241,7 @@ export function StopCard({
           </h3>
           {missing ? (
             <div className="space-y-2 text-sm text-text">
-              {gaps.length > 0 ? (
-                <ul className="space-y-1.5">
-                  {gaps.map((g) => (
-                    <li key={g.slotId} className="leading-snug">
-                      <button
-                        type="button"
-                        className="font-semibold text-brand hover:underline mr-1 text-left"
-                        onClick={() => onOpenSlot(g.slotId)}
-                      >
-                        {g.name}
-                      </button>
-                      <span className="text-text-muted">: {g.reason}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
+              {gaps.length > 0 ? <GapList gaps={gaps} onOpenSlot={onOpenSlot} /> : null}
               {caveats.length > 0 ? (
                 <ul className="list-disc pl-4 space-y-1 text-text-muted">
                   {caveats.map((c) => (
@@ -267,6 +268,7 @@ export function StopCard({
           ) : null}
         </section>
       </div>
+      <ReadingGuide />
     </Card>
   );
 }

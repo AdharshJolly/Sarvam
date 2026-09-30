@@ -210,6 +210,11 @@ def test_render_strips_typed_markers_escapes_tables_and_reports_unreported_cost(
         and "**Assurance state: SUFFICIENT_WITH_CAVEATS** (max_rounds)" in md
     )
     assert "Searches: 3/24" in md and "Mode: LIVE" in md
+    # Plain-language layer (B-36): headline, stop reason and reading guide, before the jargon line.
+    assert "**Answer is solid, with caveats.**" in md
+    assert "Why the research stopped: Follow-up limit reached." in md
+    assert "## How to read this report" in md
+    assert md.index("**Answer is solid, with caveats.**") < md.index("**Assurance state:")
     assert "### Demand" in md and "No verified claims were found for this dimension." in md
     costed = env.render(draft, usage=BudgetUsage(cost_usd=0.1234))
     assert "Cost: $0.1234" in costed
@@ -237,3 +242,30 @@ def test_verify_citations_rejects_every_unresolvable_citation(tmp_path):
     env.conn.commit()
     with pytest.raises(CitationError, match="C500: quote is not in passage"):
         verify_citations(env.conn, "R1", "text [C500]")
+
+
+def test_every_non_green_critical_gap_has_a_plain_reason_and_a_next_step(tmp_path):
+    """Card A: the report says what is missing in a full sentence and what to do about it."""
+    env = Env(tmp_path)
+    crit = [s for s in repo.list_slots(env.conn, "R1") if s.critical]
+    states = [("AMBER", 1, 0), ("AMBER", 2, 1), ("RED", 0, 0)]
+    cells = [
+        {
+            "slot_id": slot.id,
+            "state": state,
+            "independent_origins": origins,
+            "supporting_claims": origins,
+            "open_conflicts": conflicts,
+            "reason": "RAW 1 source, 1 origin: 1 of the 2 independent origins required.",
+        }
+        for slot, (state, origins, conflicts) in zip(crit, states, strict=False)
+    ]
+    repo.replace_coverage_round(env.conn, "R1", 1, cells)
+    md = env.render(draft_with(ReportFindingDraft(text="A fact.", claim_ids=[env.claim.id])))
+    section = md.split("## Conflicts and unresolved items")[1].split("\n## ")[0]
+    lines = [ln for ln in section.splitlines() if ln.startswith("- ")]
+    assert len(lines) == len(cells) >= 2
+    for ln in lines:
+        assert "Next step:" in ln, ln
+        assert ", so " in ln, ln  # a full sentence, not the raw reason
+    assert "RAW" not in section and "origin" not in section.lower().replace("independent", "")
