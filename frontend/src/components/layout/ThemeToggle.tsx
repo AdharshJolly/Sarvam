@@ -19,8 +19,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={next}
-      className="rounded border px-3 py-1 text-sm"
-      style={{ borderColor: "var(--border)" }}
+      className="btn text-sm"
       aria-label={`Theme: ${theme}. Activate to change.`}
     >
       Theme: {theme}

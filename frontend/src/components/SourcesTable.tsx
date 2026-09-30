@@ -37,7 +37,7 @@ export function SourcesTable({
         <tbody>
           {sources.map((s) => (
             <tr key={s.id} id={`source-${s.id}`} className="border-t" style={{ borderColor: "var(--border)" }}>
-              <td className="p-1">{s.id}</td>
+              <td className="mono p-1">{s.id}</td>
               <td className="p-1">
                 <a href={safeHref(s.url)} target="_blank" rel="noopener noreferrer" className="underline">
                   {s.domain || domainOf(s.url)}

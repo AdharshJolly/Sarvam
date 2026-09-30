@@ -28,6 +28,7 @@ export interface Session {
   runId: string | null;
   error: string | null;
   stopping: boolean;
+  hydrating: boolean;
   start: (body: RunCreate) => Promise<void>;
   stop: () => Promise<void>;
   reattach: () => void;
@@ -48,6 +49,7 @@ function useRunSessionState(): Session {
   const [error, setError] = useState<string | null>(null);
   const [stopping, setStopping] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [hydrating, setHydrating] = useState(false);
 
   useEffect(() => {
     const onHash = () => setRunId(runIdFromHash(window.location.hash));
@@ -60,13 +62,18 @@ function useRunSessionState(): Session {
     dispatch({ type: "reset" });
     setError(null);
     setStopping(false);
-    if (!runId) return;
+    if (!runId) {
+      setHydrating(false);
+      return;
+    }
+    setHydrating(true);
     let cancelled = false;
     let stream: { close: () => void } | null = null;
     runApi
       .getState(runId)
       .then((state) => {
         if (cancelled) return;
+        setHydrating(false);
         dispatch({ type: "hydrate", state });
         stream = openStream(
           runId,
@@ -78,7 +85,10 @@ function useRunSessionState(): Session {
         );
       })
       .catch((err: unknown) => {
-        if (!cancelled) setError(errorText(err));
+        if (!cancelled) {
+          setHydrating(false);
+          setError(errorText(err));
+        }
       });
     return () => {
       cancelled = true;
@@ -137,8 +147,8 @@ function useRunSessionState(): Session {
   }, []);
 
   return useMemo(
-    () => ({ view, runId, error, stopping, start, stop, reattach, newRun }),
-    [view, runId, error, stopping, start, stop, reattach, newRun],
+    () => ({ view, runId, error, stopping, hydrating, start, stop, reattach, newRun }),
+    [view, runId, error, stopping, hydrating, start, stop, reattach, newRun],
   );
 }
 

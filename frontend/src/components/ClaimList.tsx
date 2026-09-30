@@ -41,7 +41,7 @@ export function ClaimList({
                 <li key={c.id}>
                   <button
                     type="button"
-                    className="flex w-full flex-wrap items-center gap-2 rounded border p-2 text-left text-base"
+                    className="card card-hover flex w-full flex-wrap items-center gap-2 p-2 text-left text-base"
                     style={{ borderColor: "var(--border)", background: "var(--surface)" }}
                     onClick={() => onOpenClaim(c.id)}
                   >
