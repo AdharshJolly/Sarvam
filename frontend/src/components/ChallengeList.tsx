@@ -1,5 +1,6 @@
 import type { Challenge, Task } from "@contracts/types";
 import { Badge } from "./ui/Badge";
+import { Icon, type IconName } from "./ui/Icon";
 import { EmptyState } from "./ui/EmptyState";
 import { StateChip } from "./ui/StateChip";
 import { outcomeChip } from "./ui/chips";
@@ -11,6 +12,23 @@ const outcomeNote = {
   weakened: "The attack found evidence that weakens the conclusion.",
   unresolved: "Sarvam could not settle this either way with the evidence it could reach.",
 } as const;
+
+/** A follow-up query's status as an icon and a word; unknown statuses are shown as given, never hidden. */
+export function taskStatusView(status: string | undefined): { icon: IconName; word: string; tone: string } {
+  switch (status ?? "pending") {
+    case "done":
+      return { icon: "Check", word: "Done", tone: "text-ok-fg" };
+    case "running":
+      return { icon: "Activity", word: "Running", tone: "text-brand-secondary" };
+    case "blocked":
+    case "failed":
+      return { icon: "XOctagon", word: status === "failed" ? "Failed" : "Blocked", tone: "text-bad-fg" };
+    case "pending":
+      return { icon: "Clock", word: "Pending", tone: "text-text-muted" };
+    default:
+      return { icon: "Clock", word: status ?? "Pending", tone: "text-text-muted" };
+  }
+}
 
 const TEXT_TONE: Record<Tone, string> = {
   ok: "text-ok-fg",
@@ -79,13 +97,18 @@ export function ChallengeList({
                       {(c.followup_task_ids ?? []).length > 0 ? (
                         <div>
                           <p className="label mb-1">Follow-up queries</p>
-                          <ul className="text-base">
+                          <ul className="flex flex-col gap-1.5 text-base">
                             {(c.followup_task_ids ?? []).map((id) => {
                               const t = taskById.get(id);
+                              const s = taskStatusView(t?.status);
                               return (
-                                <li key={id} className="flex gap-2">
-                                  <span className="text-text-muted">-</span> 
-                                  <span>{t ? t.query_text : id} {t ? <Badge>{t.status ?? "pending"}</Badge> : null}</span>
+                                <li key={id} className="flex items-start justify-between gap-3">
+                                  <span className="min-w-0">{t ? t.query_text : id}</span>
+                                  {t ? (
+                                    <span className={`flex shrink-0 items-center gap-1 text-sm font-semibold ${s.tone}`}>
+                                      <Icon name={s.icon} size={14} aria-hidden /> {s.word}
+                                    </span>
+                                  ) : null}
                                 </li>
                               );
                             })}

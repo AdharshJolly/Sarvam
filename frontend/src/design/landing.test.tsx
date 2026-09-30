@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Landing } from "../components/Landing";
+import { taskStatusView } from "../components/ChallengeList";
 import { RunForm } from "../components/RunForm";
 import { RunProgress, phaseStatus } from "../components/RunProgress";
 import { SessionProvider } from "../state/useRunSession";
@@ -88,5 +89,17 @@ describe("phaseStatus", () => {
   test("splits phases around the current one", () => {
     expect([0, 1, 2].map((i) => phaseStatus(i, 1, false))).toEqual(["done", "active", "pending"]);
     expect(phaseStatus(2, 1, true)).toBe("done");
+  });
+});
+
+describe("follow-up query status", () => {
+  test("known statuses have an icon and a word", () => {
+    expect(taskStatusView("done")).toMatchObject({ icon: "Check", word: "Done" });
+    expect(taskStatusView("blocked")).toMatchObject({ icon: "XOctagon", word: "Blocked" });
+    expect(taskStatusView(undefined).word).toBe("Pending");
+  });
+
+  test("an unknown status is shown as given, not hidden", () => {
+    expect(taskStatusView("waiting").word).toBe("waiting");
   });
 });

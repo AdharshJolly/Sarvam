@@ -25,12 +25,14 @@ function valueText(c: Claim | undefined): string {
   return `${c.value_num.toLocaleString()}${unit}${c.period ? ` / ${c.period}` : ""}`;
 }
 
-function Side({ claimId, claim }: { claimId: string; claim: Claim | undefined }) {
+export function Side({ side, claimId, claim }: { side: "A" | "B"; claimId: string; claim: Claim | undefined }) {
   const { runId } = useSession();
   const { load } = useClaimEvidence(runId, claimId);
   return (
     <div className="rounded-lg p-3 bg-surface-2">
-      <p className="label mb-1">Claim {claimId}</p>
+      <p className="label mb-1">
+        Side {side} <span className="mono normal-case">{claimId}</span>
+      </p>
       <p className="mono text-2xl font-bold leading-tight">
         {valueText(claim)}
       </p>
@@ -86,15 +88,12 @@ export function ConflictList({
               <Badge mono>{c.id}</Badge>
             </div>
             <div className="grid items-center gap-2 md:grid-cols-[1fr_auto_1fr]">
-              <Side claimId={c.claim_a} claim={claims.get(c.claim_a)} />
+              <Side side="A" claimId={c.claim_a} claim={claims.get(c.claim_a)} />
               <div className="text-center">
-                <p className="label">vs</p>
-                <p className="mono font-bold">{c.delta_pct.toFixed(1)}%</p>
-                <p className="text-sm text-text-muted">
-                  apart
-                </p>
+                <p className="label">differ by</p>
+                <p className="mono text-xl font-bold">{c.delta_pct.toFixed(1)}%</p>
               </div>
-              <Side claimId={c.claim_b} claim={claims.get(c.claim_b)} />
+              <Side side="B" claimId={c.claim_b} claim={claims.get(c.claim_b)} />
             </div>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <div>
