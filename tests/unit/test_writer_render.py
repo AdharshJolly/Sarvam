@@ -16,7 +16,7 @@ from backend.synth.writer import (
 )
 from contracts.config import Settings
 from contracts.llm import ReportDraft, ReportFindingDraft, ReportSectionDraft
-from contracts.models import Budget, BudgetUsage, FailureType, Mode, Plan
+from contracts.models import Budget, BudgetUsage, FailureType, Mode, Plan, Verdict
 from tests.support.data import plan_dict
 from tests.support.fakes import FakeLLM
 
@@ -67,6 +67,7 @@ class Env:
             quote="The monthly price of the basic plan is Rs. 1,299",
             passage_id=self.passage.id,
         )
+        repo.record_verdict(self.conn, self.claim.id, Verdict.SUPPORTS, "states the price")
         self.run = repo.get_run(self.conn, "R1")
 
     def gateway(self, llm):
@@ -91,19 +92,35 @@ def draft_with(*findings, dim="D1"):
     )
 
 
-def test_only_pending_quote_verified_claims_are_eligible(tmp_path):
+def test_only_judged_quote_verified_claims_are_eligible(tmp_path):
     env = Env(tmp_path)
-    assert eligible_statuses() == {"pending"}
-    repo.insert_claim(
-        env.conn,
-        "R1",
-        slot_id="D1S1",
-        text="unverified",
-        quote="The monthly price of the basic plan",
-        passage_id=env.passage.id,
-        quote_verified=False,
-    )
-    assert [c.id for c in eligible_claims(env.conn, "R1")] == [env.claim.id]
+    assert eligible_statuses() == {"supported", "partial", "contested"}
+
+    def add(text, **kw):
+        return repo.insert_claim(
+            env.conn,
+            "R1",
+            slot_id="D1S1",
+            text=text,
+            quote="The monthly price of the basic plan",
+            passage_id=env.passage.id,
+            **kw,
+        )
+
+    add("quote not proven", quote_verified=False)
+    add("never judged")  # pending: no verdict yet, so not evidence (FR-18)
+    partial = add("hedged")
+    repo.record_verdict(env.conn, partial.id, Verdict.PARTIAL)
+    dropped = add("irrelevant")
+    repo.record_verdict(env.conn, dropped.id, Verdict.IRRELEVANT)
+    contested = add("in an open conflict")
+    repo.record_verdict(env.conn, contested.id, Verdict.SUPPORTS)
+    repo.set_claim_statuses(env.conn, {contested.id: "contested"})
+    assert [c.id for c in eligible_claims(env.conn, "R1")] == [
+        env.claim.id,
+        partial.id,
+        contested.id,
+    ]
 
 
 def test_clean_draft_drops_uncited_unknown_empty_and_unknown_dimension(tmp_path):

@@ -81,10 +81,30 @@ def writer(messages):
     )
 
 
+def verifier(messages):
+    """A judge that finds every claim supported by its passage."""
+    head = json.loads(messages[1]["content"].split("\n\n<source")[0])
+    verdicts = [
+        {
+            "claim_id": p["claim_id"],
+            "passage_id": p["passage_id"],
+            "verdict": "supports",
+            "rationale": "The passage states the claim.",
+        }
+        for p in head["pairs"]
+    ]
+    return json.dumps({"verdicts": verdicts})
+
+
 def scenario_deps(*, hits=None, fetch=None, llm_script=None, sleep=None) -> RunnerDeps:
     hit_list = hits or [SearchHit(url=u, title=u, snippet="s") for u in URLS]
     pages = fetch or {u: html_result(u, ARTICLE) for u in URLS}
-    script = {"planner.v1": plan_dict(4), "extractor.v1": extractor, "writer.v1": writer}
+    script = {
+        "planner.v1": plan_dict(4),
+        "extractor.v1": extractor,
+        "verifier.v1": verifier,
+        "writer.v1": writer,
+    }
     script.update(llm_script or {})
     return RunnerDeps(
         search=FakeSearch(default=hit_list),

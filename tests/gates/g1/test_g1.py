@@ -40,7 +40,16 @@ def test_g1_end_to_end_pipeline_with_resolving_citations(tmp_path):
         types = [e["type"] for e in events]
         assert types[:3] == ["run.started", "phase.entered", "plan.created"]
         phases = [e["payload"]["phase"] for e in events if e["type"] == "phase.entered"]
-        assert phases == ["PLAN", "DISCOVER", "ACQUIRE", "EXTRACT", "CLAIMS", "SYNTHESIZE"]
+        assert phases == [
+            "PLAN",
+            "DISCOVER",
+            "ACQUIRE",
+            "EXTRACT",
+            "CLAIMS",
+            "VERIFY",
+            "ANALYZE",
+            "SYNTHESIZE",
+        ]
         order = [
             "plan.created",
             "task.started",
