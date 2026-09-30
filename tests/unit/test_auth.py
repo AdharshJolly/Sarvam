@@ -3,7 +3,6 @@
 from fastapi.testclient import TestClient
 
 from backend.app import create_app
-from backend.store.db import init_db
 from contracts.config import Settings
 
 
@@ -66,7 +65,10 @@ def test_auth_registration_and_login(tmp_path):
         # 7. Create a run with authenticated user
         run_resp = client.post(
             "/api/runs",
-            json={"question": "What is the impact of HBM3e on semiconductor packaging?", "mode": "LIVE"},
+            json={
+                "question": "What is the impact of HBM3e on semiconductor packaging?",
+                "mode": "LIVE",
+            },
             headers={"Authorization": f"Bearer {new_token}"},
         )
         assert run_resp.status_code == 201
@@ -80,9 +82,13 @@ def test_auth_registration_and_login(tmp_path):
         assert run_data["id"] in run_ids
 
         # 9. Logout invalidates token
-        logout_resp = client.post("/api/auth/logout", headers={"Authorization": f"Bearer {new_token}"})
+        logout_resp = client.post(
+            "/api/auth/logout", headers={"Authorization": f"Bearer {new_token}"}
+        )
         assert logout_resp.status_code == 200
-        post_logout_me = client.get("/api/auth/me", headers={"Authorization": f"Bearer {new_token}"})
+        post_logout_me = client.get(
+            "/api/auth/me", headers={"Authorization": f"Bearer {new_token}"}
+        )
         assert post_logout_me.status_code == 401
 
         # 10. Login again and update profile details
@@ -132,4 +138,3 @@ def test_auth_registration_and_login(tmp_path):
             json={"email": "researcher@sarvam.ai", "password": "newpassword456"},
         )
         assert post_del_login.status_code == 401
-

@@ -497,7 +497,6 @@ class UserUpdate(Contract):
     password: str | None = None
 
 
-
 class UserPublic(Contract):
     id: str
     email: str
@@ -509,4 +508,3 @@ class UserPublic(Contract):
 class AuthResponse(Contract):
     token: str
     user: UserPublic
-

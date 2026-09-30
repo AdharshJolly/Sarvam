@@ -32,9 +32,7 @@ def _hash_token(token: str) -> str:
 
 
 def _row_to_user(row: sqlite3.Row) -> UserPublic:
-    last_login = (
-        datetime.fromisoformat(row["last_login_at"]) if row["last_login_at"] else None
-    )
+    last_login = datetime.fromisoformat(row["last_login_at"]) if row["last_login_at"] else None
     return UserPublic(
         id=row["id"],
         email=row["email"],
@@ -74,7 +72,8 @@ def register_user(
     now = datetime.now(UTC).isoformat()
 
     conn.execute(
-        "INSERT INTO users (id, email, display_name, password_hash, salt, created_at, last_login_at) "
+        "INSERT INTO users "
+        "(id, email, display_name, password_hash, salt, created_at, last_login_at) "
         "VALUES (?, ?, ?, ?, ?, ?, ?)",
         (user_id, clean_email, clean_name, password_hash, salt, now, now),
     )
@@ -98,7 +97,7 @@ def login_user(
     email: str,
     password: str,
 ) -> tuple[UserPublic, str]:
-    """Validate credentials, issue a new session token, update last_login_at, and return (UserPublic, token)."""
+    """Validate credentials, issue a session token, update last_login_at; return (user, token)."""
     clean_email = email.strip().lower()
     row = conn.execute("SELECT * FROM users WHERE email = ?", (clean_email,)).fetchone()
     if not row:
@@ -201,9 +200,8 @@ def update_user(
 
 
 def delete_user_account(conn: sqlite3.Connection, user_id: str) -> None:
-    """Permanently delete user account and sessions, setting past run user_ids to NULL for anonymization."""
+    """Delete the account and its sessions; past runs keep their data with user_id set to NULL."""
     conn.execute("UPDATE runs SET user_id = NULL WHERE user_id = ?", (user_id,))
     conn.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,))
     conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
     conn.commit()
-

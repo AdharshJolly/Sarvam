@@ -44,7 +44,6 @@ from contracts.models import (
     UserLogin,
     UserPublic,
     UserUpdate,
-
 )
 
 Runner = Callable[[str, Settings, RunHandle], Awaitable[None]]
@@ -209,7 +208,6 @@ def create_app(settings: Settings | None = None, *, runner: Runner | None = None
         auth.delete_user_account(request.app.state.db, user.id)
         return {"ok": True}
 
-
     # ------------------------------------------------------------ run routes
 
     @api.get("/runs")
@@ -218,7 +216,8 @@ def create_app(settings: Settings | None = None, *, runner: Runner | None = None
         user = get_current_user(request)
         if user:
             rows = conn.execute(
-                "SELECT * FROM runs WHERE user_id = ? OR user_id IS NULL ORDER BY started_at DESC LIMIT 50",
+                "SELECT * FROM runs WHERE user_id = ? OR user_id IS NULL "
+                "ORDER BY started_at DESC LIMIT 50",
                 (user.id,),
             ).fetchall()
         else:
@@ -234,7 +233,7 @@ def create_app(settings: Settings | None = None, *, runner: Runner | None = None
             budget = Budget(**{**settings.budget.model_dump(), **(body.budget or {})})
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=f"invalid budget override: {exc}") from exc
-        
+
         current_user = get_current_user(request)
         run = Run(
             id=f"R{secrets.token_hex(4)}",
@@ -248,7 +247,8 @@ def create_app(settings: Settings | None = None, *, runner: Runner | None = None
         conn = request.app.state.db
         try:
             conn.execute(
-                "INSERT INTO runs (id, user_id, question, scope_json, mode, budget_json, status, started_at)"
+                "INSERT INTO runs "
+                "(id, user_id, question, scope_json, mode, budget_json, status, started_at)"
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     run.id,
