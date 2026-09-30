@@ -1,19 +1,13 @@
-import { useState, useEffect } from "react";
-import { Theme, getTheme, setTheme } from "../../lib/theme";
+import { useState } from "react";
+import { THEMES, type Theme, getTheme, setTheme } from "../../lib/theme";
 import { Icon } from "../ui/Icon";
 import { Button } from "../ui/Button";
 
-const ORDER: Theme[] = ["system", "light", "dark"];
-
 export function ThemeToggle() {
-  const [themeState, setThemeState] = useState<Theme>("system");
-
-  useEffect(() => {
-    setThemeState(getTheme());
-  }, []);
+  const [themeState, setThemeState] = useState<Theme>(getTheme);
 
   const next = () => {
-    const n = ORDER[(ORDER.indexOf(themeState) + 1) % ORDER.length] ?? "system";
+    const n = THEMES[(THEMES.indexOf(themeState) + 1) % THEMES.length] ?? "system";
     setTheme(n);
     setThemeState(n);
   };
