@@ -721,7 +721,7 @@ run_count: RunCount
 cost_usd: CostUsd5
 }
 /**
- * PATCH /admin/users/{id}. Only fields present in the body change (`quota_usd: null` clears).
+ * PATCH /admin/users/{id}. Only fields present change; `quota_usd: null` clears the quota.
  * 
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "AdminUserUpdate".

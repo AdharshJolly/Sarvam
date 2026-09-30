@@ -984,7 +984,7 @@
     },
     "AdminUserUpdate": {
       "additionalProperties": false,
-      "description": "PATCH /admin/users/{id}. Only fields present in the body change (`quota_usd: null` clears).",
+      "description": "PATCH /admin/users/{id}. Only fields present change; `quota_usd: null` clears the quota.",
       "properties": {
         "role": {
           "anyOf": [

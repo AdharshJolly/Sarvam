@@ -80,7 +80,7 @@ class Settings(BaseModel):
     api_port: int = 8000
     api_prefix: str = "/api"
     cors_origins: tuple[str, ...] = ("http://localhost:5173",)
-    admin_emails: tuple[str, ...] = ()  # B-32: emails promoted to role=admin at register/login
+    admin_emails: tuple[str, ...] = ()  # B-36: emails promoted to role=admin at register/login
 
     db_path: Path = Path("data/sarvam.db")
     artifact_dir: Path = Path("data/artifacts")

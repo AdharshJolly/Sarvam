@@ -14,7 +14,7 @@ Implements SSOT section 17. Status column is honest: only rows marked "Implement
 | Overstated output | Certainty labels, state banner, labelled system inference | `synth/` | Planned (T15) |
 
 Typed failures (`FailureType` in `contracts/models.py`) exist so that no failure is silent (NFR-04).
-Accounts exist (B-32): PBKDF2-SHA256 passwords, opaque bearer sessions stored as SHA-256 hashes with a 7-day expiry. `users.role` is `user` or `admin`; admins are promoted only through `SARVAM_ADMIN_EMAILS`, and every `/api/admin/*` route is gated server-side by `require_admin`, admin mutations are recorded in the append-only `admin_actions` table, and disabled accounts lose their sessions immediately (the frontend guard is only a convenience). The API is intended for local use only and CORS is limited to the dev origin.
+Accounts exist (B-36): PBKDF2-SHA256 passwords, opaque bearer sessions stored as SHA-256 hashes with a 7-day expiry. `users.role` is `user` or `admin`; admins are promoted only through `SARVAM_ADMIN_EMAILS`, and every `/api/admin/*` route is gated server-side by `require_admin`, admin mutations are recorded in the append-only `admin_actions` table, and disabled accounts lose their sessions immediately (the frontend guard is only a convenience). The API is intended for local use only and CORS is limited to the dev origin.
 
 ## Known residual risks
 

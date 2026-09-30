@@ -31,7 +31,7 @@ def connect(db_path: str | Path) -> sqlite3.Connection:
     return conn
 
 
-# (table, column, DDL) for columns added after schema v1; applied to older databases (B-32, B-33).
+# (table, column, DDL) for columns added after schema v1; applied to older databases (B-36, B-37).
 _LATER_COLUMNS = (
     (
         "users",

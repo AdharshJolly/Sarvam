@@ -205,7 +205,7 @@ CREATE INDEX IF NOT EXISTS idx_coverage_round ON coverage (run_id, round);
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions (user_id);
 CREATE INDEX IF NOT EXISTS idx_runs_user ON runs (user_id);
 
--- Admin portal (B-32, B-33). Default budget overrides live here as key 'default_budget'.
+-- Admin portal (B-36, B-37). Default budget overrides live here as key 'default_budget'.
 CREATE TABLE IF NOT EXISTS settings (
     key        TEXT PRIMARY KEY,
     value_json TEXT NOT NULL,
