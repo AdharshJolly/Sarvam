@@ -37,21 +37,12 @@ def _provider_text(settings: Settings, run_id: str, source: Source) -> str | Non
     return text if len(text.split()) >= PROVIDER_TEXT_MIN_WORDS else None
 
 
-async def _fetch_with_one_timeout_retry(
-    gateway: ToolGateway, url: str
-) -> GatewayResult[FetchResult]:
+async def _fetch(gateway: ToolGateway, url: str) -> GatewayResult[FetchResult] | Exception:
+    """One fetch; a typed failure is returned (not raised) so the caller decides in source order."""
     try:
         return await gateway.fetch(url)
-    except BudgetExceeded:
-        raise
-    except GatewayError as exc:
-        if exc.message == "timeout":
-            try:
-                return await gateway.fetch(url)  # the single permitted retry
-            except BudgetExceeded:
-                # No budget left for the retry: give up on this source only, never the run.
-                raise exc from None
-        raise
+    except GatewayError as exc:  # includes BudgetExceeded
+        return exc
 
 
 async def run_acquire(
@@ -124,14 +115,13 @@ async def run_acquire(
         store_text(source, text, None, "provider_text_fallback", metrics)
         return True
 
-    async def one(source: Source) -> None:
+    def settle(source: Source, result: GatewayResult[FetchResult] | Exception) -> None:
         nonlocal budget_error
-        try:
-            result = await _fetch_with_one_timeout_retry(gateway, source.url)
-        except BudgetExceeded as exc:
-            budget_error = budget_error or exc
+        if isinstance(result, BudgetExceeded):
+            budget_error = budget_error or result
             return
-        except GatewayError as exc:
+        if isinstance(result, GatewayError):
+            exc = result
             if exc.failure is FailureType.SOURCE_EMPTY and use_provider_text(source, None):
                 return
             why = exc.message or exc.failure.value
@@ -150,7 +140,25 @@ async def run_acquire(
         elif not use_provider_text(source, metrics):
             mark_failed(source, FailureType.SOURCE_EMPTY, "empty_extraction")
 
-    await asyncio.gather(*(one(s) for s in repo.list_sources(conn, run_id, status="found")))
+    # Fetch budget is spent in a fixed order: every source is fetched once (in source order), and
+    # only then are timeouts retried (in source order) with what is left. Concurrency changes how
+    # fast this happens, never which requests are made, so a replay reproduces a live run (FR-26).
+    # Results are stored and emitted in source order for the same reason.
+    sources = repo.list_sources(conn, run_id, status="found")
+    outcomes = list(await asyncio.gather(*(_fetch(gateway, s.url) for s in sources)))
+    retry = [
+        i
+        for i, r in enumerate(outcomes)
+        if isinstance(r, GatewayError)
+        and not isinstance(r, BudgetExceeded)
+        and r.message == "timeout"
+    ]
+    again = await asyncio.gather(*(_fetch(gateway, sources[i].url) for i in retry))
+    for i, result in zip(retry, again, strict=True):
+        # No budget left for the single permitted retry: give up on this source only, never the run.
+        outcomes[i] = outcomes[i] if isinstance(result, BudgetExceeded) else result
+    for source, result in zip(sources, outcomes, strict=True):
+        settle(source, result)
     if budget_error is not None:
         raise budget_error
     return fetched

@@ -205,8 +205,7 @@ async def run_claims(
     fatal: GatewayError | None = None
     seen = {(c.slot_id, c.passage_id, c.quote) for c in repo.list_claims(conn, run_id)}
 
-    async def one(source: Source, slot: EvidenceSlot, top: list[Passage]) -> None:
-        nonlocal stored, failures, fatal
+    async def call(slot: EvidenceSlot, top: list[Passage]):
         payload = {
             "slot": {
                 "id": slot.id,
@@ -218,17 +217,21 @@ async def run_claims(
             "passage_ids": [p.id for p in top],
             "untrusted": [{"id": p.id, "text": p.text} for p in top],
         }
-        try:
-            res = await gateway.llm(LLMRole.EXTRACTOR, "extractor.v1", ClaimList, payload)
-        except BudgetExceeded as exc:
-            fatal = fatal or exc
+        return await gateway.llm(LLMRole.EXTRACTOR, "extractor.v1", ClaimList, payload)
+
+    def persist(slot: EvidenceSlot, top: list[Passage], res) -> None:
+        nonlocal stored, failures, fatal
+        if isinstance(res, BudgetExceeded):
+            fatal = fatal or res
             return
-        except GatewayError as exc:
-            if exc.failure in (FailureType.STEP_FAILED, FailureType.RATE_LIMITED):
+        if isinstance(res, GatewayError):
+            if res.failure in (FailureType.STEP_FAILED, FailureType.RATE_LIMITED):
                 failures += 1
                 return
-            fatal = fatal or exc
+            fatal = fatal or res
             return
+        if isinstance(res, BaseException):
+            raise res
         by_id = {p.id: p for p in top}
         metrics: CallMetrics | None = res.metrics
         for draft in res.value.claims[:MAX_CLAIMS_PER_CALL]:
@@ -275,7 +278,13 @@ async def run_claims(
             metrics = None
             stored += 1
 
-    await asyncio.gather(*(one(*job) for job in jobs))
+    # LLM calls run concurrently; claims are stored and emitted in job order afterwards, so claim
+    # ids and duplicate handling never depend on completion order (replay fidelity, FR-26).
+    results = await asyncio.gather(
+        *(call(slot, top) for _, slot, top in jobs), return_exceptions=True
+    )
+    for (_, slot, top), res in zip(jobs, results, strict=True):
+        persist(slot, top, res)
     if failures >= STEP_FAILURE_WARNING_AT:
         em.emit(
             EventType.BUDGET_WARNING,
