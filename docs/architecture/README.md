@@ -70,23 +70,21 @@ generated from the Pydantic models. It never defines its own domain shapes.
 
 ## Status
 
-M0 backend (tasks T02-T07, gate G1) and the G2 intelligence layer (T08-T12, T09) are implemented:
-contracts incl. the shared addendum, SQLite store and helpers, ToolGateway (budgets, SSRF guard, fetch,
-structured LLM, record/replay), planner, discover, acquire, extract, claims with the quote guard,
-the independent verifier (`intel/verify.py`), origin clustering (`intel/origins.py`), numeric
-normalisation and conflicts (`intel/numeric.py`, `intel/conflicts.py`), coverage, rollups and gap
-tasks (`intel/coverage.py`, `intel/gaps.py`), the ANALYZE orchestration that persists them and emits
-events (`intel/analyze.py`), writer v0, deterministic renderer, the linear `controller.run_m0`
-(PLAN, DISCOVER, ACQUIRE, EXTRACT, CLAIMS, VERIFY, ANALYZE, SYNTHESIZE) and the full API including SSE.
-The fixture corpus (`fixtures/`, 14 documents, expected JSON) and the gate suites G1 and G2 back it.
+M0, the G2 intelligence layer and the G3 lifecycle are implemented offline (fixture-driven, fake
+providers): contracts incl. the shared addendum, SQLite store, ToolGateway (budgets, SSRF guard,
+fetch, structured LLM, record/replay), planner, discover, acquire, extract, claims with the quote
+guard, the independent verifier, origin clustering, numeric conflicts, coverage and gap tasks, the
+challenge loop with rule-based outcomes (`intel/challenge.py`), the stop policy as a pure function
+(`intel/stop.py`), the round-based controller `controller.run_research` (round 0, then follow-up
+rounds on the delta only, wrap-up, stop decision, synthesis), the report verifier with certainty
+labels (`synth/report_verify.py`), the deterministic renderer and the full API including SSE.
+The frontend renders every panel from REST and SSE. Task-level status: [../STATUS.md](../STATUS.md).
 
-The frontend (T16-T21 plus a UI/UX overhaul) renders all panels from REST and SSE. Task-level status:
-[../STATUS.md](../STATUS.md).
+Not yet done: a live end-to-end run of the round loop against real providers (search budget and cost
+are unmeasured), failure states end to end (T24), recorded canonical runs and offline replay (T25),
+the audit sheet (T23), README run command (T26), additions.
 
-Not started: the challenge loop and outcome rule (T13), the full controller with rounds and the stop
-policy (T14), the report verifier (T15) and everything after (T22 harness, T23-T26, additions).
-
-Run execution: `POST /api/runs` creates the run and, outside the test env, starts `controller.run_m0`
+Run execution: `POST /api/runs` creates the run and, outside the test env, starts `controller.run_research`
 as an asyncio task on its own DB connection. SSE (`GET /runs/{id}/events`) polls the events table on
 a separate connection and sends `id:` + `data:` frames only. Wrap-up (stop request, soft time, budget
 limit, provider outage) skips the remaining stages, scores coverage from what is stored (no LLM

@@ -15,7 +15,6 @@ from contracts.models import FailureType, Scope
 from tests.support.corpus import CORPUS_DIR, expected, manifest
 from tests.support.fakes import FakeFetcher, FakeLLM, FakeSearch, html_result
 from tests.support.m0 import challenger as m0_challenger
-from tests.support.m0 import writer as m0_writer
 
 
 def _head(messages: list[dict[str, str]]) -> dict:
@@ -75,6 +74,28 @@ def verifier(messages: list[dict[str, str]]) -> str:
             }
         )
     return json.dumps({"verdicts": out})
+
+
+def writer(messages: list[dict[str, str]]) -> str:
+    """A faithful writer: one finding per claim it was given, worded exactly like the claim, plus
+    one sentence that cites nothing (the verifier must remove it)."""
+    head = json.loads(messages[1]["content"])
+    by_dim: dict[str, list[dict]] = {}
+    for c in head["claims"]:
+        by_dim.setdefault(c["dimension_id"], []).append(c)
+    sections = [
+        {
+            "dimension_id": dim,
+            "heading": dim,
+            "findings": [{"text": c["text"], "claim_ids": [c["id"]]} for c in cs],
+        }
+        for dim, cs in by_dim.items()
+    ]
+    if sections:
+        sections[0]["findings"].append({"text": "Everyone agrees on this.", "claim_ids": []})
+    return json.dumps(
+        {"decision_summary": "Pricing and permits are documented.", "sections": sections}
+    )
 
 
 def explainer(messages: list[dict[str, str]]) -> str:
@@ -160,7 +181,7 @@ def corpus_deps(
         "extractor.v1": extractor,
         "verifier.v1": verifier,
         "explainer.v1": explainer,
-        "writer.v1": m0_writer,
+        "writer.v1": writer,
         "challenger.v1": m0_challenger,
     }
     script.update(llm_script or {})

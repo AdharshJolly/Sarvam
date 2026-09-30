@@ -6,7 +6,7 @@
 
 *Research that knows when it isn't done.*
 
-![Status](https://img.shields.io/badge/status-M1%20in%20progress-yellow)
+![Status](https://img.shields.io/badge/status-G3%20offline-yellow)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
@@ -162,7 +162,7 @@ Contracts first. Walking skeleton before intelligence. Fixtures before prompts. 
 
 ## Project status
 
-**M0 and the G2 intelligence layer are built; the full lifecycle is being completed.** Done: contracts, SQLite store, ToolGateway (budgets, SSRF guard, record/replay), planner, discover, acquire, extract, claims with the quote guard, writer and renderer, independent verifier, origin clustering, numeric conflicts, coverage and gap tasks, the fixture corpus, the live frontend (matrix, origins, drawer, conflicts, challenge, stop card, report) and gates G0-G2. In progress: the challenge loop, the round-based controller with the stop policy and the report verifier (gate G3). Task-by-task status and the plan are in [docs/STATUS.md](docs/STATUS.md).
+**Gates G0-G3 pass offline; the hardening phase is next.** Done: contracts, SQLite store, ToolGateway (budgets, SSRF guard, record/replay), planner, discover, acquire, extract, claims with the quote guard, independent verifier, origin clustering, numeric conflicts, coverage and gap tasks, the challenge loop, the round-based controller with the deterministic stop policy, the report verifier with certainty labels, the fixture corpus and the live frontend. Not yet done: a measured live run, failure states end to end, recorded canonical runs with offline replay, the audit sheet and the one-command run. Task-by-task status and the plan are in [docs/STATUS.md](docs/STATUS.md).
 
 ## Documentation map
 

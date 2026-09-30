@@ -7,6 +7,7 @@ from backend.gateway.core import ToolGateway
 from backend.store import repo
 from backend.store.db import init_db
 from backend.synth.render import CitationError, render_markdown, verify_citations
+from backend.synth.report_verify import verify_report
 from backend.synth.writer import (
     NO_CLAIMS_SUMMARY,
     clean_draft,
@@ -16,7 +17,17 @@ from backend.synth.writer import (
 )
 from contracts.config import Settings
 from contracts.llm import ReportDraft, ReportFindingDraft, ReportSectionDraft
-from contracts.models import Budget, BudgetUsage, FailureType, Mode, Plan, Verdict
+from contracts.models import (
+    Budget,
+    BudgetUsage,
+    FailureType,
+    FinalState,
+    Mode,
+    Plan,
+    StopDecision,
+    TerminationReason,
+    Verdict,
+)
 from tests.support.data import plan_dict
 from tests.support.fakes import FakeLLM
 
@@ -80,8 +91,20 @@ class Env:
 
     def render(self, draft, claims=None, **kw):
         claims = eligible_claims(self.conn, "R1") if claims is None else claims
+        decision = kw.pop("decision", None) or StopDecision(
+            state=FinalState.SUFFICIENT_WITH_CAVEATS,
+            termination_reason=TerminationReason.MAX_ROUNDS,
+        )
+        verified = verify_report(draft, claims, repo.list_dimensions(self.conn, "R1"), {}, set())
         return render_markdown(
-            self.conn, self.run, draft, kw.pop("usage", BudgetUsage()), self.settings, claims, **kw
+            self.conn,
+            self.run,
+            verified,
+            kw.pop("usage", BudgetUsage()),
+            self.settings,
+            claims,
+            decision=decision,
+            **kw,
         )
 
 
@@ -182,12 +205,20 @@ def test_render_strips_typed_markers_escapes_tables_and_reports_unreported_cost(
     assert "https://a.example/x\\|y" in md  # pipe escaped inside the sources table
     assert "| S1 | a.example | news | 2 | 2026-02-03 |" in md
     assert "Cost: not reported by provider" in md
-    assert "- Geography: Bengaluru" in md and "Assurance state: not yet computed (M0)" in md
+    assert (
+        "- Geography: Bengaluru" in md
+        and "**Assurance state: SUFFICIENT_WITH_CAVEATS** (max_rounds)" in md
+    )
     assert "Searches: 3/24" in md and "Mode: LIVE" in md
     assert "### Demand" in md and "No verified claims were found for this dimension." in md
     costed = env.render(draft, usage=BudgetUsage(cost_usd=0.1234))
     assert "Cost: $0.1234" in costed
-    early = env.render(draft, termination_reason="budget")
+    early = env.render(
+        draft,
+        decision=StopDecision(
+            state=FinalState.INSUFFICIENT, termination_reason=TerminationReason.BUDGET
+        ),
+    )
     assert "Run ended early: budget" in early
 
 

@@ -46,6 +46,7 @@ from backend.store import repo
 from backend.store.db import connect
 from backend.store.emit import Emitter
 from backend.synth.render import render_markdown, verify_citations
+from backend.synth.report_verify import allowed_numbers, verify_report
 from backend.synth.writer import eligible_claims, write_draft
 from contracts.config import Settings
 from contracts.events import (
@@ -159,18 +160,32 @@ async def synthesize(
     )
     claims = eligible_claims(conn, run.id)
     result = await write_draft(gateway, conn, run, claims, wrap_up_note=note)
+    verified = verify_report(
+        result.draft,
+        claims,
+        repo.list_dimensions(conn, run.id),
+        coverage_states(conn, run.id, latest_round(conn, run.id)),
+        allowed_numbers(run),
+    )
+    dropped = [*result.dropped, *verified.dropped]
     markdown = render_markdown(
         conn,
         run,
-        result.draft,
+        verified,
         gateway.usage(),
         settings,
         claims,
-        termination_reason=termination.value if termination else None,
+        decision=decision,
         degraded_reason=result.degraded_reason,
     )
     verify_citations(conn, run.id, markdown)  # raises CitationError rather than ship a bad cite
-    report = repo.insert_report(conn, run.id, markdown=markdown, dropped_sentences=result.dropped)
+    report = repo.insert_report(
+        conn,
+        run.id,
+        markdown=markdown,
+        dropped_sentences=dropped,
+        certainty_state=decision.state.value,
+    )
     em.emit(
         EventType.REPORT_DRAFT,
         ReportDraftPayload(version=report.version),
@@ -180,7 +195,7 @@ async def synthesize(
     em.emit(
         EventType.REPORT_VERIFIED,
         ReportVerifiedPayload(
-            version=report.version, dropped_count=len(result.dropped), certainty_state=None
+            version=report.version, dropped_count=len(dropped), certainty_state=decision.state
         ),
         round=round,
     )

@@ -1,8 +1,8 @@
 """Deterministic Markdown renderer (SSOT 9.11, task T07).
 
 Citations are written `[C41]` from stored claim ids only. `verify_citations` proves that every
-cited id resolves claim -> passage -> a passage that contains the quote (NFR-05). No certainty chips
-at M0 (they arrive with T15).
+cited id resolves claim -> passage -> a passage that contains the quote (NFR-05). Certainty chips
+and the assurance state come from the report verifier (T15) and the stop decision (T14).
 """
 
 from __future__ import annotations
@@ -10,14 +10,14 @@ from __future__ import annotations
 import re
 import sqlite3
 
+from backend.intel.stop import HARD_LIMITS
 from backend.pipeline.claims import quote_in_passage
 from backend.store import repo
+from backend.synth.report_verify import VerifiedReport
 from contracts.config import Settings
-from contracts.llm import ReportDraft
-from contracts.models import BudgetUsage, Claim, Run
+from contracts.models import BudgetUsage, Claim, Run, StopDecision
 
 CITATION = re.compile(r"\[(C\d+)\]")
-ASSURANCE_LINE = "Assurance state: not yet computed (M0)"
 
 
 class CitationError(ValueError):
@@ -36,19 +36,26 @@ def _sentence(text: str) -> str:
 def render_markdown(
     conn: sqlite3.Connection,
     run: Run,
-    draft: ReportDraft,
+    report: VerifiedReport,
     usage: BudgetUsage,
     settings: Settings,
     claims: list[Claim],
     *,
-    termination_reason: str | None = None,
+    decision: StopDecision,
     degraded_reason: str | None = None,
 ) -> str:
     dims = {d.id: d for d in repo.list_dimensions(conn, run.id)}
+    slots = {s.id: s for s in repo.list_slots(conn, run.id)}
     by_id = {c.id: c for c in claims}
     lines: list[str] = [f"# {_sentence(run.question)}", "", "## Decision summary", ""]
-    lines += [_sentence(draft.decision_summary) or "No summary was produced.", ""]
-    lines += [ASSURANCE_LINE, ""]
+    lines += [_sentence(report.decision_summary) or "No summary was produced.", ""]
+    lines += [
+        f"**Assurance state: {decision.state.value}** ({decision.termination_reason.value})",
+        "",
+    ]
+    lines += [f"- {_sentence(c)}" for c in decision.caveats]
+    if decision.caveats:
+        lines.append("")
 
     lines += ["## Question and scope", "", f"- Question: {_sentence(run.question)}"]
     scope = {k: v for k, v in run.scope.model_dump().items() if v}
@@ -59,9 +66,29 @@ def render_markdown(
         lines.append("- No scope constraints were given.")
     lines.append("")
 
+    latest = max((c.round for c in repo.list_coverage(conn, run.id)), default=0)
+    cells = repo.list_coverage(conn, run.id, round=latest)
+    lines += ["## Coverage matrix", ""]
+    if cells:
+        lines += [
+            "| Dimension | Slot | State | Independent origins | Why |",
+            "| --- | --- | --- | --- | --- |",
+        ]
+        for cell in cells:
+            slot = slots.get(cell.slot_id)
+            dim = dims.get(slot.dimension_id) if slot else None
+            lines.append(
+                f"| {_cell(dim.name if dim else '')} | {_cell(slot.name if slot else cell.slot_id)}"
+                f"{' (critical)' if slot and slot.critical else ''} | {cell.state.value} | "
+                f"{cell.independent_origins} | {_cell(cell.reason)} |"
+            )
+    else:
+        lines.append("Coverage was not scored.")
+    lines.append("")
+
     lines += ["## Findings by dimension", ""]
     cited: list[str] = []
-    sections = {s.dimension_id: s for s in draft.sections}
+    sections = {s.dimension_id: s for s in report.sections}
     for dim_id, dim in dims.items():
         lines.append(f"### {_sentence(dim.name)}")
         section = sections.get(dim_id)
@@ -69,10 +96,51 @@ def render_markdown(
             lines += ["- No verified claims were found for this dimension.", ""]
             continue
         for finding in section.findings:
-            marks = " ".join(f"[{cid}]" for cid in finding.claim_ids if cid in by_id)
-            lines.append(f"- {_sentence(finding.text)} {marks}".rstrip())
-            cited += [cid for cid in finding.claim_ids if cid in by_id]
+            marks = " ".join(f"[{cid}]" for cid in finding.claim_ids)
+            lines.append(
+                f"- {_sentence(finding.text)} {marks} {{{{certainty:{finding.certainty.value}}}}}"
+            )
+            cited += list(finding.claim_ids)
         lines.append("")
+
+    conflicts = repo.list_conflicts(conn, run.id)
+    lines += ["## Conflicts and unresolved items", ""]
+    listed = False
+    for x in conflicts:
+        if x.claim_a not in by_id or x.claim_b not in by_id:
+            continue
+        listed = True
+        note = f" {_sentence(x.explanation)}" if x.explanation else ""
+        lines.append(
+            f"- {x.kind.value.replace('_', ' ').capitalize()} conflict ({x.status.value}, "
+            f"{x.delta_pct:.0%} apart) between [{x.claim_a}] and [{x.claim_b}].{note}"
+        )
+        cited += [x.claim_a, x.claim_b]
+    for cell in cells:
+        slot = slots.get(cell.slot_id)
+        if slot and slot.critical and cell.state.value != "GREEN":
+            listed = True
+            lines.append(
+                f"- {_sentence(slot.name)} is {cell.state.value}: {_sentence(cell.reason)}"
+            )
+    if not listed:
+        lines.append("- No open conflicts and no critical slot below GREEN.")
+    lines.append("")
+
+    lines += ["## What could change the conclusion", ""]
+    challenges = repo.list_challenges(conn, run.id)
+    if challenges:
+        for ch in challenges:
+            outcome = ch.outcome.value if ch.outcome else "not completed"
+            change = (
+                f" It would change the conclusion if: {_sentence(ch.would_change_if)}"
+                if ch.would_change_if
+                else ""
+            )
+            lines.append(f"- Attack ({outcome}): {_sentence(ch.attack)}.{change}")
+    else:
+        lines.append("- No challenge was completed, so this run did not test its own conclusion.")
+    lines.append("")
 
     lines += ["## Sources index", ""]
     source_ids: dict[str, None] = {}
@@ -100,21 +168,29 @@ def render_markdown(
 
     b = run.budget
     cost = f"${usage.cost_usd:.4f}" if usage.cost_usd > 0 else "not reported by provider"
+    rounds = max((c.round for c in repo.list_coverage(conn, run.id)), default=0)
     lines += [
         "## Method and run metadata",
         "",
         f"- Mode: {run.mode.value}",
-        "- Rounds completed: 0 follow-up rounds (M0: single pass, no challenge loop yet)",
+        f"- Rounds: initial pass plus {rounds} follow-up round(s); challenge rounds completed: "
+        f"{decision.challenge_rounds_completed}",
+        f"- Stop: {decision.state.value}, reason {decision.termination_reason.value}",
         f"- Searches: {usage.searches}/{b.max_searches}; fetches: {usage.fetches}/{b.max_fetches}; "
         f"LLM calls: {usage.llm_calls}/{b.max_llm_calls}",
         f"- Cost: {cost} (limit ${b.max_cost_usd:.2f}); elapsed: {usage.elapsed_seconds:.0f} s",
         f"- Models: fast {settings.llm_model_fast or 'n/a'}, "
         f"strong {settings.llm_model_strong or 'n/a'}",
     ]
-    if termination_reason:
-        lines.append(f"- Run ended early: {termination_reason} (wrap-up with the evidence in hand)")
+    if decision.termination_reason in HARD_LIMITS:
+        lines.append(
+            f"- Run ended early: {decision.termination_reason.value} "
+            "(wrap-up with the evidence in hand)"
+        )
     if degraded_reason:
         lines.append(f"- Narrative writer unavailable: {_sentence(degraded_reason)}")
+    if report.dropped:
+        lines.append(f"- Sentences removed by the report verifier: {len(report.dropped)}")
     lines.append("")
     return "\n".join(lines)
 

@@ -1,17 +1,17 @@
 # Sarvam build status and next plan
 
-Snapshot of 30 September 2026 (HEAD `35fcb54`, "G2: wire VERIFY and ANALYZE into the run"). Task IDs and gates are
-from SSOT section 14 and 13.3. The SSOT wins if this file disagrees; update this file whenever a task lands.
+Snapshot of 30 September 2026, after gate G3 (offline). Task IDs and gates are from SSOT sections 14 and
+13.3. The SSOT wins if this file disagrees; update this file whenever a task lands.
 
 ## Gate status
 
 | Gate | State | Evidence |
 | --- | --- | --- |
 | G0 | Done | `tests/gates/g0` (live cases need provider keys) |
-| G1 | Done | `tests/gates/g1/test_g1.py` |
+| G1 | Done | `tests/gates/g1/test_g1.py` (offline); `test_g1_live*.py` need keys |
 | G2 | Done | `tests/gates/g2/test_g2.py`, `tests/fixtures/*` |
-| **G3** | **Next** | Full lifecycle with a challenge round, stop state and verified report. `tests/gates/g3/` is empty. |
-| G4 | Not started | `tests/gates/g4/` is empty. |
+| G3 | Done, offline only | `tests/gates/g3/test_g3.py`: fake search, fetcher and LLM over the fixture corpus. Not yet run against real providers. |
+| G4 | Not started | `tests/gates/g4/` is empty |
 
 ## Task cards
 
@@ -22,86 +22,75 @@ from SSOT section 14 and 13.3. The SSOT wins if this file disagrees; update this
 | T03 planner | Done | `backend/pipeline/plan.py` |
 | T04 discover and qualify | Done | `backend/pipeline/discover.py` |
 | T05 acquire, extract, passages | Done | `backend/pipeline/acquire.py`, `extract.py` |
-| T06 claims and quote guard | Done | `backend/pipeline/claims.py` |
+| T06 claims and quote guard | Done | `backend/pipeline/claims.py` (delta-only per round, B-30) |
 | T07 writer v0 and renderer | Done | `backend/synth/writer.py`, `render.py` |
 | T08 fixture corpus | Done | `fixtures/`, `tests/fixtures/` |
 | T09 independent verifier | Done | `backend/intel/verify.py` |
 | T10 origin clustering | Done | `backend/intel/origins.py` |
 | T11 numeric and conflicts | Done | `backend/intel/numeric.py`, `conflicts.py` |
 | T12 coverage and gap tasks | Done | `backend/intel/coverage.py`, `gaps.py`, `analyze.py` |
-| **T13 challenge loop and outcome rule** | **Not started** | `backend/intel/challenge.py` is a 1-line stub; `challenger.v1.md` prompt exists |
-| **T14 controller rounds, wrap-up, stop policy** | **Not started** | `backend/intel/stop.py` is a 1-line stub; `controller.run_m0` is linear (B-08) |
-| **T15 report verifier and certainty labels** | **Not started** | `backend/synth/report_verify.py` is a 1-line stub |
-| T16-T21 frontend (shell, plan/sources, matrix, drawer, conflicts/challenge/stop, report) | Done | `frontend/src/`. The commit "T22: UI/UX overhaul" is a UI polish pass, not the SSOT T22 harness. |
-| T22 test harness (unit, fixture, gate suites under `make check`) | Partly | `make check`, `make fixtures`, `make gates` exist; G3 and G4 suites do not |
+| T13 challenge loop and outcome rule | Done | `backend/intel/challenge.py`, `prompts/challenger.v1.md`, `tests/unit/test_challenge.py` |
+| T14 controller rounds, wrap-up, stop policy | Done | `backend/controller.py` (`run_research`), `backend/intel/stop.py`, `tests/unit/test_stop.py` |
+| T15 report verifier and certainty labels | Done | `backend/synth/report_verify.py`, `render.py`, `tests/unit/test_report_verify.py` |
+| T16-T21 frontend (shell, plan/sources, matrix, drawer, conflicts/challenge/stop, report) | Done | `frontend/src/`. Built against mocks and REST/SSE contracts; not yet watched against a real multi-round run. The commit "T22: UI/UX overhaul" is a UI polish pass, not the SSOT T22 harness. |
+| T22 test harness (unit, fixture, gate suites under `make check`) | Partly | `make check`, `make fixtures`, `make gates` exist; `make gates` does not yet list G3 |
 | T23 golden questions and audit sheet | Partly | `fixtures/questions.yaml` exists; audit CSV template and sampler script do not |
-| T24 failure states end to end | Not started | Typed failures exist in the backend; UI coverage of all of SSOT 18 not verified |
+| T24 failure states end to end | Not started | Typed failures exist in the backend; UI coverage of all SSOT 18 states not verified |
 | T25 record 3 canonical runs, offline replay | Not started | Record/replay exists in the gateway (T02); no `make record` / `make replay`, `cache/recorded/` empty |
 | T26 README, one-command run, clean checkout | Not started | |
 
-## Why T13 to T15 are next
+## How a run works now
 
-The product claim is "research that knows when it isn't done". Today a run stops after one pass, `run.completed`
-carries `stop_state=None`, and no challenge or `stop.decided` event is ever emitted. The UI already has the Challenge
-panel and Stop card (T20) waiting on those events. Nothing in M1 or G3 is met until T13 to T15 land, and T24 and T25
-both depend on T14. The critical path is T13, T14, G3, then T15 (T15 can run in parallel with T13 once the
-`report.verified` event shape is agreed).
+```
+PLAN
+round 0:   DISCOVER > ACQUIRE > EXTRACT > CLAIMS > VERIFY > ANALYZE          (coverage round 0)
+loop:      stop policy says continue?
+             CHALLENGE (attacks + gap tasks, paced to the search budget)      round.started
+             DISCOVER > ACQUIRE > EXTRACT > CLAIMS > VERIFY                   delta only
+             resolve challenges by rule > ANALYZE                             (coverage round r)
+STOP_POLICY  final_decision(coverage, conflicts, challenges, reason)          stop.decided
+SYNTHESIZE   writer > report verifier > render > citation proof               report.draft, report.verified
+```
 
-## Plan
+A stop request, the soft time limit, a budget limit or a provider outage at any point takes the wrap-up
+path (coverage scored from stored evidence with no LLM call, then STOP_POLICY and SYNTHESIZE). Follow-up
+rounds end on: criteria met, zero marginal gain after a completed challenge, `MAX_FOLLOWUP_ROUNDS`, or a hard
+limit. Decisions B-27 to B-31 in `docs/decisions/README.md` record every choice the SSOT left open.
 
-Follow the SSOT task-card flow: tests first, fixtures before prompts, deterministic before LLM, one commit per task,
-`make check` green before each commit. Log any contract or schema change in `docs/decisions/README.md`.
+## What has been tested and what has not
 
-### T13 Challenge loop and outcome rule (`backend/intel/challenge.py`, est. 1.5 h)
+Tested (offline, deterministic): every unit above; the full lifecycle on the fixture corpus with two pages held
+back so a follow-up round changes the matrix and adds a conflict; wrap-up on a forced-low LLM budget and on a
+user stop; the stop decision recomputed from the stored tables equals the stored one; every report citation
+resolves to a stored passage containing its quote.
 
-1. Tests first on the fixture corpus: `ChallengeSet` output is capped at 3 attacks and 2 queries each, attacks target
-   the weakest slots or claims, and outcomes follow the rule (any `supports` verdict on new passages is weakened; at
-   least 3 relevant passages and none supporting is strengthened; otherwise unresolved). Use scripted LLM output from
-   `tests/support/fakes.py`.
-2. Challenger call (STRONG tier, `challenger.v1.md`, schema in `contracts/llm.py`) fed by coverage, top claims per slot,
-   open conflicts and origin statistics.
-3. Persist `challenges` rows, create follow-up tasks with `kind=challenge` via `repo`, emit `challenge.created`.
-4. Outcome function is pure code over verdicts produced by the existing verifier (attack hypothesis as the claim);
-   emit `challenge.outcome`.
-5. Done when attacks generate tasks and outcomes are assigned by rule on the fixtures.
+Not tested: any real provider (search, fetch, LLM) through the round loop; cost and latency of a multi-round run
+against NFR-01 and NFR-02; the frontend against a real multi-round event stream; the REPLAY path.
 
-### T14 Controller, rounds, wrap-up, stop policy (`backend/controller.py`, `backend/intel/stop.py`, est. 2 h)
+## Next flow
 
-1. `stop.py` first: a pure function of coverage, conflicts and challenge outcomes returning `StopDecision` per SSOT 9.10
-   (SUFFICIENT, SUFFICIENT_WITH_CAVEATS, INSUFFICIENT; marginal gain; hard limits win). Table-driven unit tests for every
-   row of the SSOT table, plus a test that recomputes the state for every stored run from its tables.
-2. Replace the linear `run_m0` with the round loop: round 0 (PLAN to ANALYZE), then CHALLENGE, then `round.started` and
-   states 2 to 7 on the delta only, repeated up to `MAX_FOLLOWUP_ROUNDS`; at least one challenge round is mandatory
-   unless a hard limit hits first. Confirm discover, acquire and claims skip already-processed sources and claims
-   (FR-16); fix that inside the task if they do not.
-3. Wrap-up path keeps working (budget, timeout, user stop, provider outage) and the stop card says the challenge was
-   not completed. Emit `stop.decided`, set `runs.stop_state` and `termination_reason`, and pass `stop_state` into
-   `run.completed`.
-4. Add the G3 gate in `tests/gates/g3/`: full lifecycle on the fixture scenario with at least one challenge round,
-   follow-up research, a stop state with reason, and the four visible moments present in `/state`. Resolve B-08
-   (replace `run_m0`) in the decisions log.
+1. **Measure a live run** (needs keys): run the canonical question, note searches, fetches, LLM calls, cost and
+   wall time per round. Round 0 uses 16 to 20 of 24 searches (B-12), so follow-up rounds get about 2 to 4 tasks;
+   decide whether to raise `MAX_SEARCHES` or cut round-0 tasks. Fix whatever the real corpus breaks (prompts,
+   thresholds) with fixtures first.
+2. **Watch the UI on a live multi-round run**: matrix round selector, challenge panel outcomes, stop card,
+   certainty chips, conflicts section. File UI fixes as bug fixes, not features.
+3. **T24 failure states end to end**: force each SSOT 18 failure in a test; check the event and the UI state.
+4. **T25 record and replay**: record three canonical runs into `cache/recorded/`, add `make record` and
+   `make replay`, prove offline replay gives the same event sequence with the network off (FR-25, FR-26, NFR-03,
+   NFR-07). Replay must show REPLAY, never LIVE.
+5. **T23 audit sheet**: CSV template and sampler script (20 sentences, stratified by dimension).
+6. **G4 suite**: three replayable runs, failure states visible, forced-low-budget test (partly covered by G2/G3),
+   M0 and M1 acceptance checklist (SSOT 16.5).
+7. **T26 README and run command** on a clean checkout. Freeze at hour 22; ranked additions (SSOT 15) only after
+   G4.
 
-### T15 Report verifier and certainty labels (`backend/synth/report_verify.py`, est. 1 h)
-
-1. Test on a planted draft: a sentence with no claim ID and a sentence with an altered number are both caught.
-2. Deterministic pass over the writer draft (FR-19); assign supported / contested / single-origin / assumed (FR-20,
-   SSOT 9.11); recommendations only under "System inference" with at least two claims.
-3. Emit `report.draft` and `report.verified`; render from the verified draft. The frontend report view (T21) already
-   shows certainty chips, so check whether the `ReportView` contract needs a change before touching it.
-
-### After G3
-
-1. T24 failure states end to end: force each SSOT 18 failure in a test and check the event and the UI state.
-2. T25 record three canonical runs into `cache/recorded/`, add `make record` and `make replay`, prove offline replay
-   with identical event sequences (FR-25, FR-26, NFR-03, NFR-07).
-3. T23 audit sheet: CSV template and sampler script (20 sentences, stratified by dimension).
-4. Forced-low-budget test and the G4 suite, then T26 README run command on a clean checkout. Freeze at hour 22; ranked
-   additions (SSOT 15) only after G4.
-
-## Risks to watch
+## Known limits and risks
 
 | Risk | Note |
 | --- | --- |
 | Free-tier LLM limits | Gemini 429 and 503 handling is in the gateway (B-19, B-20). Challenge rounds add LLM calls; check `MAX_LLM_CALLS=250` and cost against the 3 USD cap on a live run. |
-| Round 0 search budget | 16 to 20 of 24 searches go to round 0 (B-12); challenge follow-ups need headroom. Measure before changing the default. |
-| Delta-only follow-up | FR-16 is not confirmed in the current pipeline code; treat as part of T14. |
+| Search budget | Follow-up tasks are paced to the remaining searches (B-28); a run that exhausts them ends `budget` with the challenge not completed. |
+| One search phrasing per challenge | Each attack searches its first query plus discover's rephrasing (B-29). |
+| `assumed` label and "System inference" | Not produced; needs a writer contract change (B-31). |
+| Numeric rate table | INR rates in `backend/intel/numeric.py` are approximate and dated (B-26). |
