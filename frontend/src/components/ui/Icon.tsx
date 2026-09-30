@@ -50,6 +50,12 @@ import {
   ArrowLeft,
   Shield,
   Cookie,
+  LayoutDashboard,
+  Users,
+  Coins,
+  HeartPulse,
+  Menu,
+  X,
 } from "lucide-react";
 
 import type { LucideIcon, LucideProps } from "lucide-react";
@@ -110,6 +116,12 @@ const ICONS = {
   ArrowLeft,
   Shield,
   Cookie,
+  LayoutDashboard,
+  Users,
+  Coins,
+  HeartPulse,
+  Menu,
+  X,
 } satisfies Record<string, LucideIcon>;
 
 

@@ -17,6 +17,7 @@ export type PageId =
   | "register"
   | "account"
   | "admin"
+  | "console"
   | "privacy"
   | "terms"
   | "cookies";
@@ -37,7 +38,8 @@ export function getRoutePage(hash: string): PageId {
   if (hash.startsWith("#/register")) return "register";
   if (hash.startsWith("#/account")) return "account";
   if (hash.startsWith("#/workspace") || hash.startsWith("#/new")) return "workspace";
-  if (hash.startsWith("#/history") || hash.startsWith("#/admin")) return "admin";
+  if (hash.startsWith("#/history")) return "admin"; // per-user run history
+  if (hash.startsWith("#/admin")) return "console"; // operator console (role-gated, ADR B-32)
   if (hash.startsWith("#/privacy")) return "privacy";
   if (hash.startsWith("#/terms")) return "terms";
   if (hash.startsWith("#/cookies")) return "cookies";

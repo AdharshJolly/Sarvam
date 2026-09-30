@@ -1,4 +1,4 @@
--- Sarvam SQLite schema, version 2 (SSOT v2.0 section 8 + Auth).
+-- Sarvam SQLite schema, version 4 (SSOT v2.0 section 8 + Auth + admin role + admin controls).
 -- Changing this file requires a change-log row (SSOT section 21) and a SCHEMA_VERSION bump in db.py.
 -- Sources, passages and events are immutable once written. Claims, coverage and reports are
 -- versioned by round. IDs are short readable strings (S3, P12, C41) except events.id (integer).
@@ -10,7 +10,10 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash TEXT NOT NULL,
     salt          TEXT NOT NULL,
     created_at    TEXT NOT NULL,
-    last_login_at TEXT
+    last_login_at TEXT,
+    role          TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+    disabled      INTEGER NOT NULL DEFAULT 0,
+    quota_usd     REAL
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
@@ -31,7 +34,8 @@ CREATE TABLE IF NOT EXISTS runs (
     stop_state         TEXT,
     termination_reason TEXT,
     started_at         TEXT NOT NULL,
-    ended_at           TEXT
+    ended_at           TEXT,
+    hidden             INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS dimensions (
@@ -201,3 +205,22 @@ CREATE INDEX IF NOT EXISTS idx_coverage_round ON coverage (run_id, round);
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions (user_id);
 CREATE INDEX IF NOT EXISTS idx_runs_user ON runs (user_id);
 
+-- Admin portal (B-32, B-33). Default budget overrides live here as key 'default_budget'.
+CREATE TABLE IF NOT EXISTS settings (
+    key        TEXT PRIMARY KEY,
+    value_json TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+-- Append-only record of admin mutations. Not `events`: events.run_id is a required foreign key
+-- and most admin actions (users, settings) have no run. Never UPDATE or DELETE rows here.
+CREATE TABLE IF NOT EXISTS admin_actions (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts           TEXT NOT NULL,
+    actor_id     TEXT NOT NULL,
+    actor_email  TEXT NOT NULL,
+    action       TEXT NOT NULL,
+    target_type  TEXT NOT NULL,
+    target_id    TEXT NOT NULL DEFAULT '',
+    detail_json  TEXT NOT NULL DEFAULT '{}'
+);

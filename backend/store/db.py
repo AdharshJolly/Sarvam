@@ -10,7 +10,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 4
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
 
 
@@ -31,11 +31,31 @@ def connect(db_path: str | Path) -> sqlite3.Connection:
     return conn
 
 
+# (table, column, DDL) for columns added after schema v1; applied to older databases (B-32, B-33).
+_LATER_COLUMNS = (
+    (
+        "users",
+        "role",
+        "role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin'))",
+    ),
+    ("users", "disabled", "disabled INTEGER NOT NULL DEFAULT 0"),
+    ("users", "quota_usd", "quota_usd REAL"),
+    ("runs", "hidden", "hidden INTEGER NOT NULL DEFAULT 0"),
+)
+
+
+def _add_missing_columns(conn: sqlite3.Connection) -> None:
+    for table, column, ddl in _LATER_COLUMNS:
+        cols = [c[1] for c in conn.execute(f"PRAGMA table_info({table})").fetchall()]
+        if cols and column not in cols:  # empty cols = table absent; schema.sql will create it
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {ddl}")
+
+
 def init_db(db_path: str | Path) -> sqlite3.Connection:
     """Open the database, apply the schema if new, and verify the schema version."""
     conn = connect(db_path)
     version = conn.execute("PRAGMA user_version").fetchone()[0]
-    if version not in (0, 1, SCHEMA_VERSION):
+    if version not in (0, 1, 2, 3, SCHEMA_VERSION):
         conn.close()
         raise SchemaVersionError(
             f"database schema version {version} != expected {SCHEMA_VERSION}; "
@@ -46,6 +66,7 @@ def init_db(db_path: str | Path) -> sqlite3.Connection:
         cols = [c[1] for c in conn.execute("PRAGMA table_info(runs)").fetchall()]
         if "user_id" not in cols:
             conn.execute("ALTER TABLE runs ADD COLUMN user_id TEXT REFERENCES users(id)")
+    _add_missing_columns(conn)
     conn.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
     conn.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
     conn.commit()

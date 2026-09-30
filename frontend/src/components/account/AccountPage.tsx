@@ -1,5 +1,8 @@
-import { useState } from "react";
+import type { UserUsage } from "@contracts/types";
+import { useEffect, useState } from "react";
+import { api } from "../../api/client";
 import { useAuth } from "../../state/useAuth";
+import { AccountUsage, roleLabel } from "./AccountUsage";
 import { AppHeader } from "../layout/AppHeader";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
@@ -15,6 +18,27 @@ export function AccountPage() {
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // The user loads asynchronously, so the initial state above is empty after a reload: fill the
+  // field once the name is known, and again if it changes (for example after a save).
+  const savedName = user?.display_name;
+  useEffect(() => {
+    if (savedName !== undefined) setDisplayName(savedName);
+  }, [savedName]);
+
+  const [usage, setUsage] = useState<UserUsage | null>(null);
+  const [usageError, setUsageError] = useState<string | null>(null);
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    api
+      .usage()
+      .then((u) => !cancelled && setUsage(u))
+      .catch((e: unknown) => !cancelled && setUsageError(e instanceof Error ? e.message : String(e)));
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
@@ -183,8 +207,13 @@ export function AccountPage() {
                   </span>
                   <span className="inline-flex items-center gap-1.5 text-sm font-semibold px-2 py-0.5 rounded bg-brand/10 text-brand border border-brand/20">
                     <Icon name="Shield" size={13} aria-hidden />
-                    Research Analyst / Auditor
+                    {roleLabel(user.role)}
                   </span>
+                  {user.role === "admin" ? (
+                    <a href="#/admin" className="mt-2 block text-sm text-brand hover:underline">
+                      Open the admin console
+                    </a>
+                  ) : null}
                 </div>
 
                 <div className="p-4 bg-background border border-border-hairline rounded-lg">
@@ -218,6 +247,8 @@ export function AccountPage() {
                 </div>
               </div>
             </section>
+
+            <AccountUsage usage={usage} error={usageError} />
 
             {/* Profile Edit Form */}
             <section className="bg-surface border border-border-hairline rounded-xl p-6">

@@ -65,6 +65,10 @@ contracts-check:
 # Canonical local quality gate (SSOT 13.1: never merge red).
 check: lint contracts-check typecheck test build
 
+# Create or promote the preset admin account (prints a random password once).
+seed-admin:
+	uv run python -m backend.admin.seed
+
 # Refresh the Graphify code graph (AST only, no LLM). Output: graphify-out/ (git-ignored).
 graph:
 	graphify update .
