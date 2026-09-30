@@ -1,0 +1,21 @@
+# Normalize line endings for all text files
+* text=auto eol=lf
+
+# Windows-only scripts
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.docx binary
+*.pdf binary
+
+# Generated files: collapse in diffs, never hand-edit
+contracts/generated/** linguist-generated=true -diff
+bun.lock linguist-generated=true -diff

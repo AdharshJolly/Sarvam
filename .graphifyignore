@@ -1,0 +1,32 @@
+# Graphify indexing scope for Sarvam (gitignore syntax).
+# Index: backend/, contracts/, frontend/src, docs/, tests/, fixtures/, scripts/, Makefile, config.
+# Exclude: dependencies, build output, caches, local state, secrets, generated artifacts.
+node_modules/
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.vite/
+.bun/
+dist/
+build/
+.git/
+graphify-out/
+data/
+cache/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+.env
+.env.*
+!.env.example
+*.log
+*.tsbuildinfo
+uv.lock
+bun.lock
+contracts/generated/
+*.docx

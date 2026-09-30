@@ -1,0 +1,13 @@
+# Sarvam documentation map
+
+| Location | What it is | Authority |
+| --- | --- | --- |
+| [`ssot/SSOT_v2.docx`](ssot/SSOT_v2.docx) | ResearchOps 24-Hour MVP Single Source of Truth v2.0: scope, requirements, architecture, data model, algorithms, gates. | **Canonical.** Wins every conflict. |
+| [`ssot/SSOT_v2.extracted.md`](ssot/SSOT_v2.extracted.md) | Plain-text extraction of the .docx for agents and diffing (no diagrams). | Derived; the .docx wins. |
+| [`architecture/`](architecture/README.md) | Concise architecture of Sarvam as built. | Must match the SSOT. |
+| [`architecture/security.md`](architecture/security.md) | Security boundaries and what is implemented vs. planned. | Implements SSOT section 17. |
+| [`decisions/`](decisions/README.md) | ADRs and the change log (SSOT sections 20-21). | Log every contract/schema/threshold change. |
+| [`audit/`](audit/README.md) | Manual audit sheet and evaluation results (SSOT 16.3). | Filled during evaluation. |
+| [`research/`](research/README.md) | External evidence base and market notes (SSOT 2.4, 23). | Reference only. |
+
+"ResearchOps" refers to the GATEWAYS 2026 challenge domain and the SSOT title. The product is **Sarvam**.
