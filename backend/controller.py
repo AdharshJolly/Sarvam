@@ -1,8 +1,8 @@
 """Run controller (SSOT section 7). Plain code, no orchestration framework.
 
-`run_m0` is the linear M0 driver (decision B-08). The controller owns budgets, wrap-up and failure
-handling; every failure becomes a typed event. T14 later extends or replaces it with the full
-lifecycle.
+`run_m0` is the linear driver (decision B-08): the M0 pipeline plus the VERIFY and ANALYZE stages
+of G2. The controller owns budgets, wrap-up and failure handling; every failure becomes a typed
+event. T14 later extends or replaces it with the challenge loop, rounds and the stop policy.
 """
 
 from __future__ import annotations
@@ -23,6 +23,8 @@ from backend.gateway.search import (
     search_from_settings,
 )
 from backend.gateway.ssrf import DefaultSSRFGuard
+from backend.intel.analyze import run_analyze
+from backend.intel.verify import run_verify
 from backend.pipeline.acquire import run_acquire
 from backend.pipeline.claims import run_claims
 from backend.pipeline.discover import run_discover
@@ -168,9 +170,10 @@ async def run_m0(
 ) -> None:
     """Drive one run to a terminal event. Uses its own DB connection (decision B-10).
 
-    PLAN, DISCOVER, ACQUIRE, EXTRACT, CLAIMS, SYNTHESIZE in order. A stop request, the soft time
-    limit, a budget limit or a provider outage after planning takes the wrap-up path: skip the
-    remaining stages and synthesize from the evidence already stored (SSOT 7.1).
+    PLAN, DISCOVER, ACQUIRE, EXTRACT, CLAIMS, VERIFY, ANALYZE, SYNTHESIZE in order. A stop request,
+    the soft time limit, a budget limit or a provider outage after planning takes the wrap-up path:
+    skip the remaining stages, score coverage from the evidence already judged (code only, no LLM),
+    and synthesize from what is stored (SSOT 7.1).
     """
     conn = connect(settings.db_path)
     em = Emitter(conn, run_id)
@@ -197,11 +200,20 @@ async def run_m0(
         async def extract() -> None:
             run_extract(conn, em, settings, run_id)
 
+        analyzed = False
+
+        async def analyze() -> None:
+            nonlocal analyzed
+            analyzed = True  # set first: a budget error inside still computed the coverage
+            await run_analyze(gateway, conn, em, settings, run_id)
+
         stages = (
             lambda: run_discover(gateway, conn, em, settings, run_id, run.scope),
             lambda: run_acquire(gateway, conn, em, settings, run_id),
             extract,
             lambda: run_claims(gateway, conn, em, settings, run_id),
+            lambda: run_verify(gateway, conn, em, settings, run_id),
+            analyze,
         )
         termination: TerminationReason | None = None
         for stage in stages:
@@ -216,6 +228,18 @@ async def run_m0(
             except GatewayError:  # provider outage (BLOCKED): wrap up with current evidence
                 termination = TerminationReason.BLOCKED
                 break
+
+        if termination is not None and not analyzed:
+            # Wrap-up: the matrix must still show the gaps (SSOT 7.1). Code only, no LLM calls.
+            await run_analyze(
+                gateway,
+                conn,
+                em,
+                settings,
+                run_id,
+                explain=False,
+                reason=f"Wrap-up ({termination.value}): scoring coverage from stored evidence.",
+            )
 
         await synthesize(gateway, conn, em, settings, run, termination)
         em.emit(

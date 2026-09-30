@@ -22,10 +22,10 @@ NO_CLAIMS_SUMMARY = (
 
 
 def eligible_statuses() -> frozenset[str]:
-    """Claim statuses the writer may use. M0: unverified-by-judge `pending` claims whose quote was
-    proven by the quote guard. The independent verifier (M1) will tighten this to supported,
-    partial and contested."""
-    return frozenset({"pending"})
+    """Claim statuses the writer may use (SSOT 9.11, FR-18): claims an independent judge kept as
+    evidence. `contested` claims sit in an open conflict and are cited as contested. `pending`
+    (not yet judged) and `rejected` claims never reach the writer (decision B-21)."""
+    return frozenset({"supported", "partial", "contested"})
 
 
 def eligible_claims(conn: sqlite3.Connection, run_id: str) -> list[Claim]:
