@@ -16,7 +16,7 @@ test("domainOf, formatters, stateStyle", () => {
   expect(domainOf("not a url")).toBe("not a url");
   expect(formatSeconds(75)).toBe("1m 15s");
   expect(formatUsd(0.5)).toBe("$0.500");
-  expect(stateStyle("RED").icon).toBe("✕");
+  expect(stateStyle("RED").icon).toBe("XOctagon");
   expect(stateStyle("GREEN").label).toBe("GREEN");
 });
 

@@ -4,8 +4,7 @@ export function Badge({ children, title, mono = false }: { children: ReactNode; 
   return (
     <span
       title={title}
-      className={`inline-flex w-fit items-center rounded px-2 py-0.5 text-sm ${mono ? "mono" : ""}`}
-      style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}
+      className={`inline-flex w-fit items-center rounded-md border border-border-strong bg-surface-2 px-2 py-0.5 text-sm ${mono ? "mono font-mono" : ""}`}
     >
       {children}
     </span>

@@ -35,11 +35,11 @@ export function domainOf(url: string): string {
 export function stateStyle(state: CoverageState): { icon: string; label: string; colorVar: string } {
   switch (state) {
     case "RED":
-      return { icon: "✕", label: "RED", colorVar: "var(--bad)" };
+      return { icon: "XOctagon", label: "RED", colorVar: "var(--color-bad-fg)" };
     case "AMBER":
-      return { icon: "▲", label: "AMBER", colorVar: "var(--warn)" };
+      return { icon: "AlertTriangle", label: "AMBER", colorVar: "var(--color-warn-fg)" };
     case "GREEN":
-      return { icon: "✓", label: "GREEN", colorVar: "var(--ok)" };
+      return { icon: "CheckCircle", label: "GREEN", colorVar: "var(--color-ok-fg)" };
   }
 }
 
