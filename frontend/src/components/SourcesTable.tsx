@@ -36,7 +36,7 @@ export function SourcesTable({
         </thead>
         <tbody>
           {sources.map((s) => (
-            <tr key={s.id} id={`source-${s.id}`} className="border-t border-border">
+            <tr key={s.id} id={`source-${s.id}`} className="border-t border-border-hairline">
               <td className="mono p-1">{s.id}</td>
               <td className="p-1">
                 <a href={safeHref(s.url)} target="_blank" rel="noopener noreferrer" className="underline hover:text-brand transition-colors">

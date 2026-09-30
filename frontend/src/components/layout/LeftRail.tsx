@@ -28,7 +28,7 @@ export function LeftRail({ onOpenMeter }: { onOpenMeter: (k: MeterKind) => void 
   return (
     <aside
       aria-label="Research status"
-      className="left-rail flex flex-col border-b border-border lg:border-r lg:border-b-0 bg-surface"
+      className="left-rail flex flex-col border-b border-border-hairline lg:border-r lg:border-b-0 bg-surface"
     >
       <button 
         type="button"
@@ -71,7 +71,7 @@ export function LeftRail({ onOpenMeter }: { onOpenMeter: (k: MeterKind) => void 
         <section
           aria-label="Now"
           aria-live="polite"
-          className="rounded-md p-3 bg-brand-secondary/10 border border-border"
+          className="rounded-md p-3 bg-brand-secondary/10 border border-border-hairline"
         >
           <h2 className="label mb-1">Now</h2>
           <p className="text-base">{view.nowReason || (running ? "Waiting for the first step..." : "No further steps.")}</p>

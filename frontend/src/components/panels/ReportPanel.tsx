@@ -103,7 +103,7 @@ function Nodes({ nodes, resolvable, onCite }: { nodes: ReportNode[]; resolvable:
                   <thead>
                     <tr>
                       {n.header.map((h, j) => (
-                        <th key={j} className="border-b border-border p-1">
+                        <th key={j} className="border-b border-border-hairline p-1">
                           {inl(h)}
                         </th>
                       ))}
@@ -113,7 +113,7 @@ function Nodes({ nodes, resolvable, onCite }: { nodes: ReportNode[]; resolvable:
                     {n.rows.map((r, j) => (
                       <tr key={j}>
                         {r.map((c, k) => (
-                          <td key={k} className="border-b border-border p-1">
+                          <td key={k} className="border-b border-border-hairline p-1">
                             {inl(c)}
                           </td>
                         ))}
@@ -248,7 +248,7 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
                     </a>
                   </li>
                 ))}
-                <li className="pt-2 mt-2 border-t border-border">
+                <li className="pt-2 mt-2 border-t border-border-hairline">
                   <a href="#sources-cited" className="block text-text-muted hover:text-brand transition-colors">Sources cited</a>
                 </li>
                 <li>
@@ -321,7 +321,7 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
               <h3 className="label mb-2">Method and run metadata</h3>
               <dl className="grid gap-x-6 gap-y-1 sm:grid-cols-2">
                 {metaRows.map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-3 border-b border-border py-1">
+                  <div key={k} className="flex justify-between gap-3 border-b border-border-hairline py-1">
                     <dt className="text-text-muted">{k}</dt>
                     <dd className="mono text-right">{v}</dd>
                   </div>

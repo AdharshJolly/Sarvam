@@ -30,7 +30,7 @@ const TONE_COLORS = {
   ok: "bg-ok-bg border-ok-border text-ok-fg",
   warn: "bg-warn-bg border-warn-border text-warn-fg",
   bad: "bg-bad-bg border-bad-border text-bad-fg",
-  muted: "bg-surface-2 border-border text-text-muted",
+  muted: "bg-surface-2 border-border-hairline text-text-muted",
 };
 
 /** Slots whose state changed since the previous render flash once (a live state change, not decoration). */
@@ -65,7 +65,7 @@ export function CoverageMatrix(p: CoverageMatrixProps) {
           <div
             key={d.id}
             aria-label={`Dimension ${d.name}`}
-            className={`grid gap-3 p-3 lg:grid-cols-[13rem_1fr] ${di === 0 ? '' : 'border-t border-border'}`}
+            className={`grid gap-3 p-3 lg:grid-cols-[13rem_1fr] ${di === 0 ? '' : 'border-t border-border-hairline'}`}
           >
             <div className="flex flex-col gap-1">
               <h3 className="font-semibold">{d.name}</h3>

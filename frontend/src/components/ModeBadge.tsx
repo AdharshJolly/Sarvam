@@ -6,9 +6,9 @@ export function ModeBadge({ mode, pulsing = false }: { mode: Run["mode"] | null;
   const label = mode === "REPLAY" ? "REPLAY (recorded)" : (mode ?? "NO RUN");
   
   let classes = "inline-flex w-fit items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold tracking-widest transition-colors ";
-  if (mode === "LIVE") classes += "border-good text-good bg-good-bg";
+  if (mode === "LIVE") classes += "border-ok-border text-ok-fg bg-ok-bg";
   else if (mode === "REPLAY") classes += "border-warn-border text-warn-fg bg-warn-bg";
-  else classes += "border-border text-text-muted bg-surface-2";
+  else classes += "border-border-hairline text-text-muted bg-surface-2";
   
   return (
     <span
@@ -17,7 +17,7 @@ export function ModeBadge({ mode, pulsing = false }: { mode: Run["mode"] | null;
       className={classes}
     >
       {mode === "LIVE" && pulsing ? (
-        <span className="h-2 w-2 rounded-full bg-good animate-pulse" aria-hidden="true" />
+        <span className="h-2 w-2 rounded-full bg-ok-fg animate-pulse" aria-hidden="true" />
       ) : mode === "LIVE" ? (
         <Icon name="Activity" size={12} aria-hidden />
       ) : mode === "REPLAY" ? (

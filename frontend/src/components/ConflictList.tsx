@@ -78,7 +78,7 @@ export function ConflictList({
         const status = c.status ?? "open";
         const kind = c.kind ?? "genuine";
         return (
-          <li key={c.id} className={`card anim-in p-4 border-l-[4px] ${status === "open" ? "border-l-bad" : "border-l-good"}`}>
+          <li key={c.id} className={`card anim-in p-4 border-l-[4px] ${status === "open" ? "border-l-bad-fg" : "border-l-ok-fg"}`}>
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <StateChip spec={conflictStatusChip(status)} />
               <strong>{slotNames.get(c.slot_id) ?? c.slot_id}</strong>
@@ -106,7 +106,7 @@ export function ConflictList({
               </div>
             </div>
             {c.explanation ? (
-              <p className="mt-3 rounded-md p-3 text-base bg-good-bg">
+              <p className="mt-3 rounded-md p-3 text-base bg-ok-bg">
                 <strong>Explanation: </strong>
                 {c.explanation}
               </p>

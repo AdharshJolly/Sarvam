@@ -12,7 +12,7 @@ export function MockControls({ runId }: { runId: string | null }) {
         Scenario{" "}
         <select
           value={scenario}
-          className="rounded border border-border bg-surface text-text p-1 focus-visible:outline-brand-secondary"
+          className="rounded border border-border-hairline bg-surface text-text p-1 focus-visible:outline-brand-secondary"
           onChange={(e) => {
             const id = e.target.value as ScenarioId;
             setScenario(id);
@@ -30,7 +30,7 @@ export function MockControls({ runId }: { runId: string | null }) {
         Speed{" "}
         <select
           value={eps}
-          className="rounded border border-border bg-surface text-text p-1 focus-visible:outline-brand-secondary"
+          className="rounded border border-border-hairline bg-surface text-text p-1 focus-visible:outline-brand-secondary"
           onChange={(e) => {
             const n = Number(e.target.value);
             setEps(n);
@@ -46,7 +46,7 @@ export function MockControls({ runId }: { runId: string | null }) {
       </label>
       <button
         type="button"
-        className="rounded border border-border px-2 py-1 hover:bg-surface-2 transition-colors disabled:opacity-50 disabled:hover:bg-transparent"
+        className="rounded border border-border-hairline px-2 py-1 hover:bg-surface-2 transition-colors disabled:opacity-50 disabled:hover:bg-transparent"
         disabled={!runId}
         onClick={() => runId && mockControl.skipToEnd(runId)}
       >

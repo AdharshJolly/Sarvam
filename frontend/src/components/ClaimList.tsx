@@ -41,7 +41,7 @@ export function ClaimList({
                 <li key={c.id}>
                   <button
                     type="button"
-                    className="card card-hover flex w-full flex-wrap items-center gap-2 p-2 text-left text-base border-border bg-surface"
+                    className="card card-hover flex w-full flex-wrap items-center gap-2 p-2 text-left text-base border-border-hairline bg-surface"
                     onClick={() => onOpenClaim(c.id)}
                   >
                     <strong>{c.id}</strong>

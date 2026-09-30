@@ -94,7 +94,7 @@ export function RunForm() {
       <fieldset className="grid gap-2 sm:grid-cols-2">
         <legend className="label mb-1">Mode</legend>
         <label
-          className={`cursor-pointer rounded-md border p-3 transition-colors ${mode === "LIVE" ? "border-brand-secondary border-2 bg-brand-secondary/10" : "border-border border"}`}
+          className={`cursor-pointer rounded-md border p-3 transition-colors ${mode === "LIVE" ? "border-brand-secondary border-2 bg-brand-secondary/10" : "border-border-hairline border"}`}
         >
           <input type="radio" name="mode" className="sr-only" checked={mode === "LIVE"} onChange={() => setMode("LIVE")} />
           <span className="block font-semibold flex items-center gap-1.5"><Icon name="Activity" size={16} aria-hidden /> LIVE</span>
@@ -103,7 +103,7 @@ export function RunForm() {
           </span>
         </label>
         <label
-          className={`cursor-pointer rounded-md border p-3 transition-colors ${mode === "REPLAY" ? "border-brand-secondary border-2 bg-brand-secondary/10" : "border-border border"}`}
+          className={`cursor-pointer rounded-md border p-3 transition-colors ${mode === "REPLAY" ? "border-brand-secondary border-2 bg-brand-secondary/10" : "border-border-hairline border"}`}
         >
           <input type="radio" name="mode" className="sr-only" checked={mode === "REPLAY"} onChange={() => setMode("REPLAY")} />
           <span className="block font-semibold flex items-center gap-1.5"><Icon name="RotateCcw" size={16} aria-hidden /> REPLAY</span>

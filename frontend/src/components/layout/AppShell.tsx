@@ -84,7 +84,7 @@ function Shell() {
       ) : null}
 
       <header
-        className="app-header sticky top-0 z-20 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-border bg-surface px-4 py-2"
+        className="app-header sticky top-0 z-20 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-border-hairline bg-surface px-4 py-2"
       >
         <div className="flex items-baseline gap-3">
           <h1 className="text-xl font-bold tracking-tight text-brand">SARVAM</h1>

@@ -28,7 +28,7 @@ function MatrixSkeleton({ phase }: { phase: string }) {
       </p>
       <div className="card grid gap-3 p-3 sm:grid-cols-2 xl:grid-cols-3">
         {Array.from({ length: 6 }, (_, i) => (
-          <div key={i} className="rounded-lg border border-border p-3">
+          <div key={i} className="rounded-lg border border-border-hairline p-3">
             <Skeleton className="mb-2 h-4 w-1/3" />
             <Skeleton className="mb-2 h-5 w-4/5" />
             <Skeleton className="h-3 w-3/5" />
@@ -107,7 +107,7 @@ export function MatrixPanel({
               type="button"
               aria-pressed={round === r}
               className={`px-3 py-1 text-base transition-colors ${
-                round === r ? "bg-accent text-bg font-bold" : "bg-surface text-text hover:bg-surface-2"
+                round === r ? "bg-brand text-on-brand font-bold" : "bg-surface text-text hover:bg-surface-2"
               }`}
               onClick={() => setPicked(r)}
             >
