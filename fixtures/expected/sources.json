@@ -1,0 +1,19 @@
+{
+  "note": "Expected qualification (SSOT 9.2) of each fixture URL, the fetch outcome and the freshness bucket relative to manifest.as_of.",
+  "sources": {
+    "F01": {"source_type": "regulator", "authority_tier": 1, "status": "fetched", "freshness": "under_12_months"},
+    "F02": {"source_type": "unknown", "authority_tier": 3, "status": "fetched", "freshness": "under_12_months"},
+    "F03": {"source_type": "unknown", "authority_tier": 3, "status": "fetched", "freshness": "under_12_months"},
+    "F04": {"source_type": "unknown", "authority_tier": 3, "status": "fetched", "freshness": "under_12_months"},
+    "F05": {"source_type": "unknown", "authority_tier": 3, "status": "fetched", "freshness": "under_12_months"},
+    "F06": {"source_type": "blog", "authority_tier": 3, "status": "fetched", "freshness": "under_12_months"},
+    "F07": {"source_type": "company_primary", "authority_tier": 1, "status": "fetched", "freshness": "under_12_months"},
+    "F08": {"source_type": "unknown", "authority_tier": 3, "status": "fetched", "freshness": "under_12_months"},
+    "F09": {"source_type": "unknown", "authority_tier": 3, "status": "fetched", "freshness": "under_12_months"},
+    "F10": {"source_type": "unknown", "authority_tier": 3, "status": "fetched", "freshness": "over_36_months"},
+    "F11": {"source_type": "unknown", "authority_tier": 3, "status": "fetched", "freshness": "under_12_months"},
+    "F12": {"source_type": "blog", "authority_tier": 3, "status": "fetched", "freshness": "under_12_months"},
+    "F13": {"source_type": "unknown", "authority_tier": 3, "status": "fetched", "freshness": "under_12_months"},
+    "F14": {"source_type": "unknown", "authority_tier": 3, "status": "SOURCE_UNAVAILABLE", "freshness": "unknown"}
+  }
+}

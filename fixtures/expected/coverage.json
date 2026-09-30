@@ -1,0 +1,21 @@
+{
+  "note": "Expected coverage matrix (SSOT 9.8) and dimension rollups after the full analysis of the corpus. `reason_contains` are lower-case fragments the stored human-readable reason must contain.",
+  "round": 0,
+  "cells": {
+    "D1S1": {"state": "GREEN", "independent_origins": 1, "open_conflicts": 0, "reason_contains": ["tier-1"]},
+    "D1S2": {"state": "RED", "independent_origins": 0, "open_conflicts": 0, "reason_contains": ["no supporting"]},
+    "D2S1": {"state": "AMBER", "independent_origins": 3, "open_conflicts": 1, "reason_contains": ["open conflict"]},
+    "D2S2": {"state": "GREEN", "independent_origins": 2, "open_conflicts": 0, "reason_contains": ["2 independent origins"]},
+    "D3S1": {"state": "AMBER", "independent_origins": 1, "open_conflicts": 0, "reason_contains": ["1 origin"]},
+    "D3S2": {"state": "AMBER", "independent_origins": 1, "open_conflicts": 0, "reason_contains": ["partial"]},
+    "D4S1": {"state": "AMBER", "independent_origins": 1, "open_conflicts": 0, "reason_contains": ["1 origin"]},
+    "D4S2": {"state": "RED", "independent_origins": 0, "open_conflicts": 0, "reason_contains": ["no supporting"]}
+  },
+  "rollups": {"D1": "RED", "D2": "AMBER", "D3": "AMBER", "D4": "AMBER"},
+  "gap_tasks": {
+    "D1S2": {"strategy": "attributes"},
+    "D2S1": {"strategy": "conflict_resolution"},
+    "D4S1": {"strategy": "independent_verification"}
+  },
+  "no_gap_tasks_for": ["D1S1", "D2S2", "D3S1", "D3S2", "D4S2"]
+}

@@ -1,12 +1,12 @@
 # Sarvam task runner. Frontend commands use Bun only; backend commands use uv.
-# Only targets that actually work are listed. SSOT also names `fixtures`, `record` and `replay`;
-# they are added by tasks T08 / T25 when the commands behind them exist.
+# Only targets that actually work are listed. SSOT also names `record` and `replay`; they are
+# added by task T25 when the commands behind them exist.
 
 .PHONY: help dev backend frontend install lint typecheck test test-backend test-frontend \
-        build contracts contracts-check check graph
+        build contracts contracts-check check graph fixtures gates
 
 help:
-	@echo "Targets: install dev backend frontend lint typecheck test build contracts contracts-check check graph"
+	@echo "Targets: install dev backend frontend lint typecheck test build contracts contracts-check check graph fixtures gates"
 
 install:
 	uv sync
@@ -36,6 +36,14 @@ test-frontend:
 	bun run test
 
 test: test-backend test-frontend
+
+# Fixture corpus suite (SSOT 16.2): origins, conflicts, coverage and verifier on the 14 documents.
+fixtures:
+	uv run pytest tests/fixtures
+
+# Offline gate suites (G0 needs provider keys for its live cases; G1/G2 are deterministic).
+gates:
+	uv run pytest tests/gates/g1/test_g1.py tests/gates/g2
 
 build:
 	bun run build

@@ -1,0 +1,20 @@
+{
+  "note": "Synthetic corpus for the intelligence layer (SSOT 16.2). All names and domains are fictional (.example). `fetch` is how the FakeFetcher answers for that URL.",
+  "as_of": "2026-09-30",
+  "documents": {
+    "F01": {"url": "https://transport.karnataka.gov.in/notifications/ev-rental-permits", "fetch": "ok", "tests": "Regulator page stating a rule; primary_ok slot goes GREEN on one tier-1 origin."},
+    "F02": {"url": "https://www.metromobilitytimes.example/ev/voltride-launches-subscription", "fetch": "ok", "tests": "Outlet 1 of 4 repeating one press release (S2)."},
+    "F03": {"url": "https://www.evwire.example/news/voltride-subscription-bengaluru", "fetch": "ok", "tests": "Outlet 2 of 4 (S2)."},
+    "F04": {"url": "https://www.bengalurubulletin.example/city/voltride-scooter-subscription", "fetch": "ok", "tests": "Outlet 3 of 4 (S2)."},
+    "F05": {"url": "https://www.chargepost.example/analysis/voltride-plan-for-riders", "fetch": "ok", "tests": "Outlet 4 of 4: heavy rewrite, same price and one shared sentence (S3)."},
+    "F06": {"url": "https://scootergeek.blogspot.com/2026/08/is-voltride-worth-it.html", "fetch": "ok", "tests": "Blog saying 'as per VoltRide Mobility's release': joins that origin (S4)."},
+    "F07": {"url": "https://www.voltride-india.example/pricing", "fetch": "ok", "tests": "Company pricing page: separate origin, tier 1, self-reported."},
+    "F08": {"url": "https://www.cityledger.example/business/scooter-price-check", "fetch": "ok", "tests": "Different price for the same plan: planted numeric conflict 1 (genuine)."},
+    "F09": {"url": "https://www.cityridesdaily.example/voltride-daily-pass", "fetch": "ok", "tests": "Per-day price against a per-month price: unit trap (explained)."},
+    "F10": {"url": "https://www.urbanwheels-archive.example/2019/zipwheel-expands", "fetch": "ok", "tests": "2019 article: freshness bucket over 36 months."},
+    "F11": {"url": "https://www.marketscope-research.example/reports/micromobility-india", "fetch": "ok", "tests": "Two market-size figures under different definitions: planted conflict 3 (definition, explained)."},
+    "F12": {"url": "https://www.rideforum.example/forum/subscription-or-buy", "fetch": "ok", "tests": "Contains 'ignore previous instructions'; must not alter behaviour."},
+    "F13": {"url": "https://www.recipehub.example/cakes/simple-sponge", "fetch": "ok", "tests": "Irrelevant page: claims dropped as irrelevant."},
+    "F14": {"url": "https://www.voltride-careers.example/jobs", "fetch": "403", "tests": "URL returning 403: typed failure SOURCE_UNAVAILABLE."}
+  }
+}
