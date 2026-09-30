@@ -99,6 +99,9 @@ class Settings(BaseModel):
     llm_max_tokens: dict[str, int] = Field(default_factory=dict)  # per-role output ceiling override
     llm_compact_json: bool = True  # compact JSON in LLM payloads (decision B-32)
     verifier_batch_size: int = 5  # claim/passage pairs per verifier call (decision B-25)
+    # Slots per extractor call for one source. 1 = the legacy one-call-per-(source, slot) path
+    # (default); more = batched extraction (decision B-33, CL-09).
+    extractor_batch_size: int = Field(default=1, ge=1)
 
     fetch_concurrency: int = 8
     llm_concurrency: int = 8
@@ -156,6 +159,7 @@ class Settings(BaseModel):
             llm_compact_json=get("LLM_COMPACT_JSON", "1" if d.llm_compact_json else "0")
             in ("1", "true", "True"),
             verifier_batch_size=int(get("VERIFIER_BATCH_SIZE", str(d.verifier_batch_size))),
+            extractor_batch_size=int(get("EXTRACTOR_BATCH_SIZE", str(d.extractor_batch_size))),
             thresholds=Thresholds(
                 passages_per_slot_source=int(
                     get("PASSAGES_PER_SLOT", str(d.thresholds.passages_per_slot_source))

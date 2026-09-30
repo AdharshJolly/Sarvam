@@ -11,7 +11,7 @@ import asyncio
 import base64
 import time
 from collections.abc import Awaitable, Callable
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel
@@ -65,6 +65,7 @@ class LLMOpStats:
     cost_source: str = "unavailable"  # "reported" | "estimated" | "unavailable"
     latency_ms: int = 0
     status: str = "ok"  # "ok" or the typed failure value
+    meta: dict[str, int] = field(default_factory=dict)  # caller-supplied shape, e.g. batch sizes
 
 
 @dataclass(frozen=True)
@@ -280,7 +281,13 @@ class ToolGateway:
     # ------------------------------------------------------------ llm
 
     async def llm(
-        self, role: LLMRole, prompt_id: str, schema: type[BaseModel] | Any, payload: dict[str, Any]
+        self,
+        role: LLMRole,
+        prompt_id: str,
+        schema: type[BaseModel] | Any,
+        payload: dict[str, Any],
+        *,
+        meta: dict[str, int] | None = None,
     ) -> GatewayResult[Any]:
         """Structured LLM call: validate against `schema`, retry twice with the error appended.
 
@@ -292,7 +299,7 @@ class ToolGateway:
         messages = build_messages(
             prompt_id, schema, payload, compact=self.settings.llm_compact_json
         )
-        op = LLMOpStats(self.run_id, role.value, prompt_id, model)
+        op = LLMOpStats(self.run_id, role.value, prompt_id, model, meta=dict(meta or {}))
         self.llm_ops.append(op)
         last_error: Exception | None = None
         try:

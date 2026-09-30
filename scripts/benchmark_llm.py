@@ -121,6 +121,14 @@ def collect(conn: sqlite3.Connection, run_id: str, handle: RunHandle, wall: floa
         events=etypes,
         report_verified=report,
         by_role=by_role,
+        extractor_batching=dict(
+            batch_size=gw.settings.extractor_batch_size if gw else None,
+            ops=sum(1 for o in ops if o.role == "extractor"),
+            slots=sum(o.meta.get("batch_slots", 0) for o in ops if o.role == "extractor"),
+            unique_passages=sum(
+                o.meta.get("batch_passages", 0) for o in ops if o.role == "extractor"
+            ),
+        ),
         failed_ops=[[o.role, o.status] for o in ops if o.status != "ok"],
     )
 

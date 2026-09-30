@@ -11,6 +11,7 @@ import re
 import sqlite3
 import unicodedata
 from dataclasses import dataclass
+from typing import Any
 
 from rapidfuzz import fuzz
 
@@ -30,7 +31,7 @@ from contracts.events import (
     PhaseEnteredPayload,
 )
 from contracts.llm import ClaimDraft, ClaimList
-from contracts.models import EvidenceSlot, FailureType, Passage, Phase, Source
+from contracts.models import EvidenceSlot, FailureType, Passage, Phase
 
 MIN_QUOTE_WORDS = 4
 MAX_CLAIMS_PER_CALL = 6
@@ -164,6 +165,78 @@ def _relevant_slots(
     return [(s, top) for _, _, s, top in out[:MAX_SLOTS_PER_SOURCE]]
 
 
+@dataclass(frozen=True)
+class Batch:
+    """One extractor call: one source, one or more (slot, ranked passages) entries."""
+
+    entries: tuple[tuple[EvidenceSlot, tuple[Passage, ...]], ...]
+
+    @property
+    def passages(self) -> list[Passage]:
+        """Unique passages in first-appearance order (slot order, then rank order)."""
+        seen: dict[str, Passage] = {}
+        for _, top in self.entries:
+            for p in top:
+                seen.setdefault(p.id, p)
+        return list(seen.values())
+
+
+def make_batches(relevant: list[tuple[EvidenceSlot, list[Passage]]], size: int) -> list[Batch]:
+    """Split one source's relevant slots (already in deterministic order) into batches of `size`."""
+    return [
+        Batch(tuple((s, tuple(top)) for s, top in relevant[i : i + size]))
+        for i in range(0, len(relevant), size)
+    ]
+
+
+def batch_payload(batch: Batch, *, legacy: bool) -> dict[str, Any]:
+    """LLM payload. `legacy` is the exact pre-batching single-slot shape (batch size 1)."""
+    if legacy:
+        ((slot, top),) = batch.entries
+        return {
+            "slot": {
+                "id": slot.id,
+                "name": slot.name,
+                "description": slot.description,
+                "attributes": slot.attributes,
+            },
+            "allowed_attributes": slot.attributes,
+            "passage_ids": [p.id for p in top],
+            "untrusted": [{"id": p.id, "text": p.text} for p in top],
+        }
+    return {
+        "slots": [
+            {
+                "id": slot.id,
+                "name": slot.name,
+                "description": slot.description,
+                "allowed_attributes": slot.attributes,
+                "passage_ids": [p.id for p in top],
+            }
+            for slot, top in batch.entries
+        ],
+        "untrusted": [{"id": p.id, "text": p.text} for p in batch.passages],
+    }
+
+
+def validate_batch_draft(
+    draft: ClaimDraft, batch: Batch, fuzzy: float
+) -> tuple[EvidenceSlot | None, str | None]:
+    """Slot the claim belongs to and a rejection reason (None when valid). Deterministic.
+
+    The claim's own `slot_id` must be in the batch and its passage must be one of the passages
+    ranked for THAT slot; the remaining checks (quote guard, attributes) use that slot.
+    """
+    by_slot = {slot.id: (slot, top) for slot, top in batch.entries}
+    if draft.slot_id not in by_slot:
+        return None, "slot_not_in_batch"
+    slot, top = by_slot[draft.slot_id]
+    unique = {p.id: p for p in batch.passages}
+    if draft.passage_id in unique and draft.passage_id not in {p.id for p in top}:
+        return slot, "passage_not_allowed_for_slot"
+    return slot, validate_draft(draft, slot, unique, fuzzy)
+
+
 async def run_claims(
     gateway: ToolGateway,
     conn: sqlite3.Connection,
@@ -176,11 +249,14 @@ async def run_claims(
 ) -> int:
     """CLAIMS phase. Returns the number of claims stored.
 
-    One extractor call per (source, relevant slot). A call that fails validation after retries
+    One extractor call per (source, relevant slot); with `extractor_batch_size` > 1, up to that many
+    slots of the same source share one call. A call that fails validation after retries
     (STEP_FAILED) or is rate limited is skipped and the run continues. BudgetExceeded and provider
     outages (BLOCKED) are re-raised after finished work has been persisted.
     """
     t = settings.thresholds
+    size = settings.extractor_batch_size
+    legacy = size == 1
     em.emit(
         EventType.PHASE_ENTERED,
         PhaseEnteredPayload(phase=Phase.CLAIMS, reason=reason),
@@ -190,7 +266,7 @@ async def run_claims(
     tasks = repo.list_tasks(conn, run_id)
     task_slot = {task.id: task.slot_id for task in tasks}
     task_round = {task.id: task.round for task in tasks}
-    jobs: list[tuple[Source, EvidenceSlot, list[Passage]]] = []
+    jobs: list[Batch] = []
     for source in repo.list_sources(conn, run_id, status="fetched"):
         if task_round.get(source.task_id or "", 0) != round:
             continue  # delta only (FR-16): earlier rounds' sources were already processed
@@ -198,28 +274,23 @@ async def run_claims(
         if not passages:
             continue
         own_slot = task_slot.get(source.task_id or "", "")
-        for slot, top in _relevant_slots(slots, own_slot, passages, t.passages_per_slot_source):
-            jobs.append((source, slot, top))
+        relevant = _relevant_slots(slots, own_slot, passages, t.passages_per_slot_source)
+        jobs.extend(make_batches(relevant, size))
 
     stored = failures = 0
     fatal: GatewayError | None = None
     seen = {(c.slot_id, c.passage_id, c.quote) for c in repo.list_claims(conn, run_id)}
 
-    async def call(slot: EvidenceSlot, top: list[Passage]):
-        payload = {
-            "slot": {
-                "id": slot.id,
-                "name": slot.name,
-                "description": slot.description,
-                "attributes": slot.attributes,
-            },
-            "allowed_attributes": slot.attributes,
-            "passage_ids": [p.id for p in top],
-            "untrusted": [{"id": p.id, "text": p.text} for p in top],
+    async def call(batch: Batch):
+        meta = {
+            "batch_size": size,
+            "batch_slots": len(batch.entries),
+            "batch_passages": len(batch.passages),
         }
-        return await gateway.llm(LLMRole.EXTRACTOR, "extractor.v1", ClaimList, payload)
+        payload = batch_payload(batch, legacy=legacy)
+        return await gateway.llm(LLMRole.EXTRACTOR, "extractor.v1", ClaimList, payload, meta=meta)
 
-    def persist(slot: EvidenceSlot, top: list[Passage], res) -> None:
+    def persist(batch: Batch, res) -> None:
         nonlocal stored, failures, fatal
         if isinstance(res, BudgetExceeded):
             fatal = fatal or res
@@ -232,16 +303,26 @@ async def run_claims(
             return
         if isinstance(res, BaseException):
             raise res
-        by_id = {p.id: p for p in top}
         metrics: CallMetrics | None = res.metrics
-        for draft in res.value.claims[:MAX_CLAIMS_PER_CALL]:
-            why = validate_draft(draft, slot, by_id, t.quote_fuzzy_ratio)
+        per_slot: dict[str, int] = {}
+        for draft in res.value.claims[: MAX_CLAIMS_PER_CALL * len(batch.entries)]:
+            # the cap is per slot (legacy: the one slot); over-cap drafts are dropped unvalidated
+            per_slot[draft.slot_id] = per_slot.get(draft.slot_id, 0) + 1
+            if not legacy and per_slot[draft.slot_id] > MAX_CLAIMS_PER_CALL:
+                continue
+            if legacy:
+                ((slot, top),) = batch.entries
+                why = validate_draft(draft, slot, {p.id: p for p in top}, t.quote_fuzzy_ratio)
+                claim_slot_id, known = slot.id, {p.id for p in top}
+            else:
+                _, why = validate_batch_draft(draft, batch, t.quote_fuzzy_ratio)
+                claim_slot_id, known = draft.slot_id, {p.id for p in batch.passages}
             if why is not None:
                 em.emit(
                     EventType.CLAIM_REJECTED,
                     ClaimRejectedPayload(
-                        slot_id=slot.id,
-                        passage_id=draft.passage_id if draft.passage_id in by_id else None,
+                        slot_id=claim_slot_id,
+                        passage_id=draft.passage_id if draft.passage_id in known else None,
                         quote=draft.quote,
                         reason=why,
                     ),
@@ -250,14 +331,14 @@ async def run_claims(
                 )
                 metrics = None  # the call's usage is recorded once
                 continue
-            key = (slot.id, draft.passage_id, draft.quote)
+            key = (claim_slot_id, draft.passage_id, draft.quote)
             if key in seen:
                 continue
             seen.add(key)
             claim = repo.insert_claim(
                 conn,
                 run_id,
-                slot_id=slot.id,
+                slot_id=claim_slot_id,
                 text=draft.text.strip(),
                 quote=draft.quote,
                 passage_id=draft.passage_id,
@@ -280,11 +361,9 @@ async def run_claims(
 
     # LLM calls run concurrently; claims are stored and emitted in job order afterwards, so claim
     # ids and duplicate handling never depend on completion order (replay fidelity, FR-26).
-    results = await asyncio.gather(
-        *(call(slot, top) for _, slot, top in jobs), return_exceptions=True
-    )
-    for (_, slot, top), res in zip(jobs, results, strict=True):
-        persist(slot, top, res)
+    results = await asyncio.gather(*(call(b) for b in jobs), return_exceptions=True)
+    for batch, res in zip(jobs, results, strict=True):
+        persist(batch, res)
     if failures >= STEP_FAILURE_WARNING_AT:
         em.emit(
             EventType.BUDGET_WARNING,

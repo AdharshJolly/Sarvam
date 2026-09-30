@@ -194,6 +194,10 @@ Analysis only; nothing below was implemented. "Readiness" is relative to the cur
 7. Larger golden set, run history/diff, freshness, adaptive budgets, routing, challenge targeting.
 8. Roadmap-only: human source control, PDF ingestion, evidence graph, semantic retrieval.
 
+## Extractor batching: implementation status
+
+`SARVAM_EXTRACTOR_BATCH_SIZE` (default 1, decision B-33, CL-09) batches up to N slots of one source into one extractor call. Size 1 is the unchanged legacy path. Sizes above 1 are implemented and unit-tested (grouping, size limit, shared-passage dedup, per-slot passage and attribute checks, quote guard, STEP_FAILED, budget, determinism, completion-order independence) but **not measured**: this report makes no claim that batching saves cost or preserves quality. The harness output now includes `extractor_batching` (batch size, extractor operations, slots, unique passages) next to the existing per-role operation, validation-attempt and token counts. The `extractor.v1` prompt text changed, so recorded runs made before this change must be re-recorded before a replay comparison.
+
 ## Files changed in this work
 
 `backend/gateway/{__init__,core,llm}.py`, `backend/controller.py`, `backend/intel/verify.py`,

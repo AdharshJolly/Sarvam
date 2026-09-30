@@ -22,7 +22,7 @@ Snapshot of 30 September 2026, after gate G3 (offline) and the LLM optimisation 
 | T03 planner | Done | `backend/pipeline/plan.py` |
 | T04 discover and qualify | Done | `backend/pipeline/discover.py` |
 | T05 acquire, extract, passages | Done | `backend/pipeline/acquire.py`, `extract.py` |
-| T06 claims and quote guard | Done | `backend/pipeline/claims.py` (delta-only per round, B-30) |
+| T06 claims and quote guard | Done | `backend/pipeline/claims.py` (delta-only per round, B-30). Optional extractor batching (`SARVAM_EXTRACTOR_BATCH_SIZE`, default 1, B-33): implemented and unit-tested, not yet benchmarked |
 | T07 writer v0 and renderer | Done | `backend/synth/writer.py`, `render.py` |
 | T08 fixture corpus | Done | `fixtures/`, `tests/fixtures/` |
 | T09 independent verifier | Done | `backend/intel/verify.py` |
