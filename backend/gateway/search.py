@@ -82,13 +82,83 @@ class TavilySearch:
         return hits
 
 
-def search_from_settings(settings: Settings, *, on_call: MetricsSink | None = None) -> TavilySearch:
-    if settings.search_provider != "tavily":
-        raise GatewayError(
-            FailureType.BLOCKED,
-            f"unsupported or unset SARVAM_SEARCH_PROVIDER {settings.search_provider!r}",
-        )
+class ExaSearch:
+    """Exa search provider (fallback). Returns full page text with each result."""
+
+    name = "exa"
+    url = "https://api.exa.ai/search"
+
+    def __init__(
+        self,
+        api_key: str,
+        *,
+        client: httpx.AsyncClient | None = None,
+        on_call: MetricsSink | None = None,
+        timeout: float = 20.0,
+    ) -> None:
+        self._api_key = api_key
+        self._client = client
+        self._on_call = on_call
+        self._timeout = timeout
+
+    async def search(self, query: str, *, max_results: int = 8) -> list[SearchHit]:
+        payload = {"query": query, "numResults": max_results, "contents": {"text": True}}
+        headers = {"x-api-key": self._api_key}
+        start = time.perf_counter()
+        try:
+            client = self._client or httpx.AsyncClient(timeout=self._timeout)
+            try:
+                resp = await client.post(self.url, json=payload, headers=headers)
+                resp.raise_for_status()
+                data = resp.json()
+            finally:
+                if self._client is None:
+                    await client.aclose()
+            hits = [
+                SearchHit(
+                    url=r["url"],
+                    title=r.get("title") or "",
+                    snippet=(r.get("text") or "")[:300],
+                    cleaned_text=r.get("text") or None,
+                )
+                for r in data["results"]
+            ]
+        except httpx.HTTPError as exc:
+            raise http_failure(self.name, exc) from exc
+        except (ValueError, KeyError, TypeError) as exc:
+            raise GatewayError(
+                FailureType.STEP_FAILED, f"{self.name} returned an unparseable response"
+            ) from exc
+        if self._on_call:
+            latency = int((time.perf_counter() - start) * 1000)
+            self._on_call(CallMetrics("search", self.name, None, latency))
+        return hits
+
+
+_PROVIDERS = {"tavily": TavilySearch, "exa": ExaSearch}
+
+
+def _build(provider: str, key: str, label: str, on_call: MetricsSink | None):
+    cls = _PROVIDERS.get(provider)
+    if cls is None:
+        raise GatewayError(FailureType.BLOCKED, f"unsupported or unset {label} {provider!r}")
+    return cls(key, on_call=on_call)
+
+
+def search_from_settings(settings: Settings, *, on_call: MetricsSink | None = None):
     key = settings.search_api_key.get_secret_value()
-    if not key:
+    provider = settings.search_provider
+    if provider in _PROVIDERS and not key:
         raise GatewayError(FailureType.BLOCKED, "SARVAM_SEARCH_API_KEY is not set")
-    return TavilySearch(key, on_call=on_call)
+    return _build(provider, key, "SARVAM_SEARCH_PROVIDER", on_call)
+
+
+def search_fallback_from_settings(settings: Settings, *, on_call: MetricsSink | None = None):
+    """The optional fallback provider, or None when SARVAM_SEARCH_FALLBACK_PROVIDER is unset."""
+    provider = settings.search_fallback_provider
+    if not provider:
+        return None
+    key = settings.search_fallback_api_key.get_secret_value()
+    if not key:
+        raise GatewayError(FailureType.BLOCKED, "SARVAM_SEARCH_FALLBACK_API_KEY is not set")
+    return _build(provider, key, "SARVAM_SEARCH_FALLBACK_PROVIDER", on_call)

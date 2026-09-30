@@ -6,7 +6,12 @@ import pytest
 
 from backend.gateway import CallMetrics, GatewayError
 from backend.gateway.llm import OpenAICompatLLM, llm_from_settings
-from backend.gateway.search import TavilySearch, search_from_settings
+from backend.gateway.search import (
+    ExaSearch,
+    TavilySearch,
+    search_fallback_from_settings,
+    search_from_settings,
+)
 from contracts.config import Settings
 from contracts.models import FailureType
 
@@ -127,3 +132,49 @@ def test_provider_configuration():
     )
     assert isinstance(search_from_settings(ok), TavilySearch)
     assert llm_from_settings(ok)._base == "https://llm.example/v1"
+
+
+def test_exa_parses_hits_and_uses_api_key_header():
+    seen: list[CallMetrics] = []
+
+    def handler(req: httpx.Request) -> httpx.Response:
+        assert req.headers["x-api-key"] == KEY
+        body = json.loads(req.content)
+        assert body["query"] == "q" and body["numResults"] == 3
+        results = [
+            {"url": "https://a.example", "title": "A", "text": "full text"},
+            {"url": "https://b.example", "title": None, "text": None},
+        ]
+        return httpx.Response(200, json={"results": results})
+
+    exa = ExaSearch(KEY, client=_client(handler), on_call=seen.append)
+    hits = asyncio.run(exa.search("q", max_results=3))
+    assert hits[0].cleaned_text == "full text" and hits[1].cleaned_text is None
+    assert hits[1].title == "" and seen[0].provider == "exa"
+
+
+@pytest.mark.parametrize(
+    ("status", "failure"),
+    [(429, FailureType.RATE_LIMITED), (401, FailureType.BLOCKED), (500, FailureType.STEP_FAILED)],
+)
+def test_exa_errors_are_typed_and_do_not_leak_key(status, failure):
+    exa = ExaSearch(KEY, client=_client(lambda r: httpx.Response(status)))
+    with pytest.raises(GatewayError) as ei:
+        asyncio.run(exa.search("q"))
+    assert ei.value.failure is failure and KEY not in str(ei.value)
+
+
+def test_search_fallback_configuration():
+    assert search_fallback_from_settings(Settings.from_env({})) is None
+    with pytest.raises(GatewayError):
+        search_fallback_from_settings(Settings.from_env({"SARVAM_SEARCH_FALLBACK_PROVIDER": "exa"}))
+    ok = Settings.from_env(
+        {"SARVAM_SEARCH_FALLBACK_PROVIDER": "exa", "SARVAM_SEARCH_FALLBACK_API_KEY": KEY}
+    )
+    assert isinstance(search_fallback_from_settings(ok), ExaSearch)
+    with pytest.raises(GatewayError):
+        search_fallback_from_settings(
+            Settings.from_env(
+                {"SARVAM_SEARCH_FALLBACK_PROVIDER": "nope", "SARVAM_SEARCH_FALLBACK_API_KEY": KEY}
+            )
+        )
