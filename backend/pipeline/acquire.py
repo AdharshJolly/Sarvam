@@ -46,7 +46,11 @@ async def _fetch_with_one_timeout_retry(
         raise
     except GatewayError as exc:
         if exc.message == "timeout":
-            return await gateway.fetch(url)  # the single permitted retry
+            try:
+                return await gateway.fetch(url)  # the single permitted retry
+            except BudgetExceeded:
+                # No budget left for the retry: give up on this source only, never the run.
+                raise exc from None
         raise
 
 
