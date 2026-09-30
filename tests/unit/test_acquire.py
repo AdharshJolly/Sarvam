@@ -214,3 +214,14 @@ def test_extract_creates_passages_with_exact_offsets_and_is_idempotent(tmp_path)
     assert run_extract(env.conn, env.em, env.settings, "R1") == 0  # already split
     phases = [e.payload["phase"] for e in env.events(EventType.PHASE_ENTERED)]
     assert phases == ["ACQUIRE", "EXTRACT", "EXTRACT"]
+
+
+def test_retry_blocked_by_the_fetch_budget_fails_only_that_source(tmp_path):
+    """Regression (live Gemini run): timeout retries used up the fetch cap and the BudgetExceeded
+    ended the whole run with zero claims. The retry must be dropped, not the run."""
+    f = FlakyFetcher(failures=5)
+    env = Env(tmp_path, f, [U1], budget=Budget(max_fetches=1))
+    assert env.acquire() == 0  # no BudgetExceeded escapes
+    s = env.source()
+    assert (s.status, s.fail_reason) == ("SOURCE_UNAVAILABLE", "timeout") and f.calls == 1
+    assert env.events(EventType.SOURCE_FAILED)[0].payload["reason"] == "timeout"
