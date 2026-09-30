@@ -40,7 +40,8 @@ def test_g1_end_to_end_pipeline_with_resolving_citations(tmp_path):
         types = [e["type"] for e in events]
         assert types[:3] == ["run.started", "phase.entered", "plan.created"]
         phases = [e["payload"]["phase"] for e in events if e["type"] == "phase.entered"]
-        assert phases == [
+        # round 0 walks PLAN to ANALYZE; the follow-up round (T14) and the stop policy come after
+        assert phases[:7] == [
             "PLAN",
             "DISCOVER",
             "ACQUIRE",
@@ -48,8 +49,8 @@ def test_g1_end_to_end_pipeline_with_resolving_citations(tmp_path):
             "CLAIMS",
             "VERIFY",
             "ANALYZE",
-            "SYNTHESIZE",
         ]
+        assert phases[-1] == "SYNTHESIZE"
         order = [
             "plan.created",
             "task.started",
@@ -95,12 +96,11 @@ def test_g1_end_to_end_pipeline_with_resolving_citations(tmp_path):
         assert sorted(report.dropped_sentences) == ["An invented citation.", "An uncited sentence."]
         assert "C9999" not in report.markdown and "uncited sentence" not in report.markdown
         assert "## Sources index" in report.markdown and "| S" in report.markdown
-        assert "Assurance state: not yet computed (M0)" in report.markdown
+        assert "**Assurance state: " in report.markdown  # from the stop decision (T14)
 
         # 6. run summary
-        assert (
-            summary["run"]["status"] == "completed" and summary["run"]["termination_reason"] is None
-        )
+        assert summary["run"]["status"] == "completed"
+        assert summary["run"]["termination_reason"] == "no_marginal_gain"
         assert summary["phase"] == "SYNTHESIZE"
 
 

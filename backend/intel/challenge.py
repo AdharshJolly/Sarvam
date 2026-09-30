@@ -79,6 +79,7 @@ def validate_attacks(
     slot_ids: set[str],
     claim_slot: dict[str, str],
     tried: list[str],
+    limit: int = MAX_ATTACKS,
 ) -> list[ValidAttack]:
     """Keep at most MAX_ATTACKS attacks that name a real slot (or a real claim, which gives the
     slot), carry a hypothesis and at least one new query. Ids the model invented drop the attack."""
@@ -109,7 +110,7 @@ def validate_attacks(
                 tuple(queries[:2]),
             )
         )
-        if len(out) == MAX_ATTACKS:
+        if len(out) >= min(limit, MAX_ATTACKS):
             break
     return out
 
@@ -197,6 +198,7 @@ async def run_challenge(
     scope: Scope,
     *,
     round: int,
+    max_attacks: int = MAX_ATTACKS,
     reason: str = "Attacking the weakest slots and claims before relying on them.",
 ) -> list[Challenge]:
     """CHALLENGE phase (state 8): ask the challenger for attacks, store each with one follow-up task
@@ -222,7 +224,9 @@ async def run_challenge(
         raise
     slots = {s.id for s in repo.list_slots(conn, run_id)}
     claim_slot = {c.id: c.slot_id for c in repo.list_claims(conn, run_id, include_rejected=False)}
-    attacks = validate_attacks(res.value.attacks, slots, claim_slot, payload["already_tried"])
+    attacks = validate_attacks(
+        res.value.attacks, slots, claim_slot, payload["already_tried"], max_attacks
+    )
     made: list[Challenge] = []
     metrics: CallMetrics | None = res.metrics
     for attack in attacks:

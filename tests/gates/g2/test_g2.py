@@ -48,11 +48,12 @@ def run(tmp_path):
 
 def test_g2_the_lifecycle_runs_verify_and_analyze_between_claims_and_synthesis(run):
     _, _, summary, events, _, _ = run
-    assert summary["run"]["status"] == "completed" and summary["run"]["termination_reason"] is None
+    assert summary["run"]["status"] == "completed"
     phases = [e["payload"]["phase"] for e in events if e["type"] == "phase.entered"]
-    assert phases == [
-        "PLAN", "DISCOVER", "ACQUIRE", "EXTRACT", "CLAIMS", "VERIFY", "ANALYZE", "SYNTHESIZE",
+    assert phases[:7] == [
+        "PLAN", "DISCOVER", "ACQUIRE", "EXTRACT", "CLAIMS", "VERIFY", "ANALYZE",
     ]  # fmt: skip
+    assert phases[-1] == "SYNTHESIZE"
     types = [e["type"] for e in events]
     order = [
         "claim.created",
@@ -84,14 +85,14 @@ def test_g2_the_verifier_is_a_separate_call_with_its_own_prompt(run):
 def test_g2_the_coverage_matrix_renders_from_the_real_run(run):
     _, _, _, events, state, _ = run
     want = expected("coverage")
-    assert {c.slot_id: c.state.value for c in state.coverage} == {
+    assert {c.slot_id: c.state.value for c in state.coverage if c.round == 0} == {
         slot: spec["state"] for slot, spec in want["cells"].items()
     }
-    for cell in state.coverage:
-        assert cell.round == 0 and cell.reason
-    (round0,) = state.rollups
+    round0_cells = [c for c in state.coverage if c.round == 0]
+    assert len(round0_cells) == 8 and all(c.reason for c in round0_cells)
+    round0 = next(r for r in state.rollups if r.round == 0)
     assert {r.dimension_id: r.state.value for r in round0.rollups} == want["rollups"]
-    cov = [e for e in events if e["type"] == "coverage.updated"]
+    cov = [e for e in events if e["type"] == "coverage.updated" and e["round"] == 0]
     assert len(cov) == 1 and len(cov[0]["payload"]["cells"]) == 8
 
 

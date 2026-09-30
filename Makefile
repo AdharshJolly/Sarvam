@@ -41,9 +41,9 @@ test: test-backend test-frontend
 fixtures:
 	uv run pytest tests/fixtures
 
-# Offline gate suites (G0 needs provider keys for its live cases; G1/G2 are deterministic).
+# Offline gate suites (G0 needs provider keys for its live cases; G1-G3 are deterministic).
 gates:
-	uv run pytest tests/gates/g1/test_g1.py tests/gates/g2
+	uv run pytest tests/gates/g1/test_g1.py tests/gates/g2 tests/gates/g3
 
 build:
 	bun run build

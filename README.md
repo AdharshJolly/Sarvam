@@ -6,7 +6,7 @@
 
 *Research that knows when it isn't done.*
 
-![Status](https://img.shields.io/badge/status-foundation-orange)
+![Status](https://img.shields.io/badge/status-G3%20offline-yellow)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
@@ -162,13 +162,14 @@ Contracts first. Walking skeleton before intelligence. Fixtures before prompts. 
 
 ## Project status
 
-**Foundation.** The monorepo, canonical contracts, SQLite schema and event writer, health endpoint, ToolGateway interfaces and the frontend shell are in place. The research controller, pipeline, evidence intelligence and report generation are not implemented yet.
+**Gates G0-G3 pass offline; the hardening phase is next.** Done: contracts, SQLite store, ToolGateway (budgets, SSRF guard, record/replay), planner, discover, acquire, extract, claims with the quote guard, independent verifier, origin clustering, numeric conflicts, coverage and gap tasks, the challenge loop, the round-based controller with the deterministic stop policy, the report verifier with certainty labels, the fixture corpus and the live frontend. Not yet done: a measured live run, failure states end to end, recorded canonical runs with offline replay, the audit sheet and the one-command run. Task-by-task status and the plan are in [docs/STATUS.md](docs/STATUS.md).
 
 ## Documentation map
 
 | Document | Purpose |
 | --- | --- |
 | [docs/ssot/SSOT_v2.docx](docs/ssot/SSOT_v2.docx) | Single Source of Truth (canonical) |
+| [docs/STATUS.md](docs/STATUS.md) | Build status by task and gate, next plan |
 | [docs/architecture](docs/architecture/README.md) | Architecture as built |
 | [docs/architecture/security.md](docs/architecture/security.md) | Security boundaries |
 | [docs/decisions](docs/decisions/README.md) | ADRs and change log |

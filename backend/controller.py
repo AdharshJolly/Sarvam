@@ -1,8 +1,9 @@
 """Run controller (SSOT section 7). Plain code, no orchestration framework.
 
-`run_m0` is the linear driver (decision B-08): the M0 pipeline plus the VERIFY and ANALYZE stages
-of G2. The controller owns budgets, wrap-up and failure handling; every failure becomes a typed
-event. T14 later extends or replaces it with the challenge loop, rounds and the stop policy.
+`run_research` drives the ten-state lifecycle (SSOT 7): round 0 runs PLAN to ANALYZE, then each
+follow-up round runs CHALLENGE and states 2 to 7 on the delta only, until the stop policy
+(`intel/stop.py`, a pure function of the stored tables) ends the run; then SYNTHESIZE. The
+controller owns budgets, rounds, wrap-up and failure handling; every failure becomes a typed event.
 """
 
 from __future__ import annotations
@@ -23,7 +24,18 @@ from backend.gateway.search import (
     search_from_settings,
 )
 from backend.gateway.ssrf import DefaultSSRFGuard
-from backend.intel.analyze import run_analyze
+from backend.intel.analyze import create_gap_tasks, run_analyze
+from backend.intel.challenge import MAX_ATTACKS, resolve_challenges, run_challenge
+from backend.intel.stop import (
+    HARD_LIMITS,
+    coverage_states,
+    final_decision,
+    latest_round,
+    marginal_gain,
+    next_termination,
+    open_conflict_count,
+    stop_cells,
+)
 from backend.intel.verify import run_verify
 from backend.pipeline.acquire import run_acquire
 from backend.pipeline.claims import run_claims
@@ -34,6 +46,7 @@ from backend.store import repo
 from backend.store.db import connect
 from backend.store.emit import Emitter
 from backend.synth.render import render_markdown, verify_citations
+from backend.synth.report_verify import allowed_numbers, verify_report
 from backend.synth.writer import eligible_claims, write_draft
 from contracts.config import Settings
 from contracts.events import (
@@ -42,10 +55,12 @@ from contracts.events import (
     PhaseEnteredPayload,
     ReportDraftPayload,
     ReportVerifiedPayload,
+    RoundStartedPayload,
     RunCompletedPayload,
     RunFailedPayload,
+    StopDecidedPayload,
 )
-from contracts.models import FailureType, Mode, Phase, Run, TerminationReason
+from contracts.models import FailureType, Mode, Phase, Run, StopDecision, TerminationReason
 
 log = logging.getLogger("sarvam.controller")
 
@@ -126,42 +141,67 @@ async def synthesize(
     em: Emitter,
     settings: Settings,
     run: Run,
-    termination: TerminationReason | None,
+    decision: StopDecision,
+    round: int = 0,
 ) -> None:
     """SYNTHESIZE: write, clean, render deterministically, prove every citation, store, emit."""
+    reason_code = decision.termination_reason
+    termination = reason_code if reason_code in HARD_LIMITS else None
     note = f"Wrap-up ({termination.value})." if termination else None
     reason = (
         f"Wrap-up ({termination.value}): writing the report from the evidence already stored."
         if termination
         else "Writing the report from the quote-verified claims."
     )
-    em.emit(EventType.PHASE_ENTERED, PhaseEnteredPayload(phase=Phase.SYNTHESIZE, reason=reason))
+    em.emit(
+        EventType.PHASE_ENTERED,
+        PhaseEnteredPayload(phase=Phase.SYNTHESIZE, reason=reason),
+        round=round,
+    )
     claims = eligible_claims(conn, run.id)
     result = await write_draft(gateway, conn, run, claims, wrap_up_note=note)
+    verified = verify_report(
+        result.draft,
+        claims,
+        repo.list_dimensions(conn, run.id),
+        coverage_states(conn, run.id, latest_round(conn, run.id)),
+        allowed_numbers(run),
+    )
+    dropped = [*result.dropped, *verified.dropped]
     markdown = render_markdown(
         conn,
         run,
-        result.draft,
+        verified,
         gateway.usage(),
         settings,
         claims,
-        termination_reason=termination.value if termination else None,
+        decision=decision,
         degraded_reason=result.degraded_reason,
     )
     verify_citations(conn, run.id, markdown)  # raises CitationError rather than ship a bad cite
-    report = repo.insert_report(conn, run.id, markdown=markdown, dropped_sentences=result.dropped)
+    report = repo.insert_report(
+        conn,
+        run.id,
+        markdown=markdown,
+        dropped_sentences=dropped,
+        certainty_state=decision.state.value,
+    )
     em.emit(
-        EventType.REPORT_DRAFT, ReportDraftPayload(version=report.version), metrics=result.metrics
+        EventType.REPORT_DRAFT,
+        ReportDraftPayload(version=report.version),
+        round=round,
+        metrics=result.metrics,
     )
     em.emit(
         EventType.REPORT_VERIFIED,
         ReportVerifiedPayload(
-            version=report.version, dropped_count=len(result.dropped), certainty_state=None
+            version=report.version, dropped_count=len(dropped), certainty_state=decision.state
         ),
+        round=round,
     )
 
 
-async def run_m0(
+async def run_research(
     run_id: str,
     *,
     settings: Settings,
@@ -170,10 +210,11 @@ async def run_m0(
 ) -> None:
     """Drive one run to a terminal event. Uses its own DB connection (decision B-10).
 
-    PLAN, DISCOVER, ACQUIRE, EXTRACT, CLAIMS, VERIFY, ANALYZE, SYNTHESIZE in order. A stop request,
-    the soft time limit, a budget limit or a provider outage after planning takes the wrap-up path:
-    skip the remaining stages, score coverage from the evidence already judged (code only, no LLM),
-    and synthesize from what is stored (SSOT 7.1).
+    Round 0 is PLAN to ANALYZE. While the stop policy says "continue", a follow-up round creates gap
+    and challenge tasks (CHALLENGE) and runs DISCOVER to ANALYZE on the delta only. A stop request,
+    the soft time limit, a budget limit or a provider outage takes the wrap-up path from any point:
+    coverage is scored from the evidence already stored (code only, no LLM) and the run goes to
+    STOP POLICY and SYNTHESIZE (SSOT 7.1).
     """
     conn = connect(settings.db_path)
     em = Emitter(conn, run_id)
@@ -197,39 +238,104 @@ async def run_m0(
         # Without a plan there is nothing to wrap up: a planner failure is an unrecoverable failure.
         await run_plan(gateway, conn, em, run_id, run.question, run.scope, run.budget)
 
-        async def extract() -> None:
-            run_extract(conn, em, settings, run_id)
+        analyzed: set[int] = set()
 
-        analyzed = False
+        async def run_stages(round: int) -> TerminationReason | None:
+            async def extract() -> None:
+                run_extract(conn, em, settings, run_id, round=round)
 
-        async def analyze() -> None:
-            nonlocal analyzed
-            analyzed = True  # set first: a budget error inside still computed the coverage
-            await run_analyze(gateway, conn, em, settings, run_id)
+            async def resolve() -> None:
+                if round > 0:
+                    await resolve_challenges(gateway, conn, em, run_id, round=round)
 
-        stages = (
-            lambda: run_discover(gateway, conn, em, settings, run_id, run.scope),
-            lambda: run_acquire(gateway, conn, em, settings, run_id),
-            extract,
-            lambda: run_claims(gateway, conn, em, settings, run_id),
-            lambda: run_verify(gateway, conn, em, settings, run_id),
-            analyze,
-        )
-        termination: TerminationReason | None = None
-        for stage in stages:
-            termination = _wrapup_reason(gateway)
-            if termination:
-                break
+            async def analyze() -> None:
+                analyzed.add(round)  # set first: a budget error inside still computed coverage
+                await run_analyze(gateway, conn, em, settings, run_id, round=round)
+
+            stages = (
+                lambda: run_discover(gateway, conn, em, settings, run_id, run.scope, round=round),
+                lambda: run_acquire(gateway, conn, em, settings, run_id, round=round),
+                extract,
+                lambda: run_claims(gateway, conn, em, settings, run_id, round=round),
+                lambda: run_verify(gateway, conn, em, settings, run_id, round=round),
+                resolve,
+                analyze,
+            )
+            for stage in stages:
+                if (reason := _wrapup_reason(gateway)) is not None:
+                    return reason
+                try:
+                    await stage()
+                except BudgetExceeded as exc:
+                    return _budget_reason(exc)
+                except GatewayError:  # provider outage (BLOCKED): wrap up with current evidence
+                    return TerminationReason.BLOCKED
+            return None
+
+        async def followup_round(round: int) -> TerminationReason | None:
+            # The search budget pays for whole tasks: what it cannot pay for is not planned, and
+            # a round it cannot pay for at all is a budget stop (the challenge is then incomplete).
+            per_task = settings.thresholds.queries_per_task
+            capacity = (run.budget.max_searches - gateway.usage().searches) // per_task
+            if capacity < 1:
+                return TerminationReason.BUDGET
             try:
-                await stage()
+                attacks = await run_challenge(
+                    gateway,
+                    conn,
+                    em,
+                    run_id,
+                    run.question,
+                    run.scope,
+                    round=round,
+                    max_attacks=min(MAX_ATTACKS, max(1, capacity // 2)),
+                )
             except BudgetExceeded as exc:
-                termination = _budget_reason(exc)
-                break
-            except GatewayError:  # provider outage (BLOCKED): wrap up with current evidence
-                termination = TerminationReason.BLOCKED
-                break
+                return _budget_reason(exc)
+            except GatewayError:
+                return TerminationReason.BLOCKED
+            gaps = create_gap_tasks(
+                conn, run_id, run.scope, round=round, limit=capacity - len(attacks)
+            )
+            em.emit(
+                EventType.ROUND_STARTED,
+                RoundStartedPayload(
+                    round=round,
+                    reason=(
+                        f"Re-searching {len(gaps)} weak critical slot(s) and testing "
+                        f"{len(attacks)} attack(s) on the conclusion."
+                    ),
+                    task_ids=[t.id for t in repo.list_tasks(conn, run_id, round=round)],
+                ),
+                round=round,
+            )
+            return await run_stages(round)
 
-        if termination is not None and not analyzed:
+        round = 0
+        termination = await run_stages(0)
+        while termination is None:
+            gain = (
+                marginal_gain(
+                    coverage_states(conn, run_id, round - 1), coverage_states(conn, run_id, round)
+                )
+                if round > 0
+                else None
+            )
+            termination = next_termination(
+                stop_cells(conn, run_id, round),
+                open_conflict_count(conn, run_id),
+                repo.list_challenges(conn, run_id),
+                round=round,
+                max_rounds=run.budget.max_followup_rounds,
+                gain=gain,
+                hard_limit=_wrapup_reason(gateway),
+            )
+            if termination is not None:
+                break
+            round += 1
+            termination = await followup_round(round)
+
+        if round not in analyzed:
             # Wrap-up: the matrix must still show the gaps (SSOT 7.1). Code only, no LLM calls.
             await run_analyze(
                 gateway,
@@ -237,22 +343,42 @@ async def run_m0(
                 em,
                 settings,
                 run_id,
+                round=round,
                 explain=False,
                 reason=f"Wrap-up ({termination.value}): scoring coverage from stored evidence.",
             )
 
-        await synthesize(gateway, conn, em, settings, run, termination)
         em.emit(
-            EventType.RUN_COMPLETED,
-            RunCompletedPayload(stop_state=None, termination_reason=termination),
+            EventType.PHASE_ENTERED,
+            PhaseEnteredPayload(
+                phase=Phase.STOP_POLICY, reason="Applying the stop rules to the stored evidence."
+            ),
+            round=round,
         )
+        decision = final_decision(
+            stop_cells(conn, run_id, latest_round(conn, run_id)),
+            open_conflict_count(conn, run_id),
+            repo.list_challenges(conn, run_id),
+            termination,
+        )
+        em.emit(EventType.STOP_DECIDED, StopDecidedPayload(decision=decision), round=round)
         repo.set_run_status(
             conn,
             run_id,
-            "completed",
-            termination_reason=termination.value if termination else None,
-            ended=True,
+            "running",
+            termination_reason=decision.termination_reason.value,
+            stop_state=decision.state.value,
         )
+
+        await synthesize(gateway, conn, em, settings, run, decision, round)
+        em.emit(
+            EventType.RUN_COMPLETED,
+            RunCompletedPayload(
+                stop_state=decision.state, termination_reason=decision.termination_reason
+            ),
+            round=round,
+        )
+        repo.set_run_status(conn, run_id, "completed", ended=True)
     except GatewayError as exc:
         _fail(conn, em, run_id, exc.failure, exc.message or exc.failure.value)
     except asyncio.CancelledError:

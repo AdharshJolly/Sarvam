@@ -1,7 +1,7 @@
 import asyncio
 import json
 
-from backend.controller import RunHandle, run_m0
+from backend.controller import RunHandle, run_research
 from backend.gateway import GatewayError
 from backend.store import repo
 from backend.store.db import init_db
@@ -31,7 +31,7 @@ class Env:
         self.conn.commit()
 
     def run(self, deps, handle=None):
-        asyncio.run(run_m0("R1", settings=self.settings, deps=deps, handle=handle))
+        asyncio.run(run_research("R1", settings=self.settings, deps=deps, handle=handle))
         run = repo.get_run(self.conn, "R1")
         events = list(read_events(self.conn, "R1"))
         return run, events, repo.build_report_view(self.conn, "R1")
@@ -43,15 +43,15 @@ def phases(events):
 
 def test_full_run_completes_cleanly(tmp_path):
     run, events, report = Env(tmp_path).run(scenario_deps())
-    assert run.status == "completed" and run.termination_reason is None
+    # the challenge round finds nothing new (same pages), so coverage does not improve
+    assert run.status == "completed" and run.termination_reason == "no_marginal_gain"
+    round_stages = ["DISCOVER", "ACQUIRE", "EXTRACT", "CLAIMS", "VERIFY", "ANALYZE"]
     assert phases(events) == [
         "PLAN",
-        "DISCOVER",
-        "ACQUIRE",
-        "EXTRACT",
-        "CLAIMS",
-        "VERIFY",
-        "ANALYZE",
+        *round_stages,
+        "CHALLENGE",
+        *round_stages,
+        "STOP_POLICY",
         "SYNTHESIZE",
     ]
     assert report.citations and events[-1].type is EventType.RUN_COMPLETED
@@ -62,7 +62,7 @@ def test_stop_request_takes_the_wrap_up_path(tmp_path):
     handle.stop_event.set()
     run, events, report = Env(tmp_path).run(scenario_deps(), handle)
     assert run.status == "completed" and run.termination_reason == "user_stopped"
-    assert phases(events) == ["PLAN", "ANALYZE", "SYNTHESIZE"]  # wrap-up still scores the gaps
+    assert phases(events) == ["PLAN", "ANALYZE", "STOP_POLICY", "SYNTHESIZE"]  # gaps still scored
     assert (
         "Wrap-up (user_stopped)"
         in [e for e in events if e.type is EventType.PHASE_ENTERED][-1].payload["reason"]
@@ -74,7 +74,7 @@ def test_soft_time_limit_takes_the_wrap_up_path(tmp_path):
     env = Env(tmp_path, Budget(max_wall_seconds_soft=0))
     run, events, report = env.run(scenario_deps())
     assert run.termination_reason == "timeout"
-    assert phases(events) == ["PLAN", "ANALYZE", "SYNTHESIZE"]
+    assert phases(events) == ["PLAN", "ANALYZE", "STOP_POLICY", "SYNTHESIZE"]
     assert report is not None and events[-1].payload["termination_reason"] == "timeout"
 
 
@@ -98,7 +98,7 @@ def test_provider_outage_after_planning_wraps_up_with_blocked(tmp_path):
 def test_extractor_step_failures_do_not_stop_the_run(tmp_path):
     deps = scenario_deps(llm_script={"extractor.v1": GatewayError(FailureType.STEP_FAILED, "bad")})
     run, events, report = Env(tmp_path).run(deps)
-    assert run.status == "completed" and run.termination_reason is None
+    assert run.status == "completed" and run.termination_reason == "no_marginal_gain"
     assert any(e.type is EventType.BUDGET_WARNING for e in events)  # repeated failures warn
     assert "no findings" in report.markdown
 
@@ -185,13 +185,13 @@ def test_a_provider_outage_in_the_verifier_wraps_up_and_cites_nothing_unjudged(t
     run, events, report = Env(tmp_path).run(scenario_deps(llm_script={"verifier.v1": outage}))
     assert run.status == "completed" and run.termination_reason == "blocked"
     assert report.citations == [] and "no findings" in report.markdown
-    assert phases(events)[-3:] == ["VERIFY", "ANALYZE", "SYNTHESIZE"]
+    assert phases(events)[-4:] == ["VERIFY", "ANALYZE", "STOP_POLICY", "SYNTHESIZE"]
 
 
 def test_verifier_step_failures_leave_claims_unjudged_visibly_and_uncited(tmp_path):
     bad = GatewayError(FailureType.STEP_FAILED, "bad")
     run, events, report = Env(tmp_path).run(scenario_deps(llm_script={"verifier.v1": bad}))
-    assert run.status == "completed" and run.termination_reason is None
+    assert run.status == "completed" and run.termination_reason == "no_marginal_gain"
     warn = [e for e in events if e.type is EventType.BUDGET_WARNING]
     assert any(e.payload["limit"] == "verifier_unverified_claims" for e in warn)
     assert report.citations == []
