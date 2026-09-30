@@ -1,14 +1,21 @@
 import { type KeyboardEvent, type ReactNode, useRef } from "react";
 
-export const TABS = [
-  { id: "matrix", label: "Matrix" },
-  { id: "evidence", label: "Evidence" },
-  { id: "conflicts", label: "Conflicts" },
-  { id: "challenge", label: "Challenge" },
-  { id: "report", label: "Report" },
-] as const;
+import { TAB_IDS, type TabId } from "../../lib/route";
 
-export type TabId = (typeof TABS)[number]["id"];
+export type { TabId };
+
+const LABELS: Record<TabId, string> = {
+  matrix: "Matrix",
+  evidence: "Evidence",
+  conflicts: "Conflicts",
+  challenge: "Challenge",
+  report: "Report",
+};
+
+export const TABS: ReadonlyArray<{ id: TabId; label: string }> = TAB_IDS.map((id) => ({
+  id,
+  label: LABELS[id],
+}));
 
 /** Accessible tab list (roving tabindex, arrow/Home/End keys). Panels are supplied by the caller. */
 export function CenterTabs({

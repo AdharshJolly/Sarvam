@@ -11,11 +11,11 @@ import {
 } from "react";
 import { ApiError } from "../api/client";
 import { openStream, runApi } from "../api";
+import { parseRoute } from "../lib/route";
 import { type RunView, initialView, reduce } from "./runStore";
 
 export function runIdFromHash(hash: string): string | null {
-  const m = /^#\/run\/([^/?#]+)/.exec(hash);
-  return m?.[1] ? decodeURIComponent(m[1]) : null;
+  return parseRoute(hash).runId;
 }
 
 export function errorText(err: unknown): string {

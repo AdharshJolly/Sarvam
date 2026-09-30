@@ -18,6 +18,7 @@ import { ReportPanel } from "../panels/ReportPanel";
 import { SkeletonLines } from "../ui/Skeleton";
 import { StateChip } from "../ui/StateChip";
 import { failureChip } from "../ui/chips";
+import { buildHash, parseRoute } from "../../lib/route";
 import { CenterTabs, type TabId } from "./CenterTabs";
 import { EvidenceDrawer } from "./EvidenceDrawer";
 import { LeftRail } from "./LeftRail";
@@ -31,28 +32,23 @@ import { Button } from "../ui/Button";
 function Shell() {
   const { view, runId, error, newRun, reattach, hydrating } = useSession();
   const ev = useEvidence();
-  const [tab, setTabState] = useState<TabId>("matrix");
+  const [tab, setTabState] = useState<TabId>(() => parseRoute(window.location.hash).tab);
   const [slotFilter, setSlotFilter] = useState<string | null>(null);
   const [dockFilter, setDockFilter] = useState<DockFilter>("all");
   const run = view.run;
   const running = run?.status === "running" || run?.status === "queued";
   const tokens = view.timeline.reduce((n, t) => n + (t.tokens ?? 0), 0);
 
+  // The tab lives in the URL (#/run/<id>/<tab>) so reloads, shared links and Back restore it.
   useEffect(() => {
-    const handleHash = () => {
-      const hash = window.location.hash.slice(1);
-      if (["matrix", "evidence", "conflicts", "challenge", "report"].includes(hash)) {
-        setTabState(hash as TabId);
-      }
-    };
-    handleHash();
-    window.addEventListener("hashchange", handleHash);
-    return () => window.removeEventListener("hashchange", handleHash);
+    const onHash = () => setTabState(parseRoute(window.location.hash).tab);
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
   const setTab = (t: TabId) => {
-    setTabState(t);
-    window.history.replaceState(null, "", `#${t}`);
+    if (runId) window.location.hash = buildHash(runId, t);
+    else setTabState(t);
   };
 
   const goEvidenceForSlot = (slotId: string) => {
