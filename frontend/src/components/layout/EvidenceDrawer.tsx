@@ -147,7 +147,7 @@ export function EvidenceDrawer() {
       isOpen={ev.isOpen}
       onClose={close}
       title="Evidence"
-      isDrawer
+      placement="right"
       docked={docked}
     >
       {ev.isOpen && runId ? (
