@@ -9,6 +9,18 @@ export const TAB_IDS = ["matrix", "evidence", "conflicts", "challenge", "report"
 export type TabId = (typeof TAB_IDS)[number];
 export const DEFAULT_TAB: TabId = "matrix";
 
+export type PageId =
+  | "landing"
+  | "workspace"
+  | "run"
+  | "signin"
+  | "register"
+  | "account"
+  | "admin"
+  | "privacy"
+  | "terms"
+  | "cookies";
+
 export interface Route {
   runId: string | null;
   tab: TabId;
@@ -19,6 +31,21 @@ const RUN_ROUTE = /^#\/run\/([^/?#]+)(?:\/([^/?#]+))?/;
 function isTab(value: string | undefined): value is TabId {
   return value !== undefined && (TAB_IDS as readonly string[]).includes(value);
 }
+
+export function getRoutePage(hash: string): PageId {
+  if (hash.startsWith("#/signin")) return "signin";
+  if (hash.startsWith("#/register")) return "register";
+  if (hash.startsWith("#/account")) return "account";
+  if (hash.startsWith("#/workspace") || hash.startsWith("#/new")) return "workspace";
+  if (hash.startsWith("#/history") || hash.startsWith("#/admin")) return "admin";
+  if (hash.startsWith("#/privacy")) return "privacy";
+  if (hash.startsWith("#/terms")) return "terms";
+  if (hash.startsWith("#/cookies")) return "cookies";
+  const m = RUN_ROUTE.exec(hash);
+  if (m?.[1]) return "run";
+  return "landing";
+}
+
 
 /** Parse a location hash. Unknown or missing tabs fall back to the default tab. */
 export function parseRoute(hash: string): Route {

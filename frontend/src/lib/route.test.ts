@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { DEFAULT_TAB, TAB_IDS, buildHash, parseRoute } from "./route";
+import { DEFAULT_TAB, TAB_IDS, buildHash, parseRoute, getRoutePage } from "./route";
 
 describe("parseRoute", () => {
   test("no run in the hash means the landing screen", () => {
@@ -51,3 +51,25 @@ describe("buildHash", () => {
     }
   });
 });
+
+describe("getRoutePage", () => {
+  test("identifies signin, register, admin, run and landing pages", () => {
+    expect(getRoutePage("")).toBe("landing");
+    expect(getRoutePage("#")).toBe("landing");
+    expect(getRoutePage("#/")).toBe("landing");
+    expect(getRoutePage("#/signin")).toBe("signin");
+    expect(getRoutePage("#/register")).toBe("register");
+    expect(getRoutePage("#/account")).toBe("account");
+    expect(getRoutePage("#/workspace")).toBe("workspace");
+    expect(getRoutePage("#/new")).toBe("workspace");
+    expect(getRoutePage("#/admin")).toBe("admin");
+    expect(getRoutePage("#/history")).toBe("admin");
+    expect(getRoutePage("#/privacy")).toBe("privacy");
+    expect(getRoutePage("#/terms")).toBe("terms");
+    expect(getRoutePage("#/cookies")).toBe("cookies");
+    expect(getRoutePage("#/run/R1")).toBe("run");
+    expect(getRoutePage("#/unknown")).toBe("landing");
+  });
+});
+
+
