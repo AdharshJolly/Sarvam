@@ -70,5 +70,11 @@ generated from the Pydantic models. It never defines its own domain shapes.
 
 ## Status
 
-Bootstrap only: contracts, SQLite schema and event writer, health endpoint, gateway interfaces and the
-frontend shell exist. Controller, pipeline, intel and synthesis are unimplemented (tasks T02-T15).
+Done: contracts (incl. the shared addendum), SQLite store and helpers, ToolGateway (T02: budgets, SSRF
+guard, fetch, structured LLM, record/replay), planner (T03) and the full API surface including SSE.
+The controller currently runs PLAN only (interim `run_m0`); discover, acquire, extract, claims and
+synthesis (T04-T07) are in progress. Intel (Stream B) and T13-T15 are not started.
+
+Run execution: `POST /api/runs` creates the run and, outside the test env, starts `controller.run_m0`
+as an asyncio task on its own DB connection. SSE (`GET /runs/{id}/events`) polls the events table on
+a separate connection and sends `id:` + `data:` frames only.

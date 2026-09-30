@@ -18,10 +18,13 @@ from contracts.models import FailureType
 class GatewayError(Exception):
     """Typed gateway failure (SSOT section 18). Never swallowed silently (NFR-04)."""
 
-    def __init__(self, failure: FailureType, message: str = "") -> None:
+    def __init__(
+        self, failure: FailureType, message: str = "", *, retry_after: float | None = None
+    ) -> None:
         super().__init__(f"{failure.value}: {message}" if message else failure.value)
         self.failure = failure
         self.message = message
+        self.retry_after = retry_after  # seconds the provider asked us to wait (HTTP 429)
 
 
 class BudgetExceeded(GatewayError):
@@ -66,7 +69,14 @@ def http_failure(provider: str, exc: Exception) -> GatewayError:
     if isinstance(exc, httpx.HTTPStatusError):
         code = exc.response.status_code
         if code == 429:
-            return GatewayError(FailureType.RATE_LIMITED, f"{provider} returned HTTP 429")
+            header = exc.response.headers.get("retry-after", "")
+            try:
+                wait = float(header) if header else None
+            except ValueError:
+                wait = None
+            return GatewayError(
+                FailureType.RATE_LIMITED, f"{provider} returned HTTP 429", retry_after=wait
+            )
         if code in (401, 403):
             return GatewayError(FailureType.BLOCKED, f"{provider} rejected credentials ({code})")
         return GatewayError(FailureType.STEP_FAILED, f"{provider} returned HTTP {code}")

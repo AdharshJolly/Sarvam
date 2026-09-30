@@ -34,6 +34,8 @@ from contracts.models import Budget, BudgetUsage, FailureType, Mode
 T = TypeVar("T")
 
 SEARCH_BACKOFF_SECONDS = (0.5, 1.0, 2.0)
+LLM_RATE_LIMIT_RETRIES = 3
+LLM_RATE_LIMIT_MAX_WAIT = 30.0  # seconds; honours the provider Retry-After up to this cap
 LLM_MAX_ATTEMPTS = 3  # first try plus 2 validation retries (SSOT 10)
 WARN_FRACTION = 0.8
 
@@ -276,9 +278,23 @@ class ToolGateway:
     ) -> dict[str, Any]:
         async def live() -> dict[str, Any]:
             llm = self._need("LLM client", self._llm)
-            comp = await llm.complete(
-                model, messages, temperature=temperature, max_tokens=max_tokens
-            )
+            for attempt in range(LLM_RATE_LIMIT_RETRIES + 1):
+                try:
+                    comp = await llm.complete(
+                        model, messages, temperature=temperature, max_tokens=max_tokens
+                    )
+                    break
+                except GatewayError as exc:
+                    if (
+                        exc.failure is not FailureType.RATE_LIMITED
+                        or attempt == LLM_RATE_LIMIT_RETRIES
+                    ):
+                        raise
+                    wait = min(
+                        max(exc.retry_after or 0.0, SEARCH_BACKOFF_SECONDS[min(attempt, 2)]),
+                        LLM_RATE_LIMIT_MAX_WAIT,
+                    )
+                    await self._sleep(wait)
             m = comp.metrics
             return {
                 "text": comp.text,

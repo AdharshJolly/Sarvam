@@ -16,6 +16,12 @@ the same commit (SSOT section 21).
 | B-05 | Contracts use `extra="forbid"`. | Prevents silent shape drift between backend and frontend. |
 | B-06 | Schema versioning via `PRAGMA user_version` + idempotent `schema.sql`. | Simplest migration strategy for a 24-hour MVP. |
 | B-07 | `uv.lock` is not committed. | CLAUDE.md rule "no dependency lockfile other than Bun's"; reversible (see final report). |
+| B-08 | `controller.run_m0` is a minimal linear M0 driver, written as part of T07; T14 extends or replaces it. | No task card owns the M0 wiring, but G1 needs an end-to-end run before Stream B lands. |
+| B-09 | Short ids (S3, P12, C41, ...) are allocated globally monotonic by `backend/store/ids.py::next_id` inside `BEGIN IMMEDIATE`; origins, dimensions, slots and tasks stay per-run. | `schema.sql` keys most tables globally, so ids would collide across runs. No schema change. |
+| B-10 | The run task and each SSE stream open their own SQLite connection; `busy_timeout=5000`. The lifespan connection serves short request handlers only. | One shared connection is unsafe with concurrent writers and readers. `POST /runs` is `async def` and does a few sync SQLite calls on the event loop (acceptable for the MVP). |
+| B-11 | SSE frames carry `id:` and `data:` only (no `event:` field); heartbeat is a `: keepalive` comment every 15 s. | `EventSource.onmessage` does not receive named events. |
+| B-12 | Planner is limited to 4-5 dimensions x 2 slots x 1 task; discover uses exactly 2 queries per task (16-20 searches in round 0 against MAX_SEARCHES=24). | FR-02 plus FR-04 can exceed the budget in round 0. The default cap is not changed; G1 measures and reports. |
+| B-13 | Gateway retries LLM HTTP 429 up to 3 times, honouring `Retry-After` (capped at 30 s); per-role `max_tokens` are 3000-6000. | Groq free tier allows 8,000 tokens per minute for `gpt-oss-120b`; unhandled 429s failed the live planner test. |
 
 ## Change log (SSOT section 21)
 

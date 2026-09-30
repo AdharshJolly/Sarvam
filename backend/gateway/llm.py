@@ -146,11 +146,11 @@ class RoleSettings:
 
 
 ROLE_SETTINGS: dict[LLMRole, RoleSettings] = {
-    LLMRole.PLANNER: RoleSettings(LLMTier.STRONG, 0.2, 6000),
-    LLMRole.EXTRACTOR: RoleSettings(LLMTier.FAST, 0.0, 4000),
+    LLMRole.PLANNER: RoleSettings(LLMTier.STRONG, 0.2, 4000),
+    LLMRole.EXTRACTOR: RoleSettings(LLMTier.FAST, 0.0, 3000),
     LLMRole.VERIFIER: RoleSettings(LLMTier.FAST, 0.0, 2000),
-    LLMRole.CHALLENGER: RoleSettings(LLMTier.STRONG, 0.4, 5000),
-    LLMRole.WRITER: RoleSettings(LLMTier.STRONG, 0.2, 8000),
+    LLMRole.CHALLENGER: RoleSettings(LLMTier.STRONG, 0.4, 4000),
+    LLMRole.WRITER: RoleSettings(LLMTier.STRONG, 0.2, 6000),
     LLMRole.EXPLAINER: RoleSettings(LLMTier.FAST, 0.0, 2000),
 }
 
