@@ -43,6 +43,7 @@ import { SignInPage } from "../auth/SignInPage";
 import { RegisterPage } from "../auth/RegisterPage";
 import { WorkspacePage } from "../workspace/WorkspacePage";
 import { AdminPage } from "../admin/AdminPage";
+import { AdminConsole } from "../admin-portal/AdminConsole";
 import { AccountPage } from "../account/AccountPage";
 import { PrivacyPolicyPage } from "../legal/PrivacyPolicyPage";
 import { TermsPage } from "../legal/TermsPage";
@@ -109,6 +110,7 @@ function Shell() {
   if (page === "register") return <RegisterPage />;
   if (page === "workspace") return <WorkspacePage />;
   if (page === "admin") return <AdminPage />;
+  if (page === "console") return <AdminConsole />;
   if (page === "account") return <AccountPage />;
   if (page === "privacy") return <PrivacyPolicyPage />;
   if (page === "terms") return <TermsPage />;

@@ -4,7 +4,7 @@ import { StateChip } from "./ui/StateChip";
 import { coverageChip } from "./ui/chips";
 
 /**
- * Legend plus the Simple / Detailed switch (decision B-36). Simple shows plain wording only;
+ * Legend plus the Simple / Detailed switch (decision B-38). Simple shows plain wording only;
  * Detailed adds the technical term (RED, SUFFICIENT_WITH_CAVEATS, ...) beside it.
  */
 export function ReadingGuide() {

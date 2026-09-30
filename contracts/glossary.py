@@ -1,4 +1,4 @@
-"""Plain-language glossary (decision B-36): the single source of user-facing wording.
+"""Plain-language glossary (decision B-38): the single source of user-facing wording.
 
 Every enum value a reader can see (coverage state, final state, verdict, challenge outcome, conflict
 kind and status, stop reason, failure, source status, certainty) maps to a plain label, a one-line

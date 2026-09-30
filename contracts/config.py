@@ -80,6 +80,7 @@ class Settings(BaseModel):
     api_port: int = 8000
     api_prefix: str = "/api"
     cors_origins: tuple[str, ...] = ("http://localhost:5173",)
+    admin_emails: tuple[str, ...] = ()  # B-36: emails promoted to role=admin at register/login
 
     db_path: Path = Path("data/sarvam.db")
     artifact_dir: Path = Path("data/artifacts")
@@ -145,6 +146,9 @@ class Settings(BaseModel):
             api_host=get("API_HOST", d.api_host),
             api_port=int(get("API_PORT", str(d.api_port))),
             cors_origins=tuple(o.strip() for o in origins.split(",") if o.strip()),
+            admin_emails=tuple(
+                a.strip().lower() for a in get("ADMIN_EMAILS", "").split(",") if a.strip()
+            ),
             db_path=Path(get("DB_PATH", str(d.db_path))),
             artifact_dir=Path(get("ARTIFACT_DIR", str(d.artifact_dir))),
             record_dir=Path(get("RECORD_DIR", str(d.record_dir))),

@@ -210,7 +210,7 @@ def test_render_strips_typed_markers_escapes_tables_and_reports_unreported_cost(
         and "**Assurance state: SUFFICIENT_WITH_CAVEATS** (max_rounds)" in md
     )
     assert "Searches: 3/24" in md and "Mode: LIVE" in md
-    # Plain-language layer (B-36): headline, stop reason and reading guide, before the jargon line.
+    # Plain-language layer (B-38): headline, stop reason and reading guide, before the jargon line.
     assert "**Answer is solid, with caveats.**" in md
     assert "Why the research stopped: Follow-up limit reached." in md
     assert "## How to read this report" in md

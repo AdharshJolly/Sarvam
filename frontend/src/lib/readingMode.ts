@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-/** Simple shows plain wording only; Detailed adds the technical term beside it (B-36). */
+/** Simple shows plain wording only; Detailed adds the technical term beside it (B-38). */
 export type ReadingMode = "simple" | "detailed";
 
 const KEY = "sarvam.readingMode";

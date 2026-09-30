@@ -3,7 +3,7 @@
 | File | Produced by | Command |
 | --- | --- | --- |
 | `schema.json` | `contracts/schema_export.py` (Pydantic -> JSON Schema) | `make contracts` |
-| `glossary.ts` | `contracts/glossary.py` (plain-language wording, B-36) | `make contracts` |
+| `glossary.ts` | `contracts/glossary.py` (plain-language wording, B-38) | `make contracts` |
 | `types.ts` | `json-schema-to-typescript` via `bun run gen:types` | `make contracts` |
 
 Both are committed so the frontend typechecks on a fresh checkout. `make contracts-check`

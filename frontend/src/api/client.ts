@@ -1,4 +1,15 @@
 import type {
+  AdminActivity,
+  AdminAudit,
+  AdminCosts,
+  AdminHealth,
+  AdminOverview,
+  AdminRunDetail,
+  AdminRunPage,
+  AdminSettings,
+  AdminUserRow,
+  AdminUserUpdate,
+  Budget,
   AuthResponse,
   ClaimEvidence,
   ReportView,
@@ -9,6 +20,7 @@ import type {
   UserCreate,
   UserLogin,
   UserPublic,
+  UserUsage,
 } from "@contracts/types";
 import { env } from "../config/env";
 import { apiUrl, routes } from "./url";
@@ -119,6 +131,7 @@ export const api = {
     request<AuthResponse>(routes.authLogin(), { method: "POST", body: JSON.stringify(body) }),
   logout: () => request<{ ok: boolean }>(routes.authLogout(), { method: "POST" }),
   me: () => request<UserPublic>(routes.authMe()),
+  usage: () => request<UserUsage>(routes.authUsage()),
   updateProfile: (body: UserUpdateData) =>
     request<UserPublic>(routes.authMe(), { method: "PATCH", body: JSON.stringify(body) }),
   deleteAccount: () =>
@@ -127,3 +140,82 @@ export const api = {
   stopRun: (id: string) => request<RunSummary>(routes.stop(id), { method: "POST" }),
 };
 
+
+export interface AdminRunsQuery {
+  include_hidden?: boolean;
+  status?: string;
+  mode?: string;
+  user_id?: string;
+  limit?: number;
+  offset?: number;
+}
+
+function qs(params: Record<string, string | number | boolean | undefined>): string {
+  const p = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== undefined && v !== "" && v !== false) p.set(k, String(v));
+  }
+  const s = p.toString();
+  return s ? `?${s}` : "";
+}
+
+/** Operator console API (ADR B-36, B-37). The server enforces the admin role; 401/403 surface as ApiError. */
+export const adminApi = {
+  overview: () => request<AdminOverview>(routes.adminOverview()),
+  runs: (q: AdminRunsQuery = {}) =>
+    request<AdminRunPage>(`${routes.adminRuns()}${qs({ ...q })}`),
+  run: (id: string) => request<AdminRunDetail>(routes.adminRun(id)),
+  users: () => request<AdminUserRow[]>(routes.adminUsers()),
+  costs: (days: 7 | 30 | 90) => request<AdminCosts>(`${routes.adminCosts()}${qs({ days })}`),
+  activity: (q: { since_id?: number; type?: string; limit?: number } = {}) =>
+    request<AdminActivity>(`${routes.adminActivity()}${qs({ ...q })}`),
+  health: () => request<AdminHealth>(routes.adminHealth()),
+  updateUser: (id: string, body: AdminUserUpdate) =>
+    request<AdminUserRow>(routes.adminUser(id), { method: "PATCH", body: JSON.stringify(body) }),
+  deleteUser: (id: string) => request<{ ok: boolean }>(routes.adminUser(id), { method: "DELETE" }),
+  stopRun: (id: string) => request<AdminRunDetail>(routes.adminRunStop(id), { method: "POST" }),
+  setRunHidden: (id: string, hidden: boolean) =>
+    request<AdminRunDetail>(routes.adminRun(id), {
+      method: "PATCH",
+      body: JSON.stringify({ hidden }),
+    }),
+  settings: () => request<AdminSettings>(routes.adminSettings()),
+  saveSettings: (default_budget: Budget) =>
+    request<AdminSettings>(routes.adminSettings(), {
+      method: "PUT",
+      body: JSON.stringify({ default_budget }),
+    }),
+  resetSettings: () => request<AdminSettings>(routes.adminSettings(), { method: "DELETE" }),
+  audit: (q: { since_id?: number; limit?: number } = {}) =>
+    request<AdminAudit>(`${routes.adminAudit()}${qs({ ...q })}`),
+};
+
+/** Download a CSV through fetch so the Authorization header is sent, then hand it to the browser. */
+export async function downloadCsv(path: string, filename: string): Promise<void> {
+  const token = getStoredToken();
+  const res = await fetch(apiUrl(env.apiBaseUrl, path), {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) {
+    let detail: string | null = null;
+    try {
+      detail = detailOf(await res.json());
+    } catch {
+      detail = null;
+    }
+    throw new ApiError(res.status, detail ?? `${res.status} ${res.statusText}`, detail);
+  }
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export const adminDownloads = {
+  runs: (q: { status?: string; mode?: string } = {}) =>
+    downloadCsv(`${routes.adminExportRuns()}${qs({ ...q })}`, "sarvam-runs.csv"),
+  costs: (days: 7 | 30 | 90) =>
+    downloadCsv(`${routes.adminExportCosts()}${qs({ days })}`, "sarvam-costs.csv"),
+};

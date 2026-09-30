@@ -62,7 +62,8 @@ describe("getRoutePage", () => {
     expect(getRoutePage("#/account")).toBe("account");
     expect(getRoutePage("#/workspace")).toBe("workspace");
     expect(getRoutePage("#/new")).toBe("workspace");
-    expect(getRoutePage("#/admin")).toBe("admin");
+    expect(getRoutePage("#/admin")).toBe("console");
+    expect(getRoutePage("#/admin/runs/R1")).toBe("console");
     expect(getRoutePage("#/history")).toBe("admin");
     expect(getRoutePage("#/privacy")).toBe("privacy");
     expect(getRoutePage("#/terms")).toBe("terms");

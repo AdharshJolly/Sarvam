@@ -1,4 +1,4 @@
-# Plain-language layer (B-36, CL-11)
+# Plain-language layer (B-38, CL-13)
 
 Task record for making every result readable by non-specialists, in the UI and in the report.
 Decided with the project owner on 1 Oct 2026. The change is permanent: results must be
@@ -54,7 +54,7 @@ Colour is never the only signal: every chip keeps its icon and its words.
 - Frontend: `render.test.tsx`, `format.test.ts`, `MatrixPanel.test.ts` updated to the new labels.
 - `make contracts-check` now also fails when `glossary.ts` is stale.
 
-## Phase 2 (CL-12)
+## Phase 2 (CL-14)
 
 | Card | What changed |
 | --- | --- |
@@ -62,7 +62,7 @@ Colour is never the only signal: every chip keeps its icon and its words.
 | B. Simple mode is simple | In Simple mode the Matrix tab shows the totals, the gaps with next steps and a "Show details" button; the grid, table, round slider and cell detail appear after it is pressed. Detailed mode is unchanged. The stop card already showed only the headline, caveats and key-point tiles. |
 | C. Jargon sweep | `TERMS` in the glossary (slot = key point, origin = independent source, round = research round, claim = statement) is read through `lib/terms.ts` by `CoverageMatrix`, `MatrixPanel`, `OriginGroupView`, `ClaimList`, `ConflictList`, `SourcesTable`, `EvidenceDrawer` and `ReportPanel`. The mock report uses the new wording. `LeftRail` had no such terms. `src/design/simpleMode.test.tsx` fails if an uppercase enum value such as RED reaches Simple-mode HTML. |
 
-## Phase 3 (CL-13)
+## Phase 3 (CL-15)
 
 | Item | What changed |
 | --- | --- |

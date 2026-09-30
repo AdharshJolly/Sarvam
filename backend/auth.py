@@ -39,6 +39,7 @@ def _row_to_user(row: sqlite3.Row) -> UserPublic:
         display_name=row["display_name"],
         created_at=datetime.fromisoformat(row["created_at"]),
         last_login_at=last_login,
+        role=row["role"],
     )
 
 
@@ -51,6 +52,7 @@ def register_user(
     email: str,
     password: str,
     display_name: str,
+    admin_emails: tuple[str, ...] = (),
 ) -> tuple[UserPublic, str]:
     """Register a new user, create an active session token, and return (UserPublic, token)."""
     clean_email = email.strip().lower()
@@ -72,10 +74,18 @@ def register_user(
     now = datetime.now(UTC).isoformat()
 
     conn.execute(
-        "INSERT INTO users "
-        "(id, email, display_name, password_hash, salt, created_at, last_login_at) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?)",
-        (user_id, clean_email, clean_name, password_hash, salt, now, now),
+        "INSERT INTO users (id, email, display_name, password_hash, salt, created_at,"
+        " last_login_at, role) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        (
+            user_id,
+            clean_email,
+            clean_name,
+            password_hash,
+            salt,
+            now,
+            now,
+            "admin" if clean_email in admin_emails else "user",
+        ),
     )
 
     token = secrets.token_urlsafe(32)
@@ -96,6 +106,7 @@ def login_user(
     conn: sqlite3.Connection,
     email: str,
     password: str,
+    admin_emails: tuple[str, ...] = (),
 ) -> tuple[UserPublic, str]:
     """Validate credentials, issue a session token, update last_login_at; return (user, token)."""
     clean_email = email.strip().lower()
@@ -109,11 +120,15 @@ def login_user(
 
     if not hmac.compare_digest(expected_hash, computed_hash):
         raise AuthError("Invalid email or password")
+    if row["disabled"]:
+        raise AuthError("This account has been disabled by an administrator")
 
     user_id = row["id"]
     now = datetime.now(UTC).isoformat()
 
     conn.execute("UPDATE users SET last_login_at = ? WHERE id = ?", (now, user_id))
+    if clean_email in admin_emails and row["role"] != "admin":
+        conn.execute("UPDATE users SET role = 'admin' WHERE id = ?", (user_id,))
 
     token = secrets.token_urlsafe(32)
     token_hash = _hash_token(token)
@@ -152,7 +167,9 @@ def get_user_by_token(conn: sqlite3.Connection, token: str) -> UserPublic | None
     user_row = conn.execute(
         "SELECT * FROM users WHERE id = ?", (session_row["user_id"],)
     ).fetchone()
-    return _row_to_user(user_row) if user_row else None
+    if user_row is None or user_row["disabled"]:
+        return None
+    return _row_to_user(user_row)
 
 
 def logout_user(conn: sqlite3.Connection, token: str) -> None:

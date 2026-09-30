@@ -69,7 +69,7 @@ def render_markdown(
     ]
     if verdict.next_step:
         lines += [verdict.next_step, ""]
-    # Technical state line: kept verbatim for tooling and the gates (B-36).
+    # Technical state line: kept verbatim for tooling and the gates (B-38).
     lines += [
         f"**Assurance state: {decision.state.value}** ({decision.termination_reason.value})",
         "",

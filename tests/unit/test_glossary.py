@@ -1,4 +1,4 @@
-"""Plain-language glossary (B-36): complete, pinned headline labels, rendered into the report."""
+"""Plain-language glossary (B-38): complete, pinned headline labels, rendered into the report."""
 
 import pytest
 

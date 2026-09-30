@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -497,14 +497,173 @@ class UserUpdate(Contract):
     password: str | None = None
 
 
+UserRole = Literal["user", "admin"]
+
+
 class UserPublic(Contract):
     id: str
     email: str
     display_name: str
     created_at: datetime
     last_login_at: datetime | None = None
+    role: UserRole = "user"
 
 
 class AuthResponse(Contract):
     token: str
     user: UserPublic
+
+
+# ---------------------------------------------------------------- admin portal (B-36, CL-11)
+
+
+class AdminOverview(Contract):
+    users: int
+    admins: int
+    runs: int
+    runs_by_status: dict[str, int]
+    runs_by_mode: dict[str, int]
+    stop_states: dict[str, int]
+    insufficient_runs: int
+    total_cost_usd: float
+    total_tokens: int
+
+
+class AdminRunRow(Contract):
+    hidden: bool = False
+    id: str
+    question: str
+    mode: Mode
+    status: RunStatus
+    stop_state: FinalState | None = None
+    termination_reason: TerminationReason | None = None
+    started_at: datetime
+    ended_at: datetime | None = None
+    user_id: str | None = None
+    user_email: str | None = None
+    cost_usd: float
+    tokens: int
+
+
+class AdminRunPage(Contract):
+    items: list[AdminRunRow]
+    total: int
+    limit: int
+    offset: int
+
+
+class AdminRunDetail(Contract):
+    run: AdminRunRow
+    event_count: int
+    cost_usd: float
+    tokens: int
+    claims_by_status: dict[str, int]
+    conflicts_by_status: dict[str, int]
+    challenges_by_outcome: dict[str, int]
+    coverage_by_state: dict[str, int]  # latest round only
+
+
+class AdminUserRow(Contract):
+    disabled: bool = False
+    quota_usd: float | None = None  # None = unlimited
+    id: str
+    email: str
+    display_name: str
+    role: UserRole
+    created_at: datetime
+    last_login_at: datetime | None = None
+    run_count: int
+    cost_usd: float
+
+
+class AdminCostDay(Contract):
+    date: str  # YYYY-MM-DD (UTC)
+    cost_usd: float
+    tokens: int
+
+
+class AdminCostByType(Contract):
+    type: str
+    cost_usd: float
+    tokens: int
+    events: int
+
+
+class AdminCosts(Contract):
+    days: int
+    total_cost_usd: float
+    total_tokens: int
+    daily: list[AdminCostDay]
+    by_event_type: list[AdminCostByType]
+
+
+class AdminEvent(Contract):
+    id: int
+    run_id: str
+    ts: datetime
+    round: int
+    type: str
+    cost_usd: float | None = None
+    tokens: int | None = None
+    summary: str
+
+
+class AdminActivity(Contract):
+    items: list[AdminEvent]
+
+
+class AdminHealth(Contract):
+    status: Literal["healthy", "degraded"]
+    db_ok: bool
+    db_foreign_keys: bool
+    db_journal_mode: str
+    schema_version: int
+    mode: Literal["live", "replay"] = Field(title="GatewayMode")  # not "Mode": that is the run mode
+    budget_defaults: Budget
+    running_runs: int
+    failures: dict[str, int]
+
+
+class AdminUserUpdate(Contract):
+    """PATCH /admin/users/{id}. Only fields present change; `quota_usd: null` clears the quota."""
+
+    role: UserRole | None = None
+    disabled: bool | None = None
+    quota_usd: float | None = Field(default=None, ge=0)
+
+
+class AdminRunUpdate(Contract):
+    hidden: bool | None = None
+
+
+class AdminSettings(Contract):
+    default_budget: Budget
+    customized: bool = False  # False = environment defaults, True = stored override
+
+
+class AdminSettingsUpdate(Contract):
+    default_budget: Budget
+
+
+class AdminAction(Contract):
+    id: int
+    ts: datetime
+    actor_id: str
+    actor_email: str
+    action: str
+    target_type: str
+    target_id: str
+    detail: dict[str, Any] = Field(default_factory=dict)
+
+
+class AdminAudit(Contract):
+    items: list[AdminAction]
+
+
+class UserUsage(Contract):
+    """GET /auth/me/usage: the signed-in user's own runs and metered spend."""
+
+    run_count: int
+    cost_usd: float
+    quota_usd: float | None = None  # None = unlimited
+    remaining_usd: float | None = None  # None = unlimited; never negative

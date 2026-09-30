@@ -1,7 +1,7 @@
 import type { Scope } from "@contracts/types";
 
 /**
- * "Dig deeper" on a gap (B-36 follow-up). It does not start anything: it carries a focused question
+ * "Dig deeper" on a gap (B-38 follow-up). It does not start anything: it carries a focused question
  * to the new-run form, where the person reviews it and presses Start. A follow-up is a new run, so
  * a live run is only ever started by that explicit press. Per-viewer, survives one page hop.
  */
