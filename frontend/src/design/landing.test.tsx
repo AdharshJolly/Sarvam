@@ -3,6 +3,10 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { Landing } from "../components/Landing";
 import { taskStatusView } from "../components/ChallengeList";
 import { RunForm } from "../components/RunForm";
+import { contentsEntries } from "../components/panels/ReportPanel";
+import { ReportBody } from "../components/report/ReportBody";
+import { ReportContents } from "../components/report/ReportContents";
+import { parseReport } from "../lib/reportMarkdown";
 import { RunProgress, phaseStatus } from "../components/RunProgress";
 import { SessionProvider } from "../state/useRunSession";
 
@@ -101,5 +105,29 @@ describe("follow-up query status", () => {
 
   test("an unknown status is shown as given, not hidden", () => {
     expect(taskStatusView("waiting").word).toBe("waiting");
+  });
+});
+
+describe("report", () => {
+  const md = "# Title\n\n## Summary\n\nA finding [C1] here.\n\n### Detail\n\n- point one\n";
+  const nodes = parseReport(md);
+  const html = renderToStaticMarkup(<ReportBody nodes={nodes} resolvable={new Set(["C1"])} onCite={() => {}} />);
+
+  test("reads in a Newsreader column of about 70 characters", () => {
+    expect(html).toContain("font-display");
+    expect(html).toContain("max-w-[70ch]");
+  });
+
+  test("headings carry ids and a resolved citation is a button", () => {
+    expect(html).toMatch(/<h3 id="heading-\d+"/);
+    expect(html).toContain('aria-label="Open evidence for claim C1"');
+  });
+
+  test("contents lists only h2 and h3 and points at real heading ids", () => {
+    const entries = contentsEntries(nodes);
+    expect(entries.map((e) => e.level)).toEqual([2, 3]);
+    const nav = renderToStaticMarkup(<ReportContents headings={entries} />);
+    for (const e of entries) expect(nav).toContain(`href="#heading-${e.index}"`);
+    expect(nav).toContain('href="#sources-cited"');
   });
 });

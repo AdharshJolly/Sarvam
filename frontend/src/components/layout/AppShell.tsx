@@ -10,6 +10,7 @@ import {
   readRailPref,
   writeRailPref,
 } from "../../lib/layout";
+import { onAnchorClick } from "../../lib/anchor";
 import { buildHash, parseRoute } from "../../lib/route";
 import { useMediaQuery } from "../../lib/useMediaQuery";
 import { EvidenceProvider, useEvidence } from "../../state/EvidenceContext";
@@ -114,7 +115,7 @@ function Shell() {
 
   return (
     <div className={`flex min-h-screen flex-col ${ev.isOpen ? "xl:pr-[30rem]" : ""}`}>
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-surface focus:text-brand">
+      <a href="#main-content" onClick={onAnchorClick("main-content")} className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-surface focus:text-brand">
         Skip to content
       </a>
       {/* The single polite announcement of what the run is doing; the visible "Now" text is not live. */}
