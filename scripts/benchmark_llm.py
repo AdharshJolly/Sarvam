@@ -179,6 +179,8 @@ async def main() -> None:
         compact_json=settings.llm_compact_json,
         passages_per_slot=settings.thresholds.passages_per_slot_source,
         verifier_batch=settings.verifier_batch_size,
+        extractor_batch=settings.extractor_batch_size,
+        extractor_min_overlap=settings.thresholds.extractor_min_overlap,
         llm_concurrency=settings.llm_concurrency,
         models=[settings.llm_model_fast, settings.llm_model_strong],
         budget=settings.budget.model_dump(),

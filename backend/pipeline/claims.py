@@ -148,9 +148,17 @@ def validate_draft(
 
 
 def _relevant_slots(
-    slots: list[EvidenceSlot], own_slot_id: str, passages: list[Passage], k: int
+    slots: list[EvidenceSlot],
+    own_slot_id: str,
+    passages: list[Passage],
+    k: int,
+    min_other_overlap: int = 0,
 ) -> list[tuple[EvidenceSlot, list[Passage]]]:
-    """Own slot first, then other slots whose passages share content words with the slot."""
+    """Own slot first, then other slots whose passages share content words with the slot.
+
+    `min_other_overlap` (B-35, 0 = off) is a floor on shared words for slots other than the
+    source's own; the own slot only needs to share one word.
+    """
     out: list[tuple[int, int, EvidenceSlot, list[Passage]]] = []
     for order, slot in enumerate(slots):
         query = set(slot_query_tokens(slot)) - STOP_WORDS
@@ -158,8 +166,9 @@ def _relevant_slots(
         overlap = max(
             (len(query & (set(re.findall(r"\w+", p.text.lower())))) for p in top), default=0
         )
-        if overlap > 0:
-            own = 0 if slot.id == own_slot_id else 1
+        is_own = slot.id == own_slot_id
+        if overlap > 0 and (is_own or overlap >= min_other_overlap):
+            own = 0 if is_own else 1
             out.append((own, order, slot, top))
     out.sort(key=lambda t: (t[0], t[1]))
     return [(s, top) for _, _, s, top in out[:MAX_SLOTS_PER_SOURCE]]
@@ -274,7 +283,9 @@ async def run_claims(
         if not passages:
             continue
         own_slot = task_slot.get(source.task_id or "", "")
-        relevant = _relevant_slots(slots, own_slot, passages, t.passages_per_slot_source)
+        relevant = _relevant_slots(
+            slots, own_slot, passages, t.passages_per_slot_source, t.extractor_min_overlap
+        )
         jobs.extend(make_batches(relevant, size))
 
     stored = failures = 0
