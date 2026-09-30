@@ -8,6 +8,7 @@ import { StateChip } from "./ui/StateChip";
 import { conflictKindText, conflictStatusChip } from "./ui/chips";
 import { Icon } from "./ui/Icon";
 import { Button } from "./ui/Button";
+import { Card } from "./ui/Card";
 
 const whyItMatters: Record<ConflictKind, string> = {
   genuine: "Different values are reported for the same thing and period. Sarvam cannot pick a winner from the evidence it has.",
@@ -78,7 +79,7 @@ export function ConflictList({
         const status = c.status ?? "open";
         const kind = c.kind ?? "genuine";
         return (
-          <li key={c.id} className={`card anim-in p-4 border-l-[4px] ${status === "open" ? "border-l-bad-fg" : "border-l-ok-fg"}`}>
+          <Card as="li" key={c.id} pad="md" accent={status === "open" ? "bad" : "ok"} className="anim-in">
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <StateChip spec={conflictStatusChip(status)} />
               <strong>{slotNames.get(c.slot_id) ?? c.slot_id}</strong>
@@ -123,7 +124,7 @@ export function ConflictList({
             >
               Compare evidence
             </Button>
-          </li>
+          </Card>
         );
       })}
     </ul>

@@ -1,4 +1,5 @@
 import type { Claim, Verdict } from "@contracts/types";
+import { Card } from "./ui/Card";
 import { EmptyState } from "./ui/EmptyState";
 import { StateChip } from "./ui/StateChip";
 import { verdictChip } from "./ui/chips";
@@ -39,9 +40,11 @@ export function ClaimList({
               const numeric = c.value_num != null;
               return (
                 <li key={c.id}>
-                  <button
-                    type="button"
-                    className="card card-hover flex w-full flex-wrap items-center gap-2 p-2 text-left text-base border-border-hairline bg-surface"
+                  <Card
+                    as="button"
+                    interactive
+                    pad="xs"
+                    className="flex w-full flex-wrap items-center gap-2 text-left text-base"
                     onClick={() => onOpenClaim(c.id)}
                   >
                     <strong>{c.id}</strong>
@@ -52,7 +55,7 @@ export function ClaimList({
                       </span>
                     ) : null}
                     {v ? <StateChip spec={verdictChip(v)} /> : null}
-                  </button>
+                  </Card>
                 </li>
               );
             })}

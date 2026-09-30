@@ -3,6 +3,8 @@ import { Badge } from "./ui/Badge";
 import { EmptyState } from "./ui/EmptyState";
 import { StateChip } from "./ui/StateChip";
 import { outcomeChip } from "./ui/chips";
+import { Card } from "./ui/Card";
+import type { Tone } from "./ui/chips";
 
 const outcomeNote = {
   strengthened: "The attack failed: the conclusion stands after looking for counter-evidence.",
@@ -10,13 +12,13 @@ const outcomeNote = {
   unresolved: "Sarvam could not settle this either way with the evidence it could reach.",
 } as const;
 
-const TONE_COLORS = {
-  ok: "border-ok-fg text-ok-fg",
-  warn: "border-warn-fg text-warn-fg",
-  bad: "border-bad-fg text-bad-fg",
-  muted: "border-border-strong text-text-muted",
-  brand: "border-brand text-brand",
-  info: "border-info-fg text-info-fg",
+const TEXT_TONE: Record<Tone, string> = {
+  ok: "text-ok-fg",
+  warn: "text-warn-fg",
+  bad: "text-bad-fg",
+  muted: "text-text-muted",
+  brand: "text-brand",
+  info: "text-info-fg",
 };
 
 /** slotNames maps a slot id to a readable path such as "Pricing → Competitor subscription pricing". */
@@ -52,10 +54,9 @@ export function ChallengeList({
               .filter((c) => c.round === r)
               .map((c) => {
                 const oc = outcomeChip(c.outcome);
-                const toneClass = TONE_COLORS[oc.tone] ?? TONE_COLORS.muted;
-                const [borderColor, textColor] = toneClass.split(" ");
+                const textColor = TEXT_TONE[oc.tone];
                 return (
-                  <li key={c.id} className={`card anim-in p-4 border-l-4 ${borderColor}`}>
+                  <Card as="li" key={c.id} pad="md" accent={oc.tone} className="anim-in">
                     <div className="mb-2 flex flex-wrap items-center gap-2">
                       <StateChip spec={oc} />
                       <Badge mono>{c.id}</Badge>
@@ -107,7 +108,7 @@ export function ChallengeList({
                         <p className="text-base">{c.would_change_if}</p>
                       </div>
                     ) : null}
-                  </li>
+                  </Card>
                 );
               })}
           </ul>

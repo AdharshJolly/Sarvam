@@ -4,6 +4,7 @@ import { finalStateChip } from "./ui/chips";
 import { Icon } from "./ui/Icon";
 import { Banner } from "./ui/Banner";
 import { Button } from "./ui/Button";
+import { Card } from "./ui/Card";
 
 export const terminationText: Record<TerminationReason, string> = {
   criteria_met: "All critical slots are green and a challenge round completed.",
@@ -23,10 +24,10 @@ const meaning: Record<FinalState, string> = {
 
 const stateTone = { SUFFICIENT: "ok", SUFFICIENT_WITH_CAVEATS: "warn", INSUFFICIENT: "bad" } as const;
 
-const TONE_COLORS = {
-  ok: "border-ok-border bg-ok-bg",
-  warn: "border-warn-border bg-warn-bg",
-  bad: "border-bad-border bg-bad-bg",
+const BAND_BG = {
+  ok: "bg-ok-bg",
+  warn: "bg-warn-bg",
+  bad: "bg-bad-bg",
 };
 
 export interface StopGap {
@@ -59,14 +60,15 @@ export function StopCard({
   const wouldChange = challenges.filter((c) => c.would_change_if);
   const weakened = challenges.filter((c) => c.outcome === "weakened").length;
   const tone = stateTone[stop.state] || "ok";
-  const toneClass = TONE_COLORS[tone] ?? TONE_COLORS.ok;
-  const [borderColor, bgColor] = toneClass.split(" ");
+  const bgColor = BAND_BG[tone] ?? BAND_BG.ok;
 
   return (
-    <section
+    <Card
+      as="section"
       aria-live="polite"
       aria-label="Stop decision"
-      className={`card anim-in overflow-hidden border-2 ${borderColor}`}
+      frame={tone}
+      className="anim-in overflow-hidden"
     >
       <div className={`flex flex-wrap items-center gap-3 px-4 py-3 ${bgColor}`}>
         <div>
@@ -153,6 +155,6 @@ export function StopCard({
           ) : null}
         </div>
       </div>
-    </section>
+    </Card>
   );
 }

@@ -22,11 +22,23 @@ const ACCENT: Record<Tone, string> = {
   muted: "border-l-4 border-l-border-strong",
 };
 
+// A full 2px frame in the status colour, replacing the hairline (used by the stop card).
+const FRAME: Record<Tone, string> = {
+  ok: "border-2 border-ok-fg",
+  warn: "border-2 border-warn-fg",
+  bad: "border-2 border-bad-fg",
+  info: "border-2 border-info-fg",
+  brand: "border-2 border-brand-secondary",
+  muted: "border-2 border-border-strong",
+};
+
 export interface CardProps extends HTMLAttributes<HTMLElement> {
   /** The element to render. A "button" card is a whole-card click target. */
   as?: "div" | "section" | "article" | "li" | "button";
   pad?: CardPad;
   accent?: Tone;
+  /** A full status-coloured frame instead of the hairline border. */
+  frame?: Tone;
   /** Adds a hover border and shadow; use for clickable cards. */
   interactive?: boolean;
 }
@@ -36,13 +48,15 @@ export function Card({
   as = "div",
   pad = "none",
   accent,
+  frame,
   interactive = false,
   className = "",
   children,
   ...props
 }: CardProps) {
   const classes = [
-    "rounded-lg border border-border-hairline bg-surface",
+    "rounded-lg bg-surface",
+    frame ? FRAME[frame] : "border border-border-hairline",
     interactive ? "transition-colors hover:border-border-strong hover:shadow-elevation" : "",
     PAD[pad],
     accent ? ACCENT[accent] : "",

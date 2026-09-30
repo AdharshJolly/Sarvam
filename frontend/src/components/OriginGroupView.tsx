@@ -2,6 +2,8 @@ import type { Origin, OriginMethod, Source } from "@contracts/types";
 import { domainOf, safeHref } from "../lib/format";
 import { Badge } from "./ui/Badge";
 import { Icon } from "./ui/Icon";
+import { Card } from "./ui/Card";
+import type { Tone } from "./ui/chips";
 
 export const methodText: Record<OriginMethod, string> = {
   domain: "same publisher",
@@ -58,12 +60,14 @@ export function OriginGroupView({
         {groups.map((g, gi) => {
           const unestablished = !g.origin || g.origin.method === "none";
           const collapsed = g.sources.length > 1;
-          const borderClass = collapsed ? "border-l-brand-secondary" : unestablished ? "border-l-warn-border" : "border-l-border-strong";
+          const accent: Tone = collapsed ? "brand" : unestablished ? "warn" : "muted";
           
           return (
-            <div
+            <Card
               key={g.key}
-              className={`card anim-in p-3 border-l-[4px] ${borderClass}`}
+              pad="sm"
+              accent={accent}
+              className="anim-in"
               style={{ animationDelay: `${gi * 60}ms` }}
             >
               <div className="flex flex-wrap items-center gap-2">
@@ -102,7 +106,7 @@ export function OriginGroupView({
                   );
                 })}
               </ul>
-            </div>
+            </Card>
           );
         })}
       </div>
