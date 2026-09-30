@@ -1,10 +1,11 @@
 import type { Mode } from "@contracts/types";
-import { type FormEvent, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { CANONICAL_QUESTION } from "../mocks/scenarios";
 import { errorText, useSession } from "../state/useRunSession";
 import { Banner } from "./ui/Banner";
 import { Button } from "./ui/Button";
 import { Icon, type IconName } from "./ui/Icon";
+import { Input } from "./ui/input";
 
 const EXAMPLES = [
   { label: "Canonical (Bengaluru scooters)", q: CANONICAL_QUESTION },
@@ -26,8 +27,6 @@ const MODES: Array<{ mode: Mode; icon: IconName; text: string }> = [
 ];
 
 const MAX_QUESTION = 2000;
-const FIELD =
-  "w-full rounded-md border border-border-strong bg-surface p-2 text-base text-text placeholder:text-text-muted focus-visible:outline-2 focus-visible:outline-brand-secondary";
 
 export function RunForm() {
   const { start } = useSession();
@@ -37,12 +36,25 @@ export function RunForm() {
   const [constraints, setConstraints] = useState("");
   const [mode, setMode] = useState<Mode>("LIVE");
   const [busy, setBusy] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const questionRef = useRef<HTMLTextAreaElement>(null);
+  const questionRef = useRef<HTMLInputElement>(null);
 
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
+  // Debounced search animation while typing
+  useEffect(() => {
+    if (question.trim()) {
+      setIsLoading(true);
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+    setIsLoading(false);
+  }, [question]);
+
+  const submit = async (e?: FormEvent) => {
+    if (e) e.preventDefault();
     if (!question.trim()) {
       // The error belongs to the field: say it there and put the cursor in it.
       setFieldError("Enter a research question before starting a run.");
@@ -69,125 +81,193 @@ export function RunForm() {
     }
   };
 
-  return (
-    <form onSubmit={submit} noValidate className="flex flex-col gap-4" aria-label="Start a research run">
-      <h2 className="text-xl font-semibold">Start a research run</h2>
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submit();
+    }
+  };
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="question" className="label">
-          Research question
-        </label>
-        <textarea
-          id="question"
-          ref={questionRef}
-          className={`${FIELD} ${fieldError ? "border-bad-fg" : ""}`}
-          rows={4}
-          maxLength={MAX_QUESTION}
-          value={question}
-          placeholder="What do you need to know, and what decision does it feed?"
-          onChange={(e) => {
-            setQuestion(e.target.value);
-            if (fieldError) setFieldError(null);
-          }}
-          aria-required="true"
-          aria-invalid={fieldError ? true : undefined}
-          aria-describedby={fieldError ? "question-error question-count" : "question-count"}
-        />
-        <div className="flex items-start justify-between gap-3">
-          {fieldError ? (
-            <p id="question-error" role="alert" className="flex items-center gap-1.5 text-sm font-semibold text-bad-fg">
-              <Icon name="XOctagon" size={14} aria-hidden /> {fieldError}
-            </p>
-          ) : (
-            <span />
-          )}
-          <span id="question-count" className="mono shrink-0 text-sm text-text-muted">
+  return (
+    <form onSubmit={submit} noValidate className="flex flex-col gap-5" aria-label="Start a research run">
+      <div className="flex items-center justify-between pb-3 border-b border-border-hairline">
+        <div>
+          <h2 className="text-xl font-bold tracking-tight text-text">Start a research run</h2>
+          <p className="text-sm text-text-muted mt-0.5">Formulate a question for autonomous evidence synthesis</p>
+        </div>
+      </div>
+
+      {/* Main Question Animated Search Bar */}
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center justify-between">
+          <label htmlFor="question" className="label text-text-muted">
+            Research question <span className="text-bad-fg">*</span>
+          </label>
+          <span id="question-count" className="mono text-sm text-text-muted">
             {question.length}/{MAX_QUESTION}
           </span>
         </div>
-      </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm text-text-muted">Try:</span>
-        {EXAMPLES.map((x) => (
-          <button
-            key={x.label}
-            type="button"
-            className="rounded-full border border-border-strong px-3 py-0.5 text-sm transition-colors hover:border-brand-secondary pointer-coarse:min-h-11"
-            onClick={() => {
-              setQuestion(x.q);
-              setFieldError(null);
+        <div className="relative flex items-center">
+          <Input
+            id="question"
+            ref={questionRef}
+            type="search"
+            maxLength={MAX_QUESTION}
+            value={question}
+            placeholder="What do you need to know, and what decision does it feed?"
+            onKeyDown={handleKeyDown}
+            onChange={(e) => {
+              setQuestion(e.target.value);
+              if (fieldError) setFieldError(null);
             }}
-          >
-            {x.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-3">
-        <div className="flex flex-col gap-1">
-          <label htmlFor="geography" className="label">
-            Geography
-          </label>
-          <input id="geography" className={FIELD} value={geography} placeholder="e.g. Bengaluru" onChange={(e) => setGeography(e.target.value)} />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="horizon" className="label">
-            Time horizon
-          </label>
-          <input id="horizon" className={FIELD} value={horizon} placeholder="e.g. 2027" onChange={(e) => setHorizon(e.target.value)} />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="constraints" className="label">
-            Constraints
-          </label>
-          <input
-            id="constraints"
-            className={FIELD}
-            value={constraints}
-            placeholder="e.g. under 50 lakh"
-            onChange={(e) => setConstraints(e.target.value)}
+            className={`peer pe-4 ps-10 h-11 text-sm bg-surface transition-all ${
+              fieldError ? "border-bad-fg ring-2 ring-bad-fg/20" : ""
+            }`}
+            aria-required="true"
+            aria-invalid={fieldError ? true : undefined}
+            aria-describedby={fieldError ? "question-error question-count" : "question-count"}
           />
+          <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-text-muted peer-disabled:opacity-50">
+            {isLoading ? (
+              <Icon
+                name="LoaderCircle"
+                size={18}
+                className="animate-spin text-brand-secondary"
+                aria-hidden
+              />
+            ) : (
+              <Icon name="Search" size={18} aria-hidden />
+            )}
+          </div>
+        </div>
+
+        {fieldError ? (
+          <p id="question-error" role="alert" className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-bad-fg">
+            <Icon name="XOctagon" size={14} aria-hidden /> {fieldError}
+          </p>
+        ) : null}
+      </div>
+
+      {/* Suggested Templates */}
+      <div className="flex flex-col gap-2">
+        <span className="label text-text-muted">
+          Try example questions:
+        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          {EXAMPLES.map((x) => (
+            <button
+              key={x.label}
+              type="button"
+              className="inline-flex items-center rounded-lg border border-border-hairline bg-surface px-3 py-1.5 text-sm font-medium text-text-muted transition-all hover:border-brand-secondary hover:text-brand-secondary hover:bg-surface-2 active:scale-98 pointer-coarse:min-h-11"
+              onClick={() => {
+                setQuestion(x.q);
+                setFieldError(null);
+              }}
+            >
+              {x.label}
+            </button>
+          ))}
         </div>
       </div>
-      <p className="-mt-2 text-sm text-text-muted">Geography, horizon and constraints are optional and steer the search.</p>
 
-      <fieldset className="grid gap-2 sm:grid-cols-2">
-        <legend className="label mb-1">Mode</legend>
-        {MODES.map((m) => {
-          const selected = mode === m.mode;
-          return (
-            <label
-              key={m.mode}
-              className={`cursor-pointer rounded-md border p-3 transition-colors ${
-                selected
-                  ? "border-brand-secondary bg-brand-secondary/10 ring-1 ring-brand-secondary"
-                  : "border-border-strong hover:bg-surface-2"
-              }`}
-            >
-              <input type="radio" name="mode" className="sr-only" checked={selected} onChange={() => setMode(m.mode)} />
-              <span className="flex items-center gap-1.5 font-semibold">
-                <Icon name={m.icon} size={16} aria-hidden /> {m.mode}
-                {selected ? <Icon name="Check" size={16} className="ml-auto text-brand-secondary" aria-hidden /> : null}
-              </span>
-              <span className="mt-1 block text-sm text-text-muted">{m.text}</span>
+      {/* Scope Parameters */}
+      <div className="rounded-xl border border-border-hairline bg-surface-2/40 p-4 flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <span className="label text-text-muted">
+            Scope &amp; Constraints
+          </span>
+          <span className="text-sm text-text-muted">Optional search steer</span>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="flex flex-col gap-1">
+            <label htmlFor="geography" className="label">
+              Geography
             </label>
-          );
-        })}
+            <Input
+              id="geography"
+              value={geography}
+              placeholder="e.g. Bengaluru"
+              onChange={(e) => setGeography(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="horizon" className="label">
+              Time horizon
+            </label>
+            <Input
+              id="horizon"
+              value={horizon}
+              placeholder="e.g. 2027"
+              onChange={(e) => setHorizon(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="constraints" className="label">
+              Constraints
+            </label>
+            <Input
+              id="constraints"
+              value={constraints}
+              placeholder="e.g. under 50 lakh"
+              onChange={(e) => setConstraints(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Mode Selector */}
+      <fieldset className="flex flex-col gap-2">
+        <legend className="label mb-1">
+          Execution Mode
+        </legend>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {MODES.map((m) => {
+            const selected = mode === m.mode;
+            return (
+              <label
+                key={m.mode}
+                className={`relative flex cursor-pointer flex-col rounded-xl border p-4 transition-all select-none ${
+                  selected
+                    ? "border-brand-secondary bg-brand-secondary/10 shadow-elevation ring-1 ring-brand-secondary"
+                    : "border-border-hairline bg-surface hover:border-border-strong hover:bg-surface-2"
+                }`}
+              >
+                <input type="radio" name="mode" className="sr-only" checked={selected} onChange={() => setMode(m.mode)} />
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-sm text-text">
+                    {m.mode}
+                  </span>
+                  {selected ? (
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-secondary text-on-brand">
+                      <Icon name="Check" size={13} aria-hidden />
+                    </span>
+                  ) : (
+                    <span className="h-4 w-4 rounded-full border border-border-strong" />
+                  )}
+                </div>
+                <span className="mt-2 text-sm leading-relaxed text-text-muted">{m.text}</span>
+              </label>
+            );
+          })}
+        </div>
       </fieldset>
 
       {error ? <Banner tone="bad">{error}</Banner> : null}
 
-      <Button
-        type="submit"
-        variant="primary"
-        size="lg"
-        disabled={busy}
-        className="w-fit"
-        icon={<Icon name={busy ? "Activity" : "ArrowRight"} size={18} className={busy ? "blink" : undefined} aria-hidden />}
-      >
-        {busy ? "Starting run..." : "Start run"}
-      </Button>
+      <div className="pt-1">
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          disabled={busy}
+          className="w-full sm:w-auto min-w-[180px] shadow-elevation transition-all font-semibold"
+          icon={<Icon name={busy ? "Activity" : "ArrowRight"} size={18} className={busy ? "blink" : undefined} aria-hidden />}
+        >
+          {busy ? "Starting run..." : "Start run"}
+        </Button>
+      </div>
     </form>
   );
 }

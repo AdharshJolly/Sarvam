@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@contracts": fileURLToPath(new URL("../contracts/generated", import.meta.url)),
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
   server: { port: 5173 },

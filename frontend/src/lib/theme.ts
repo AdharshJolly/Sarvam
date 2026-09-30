@@ -12,8 +12,8 @@ export const STORAGE_KEY = "theme";
 
 /** Browser chrome colour per resolved theme; must equal the page background token. */
 export const THEME_COLOR: Record<ResolvedTheme, string> = {
-  light: "#F8FAFC",
-  dark: "#0B1120",
+  light: "#ffffff",
+  dark: "#000000",
 };
 
 /** Anything other than an explicit light or dark (missing, corrupted, hand-edited) means system. */
@@ -42,6 +42,11 @@ export function applyTheme(theme: Theme): void {
   const resolved = resolveTheme(theme, prefersDark());
   const root = document.documentElement;
   root.setAttribute("data-theme", resolved);
+  if (resolved === "dark") {
+    root.classList.add("dark");
+  } else {
+    root.classList.remove("dark");
+  }
   root.style.colorScheme = resolved;
 
   let meta = document.querySelector('meta[name="theme-color"]');

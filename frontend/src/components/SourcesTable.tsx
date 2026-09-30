@@ -123,7 +123,7 @@ export function SourcesTable({
               <td className="p-2">
                 <Badge>{ageBucket(s.published_at, now)}</Badge>
               </td>
-              <td className="mono p-2">{s.origin_id ?? "—"}</td>
+              <td className="mono p-2">{s.origin_id ?? "-"}</td>
               <td className="mono p-2">{passageCounts[s.id] ?? 0}</td>
             </tr>
           ))}

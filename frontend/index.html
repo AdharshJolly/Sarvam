@@ -8,6 +8,13 @@
       content="Sarvam: Evidence-First Autonomous Research Agent. Research that knows when it isn't done."
     />
     <title>Sarvam | Evidence-First Research Agent</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+      rel="stylesheet"
+    />
     <script>
       (function () {
         try {
@@ -16,10 +23,15 @@
           var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
           var root = document.documentElement;
           root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+          if (isDark) {
+            root.classList.add('dark');
+          } else {
+            root.classList.remove('dark');
+          }
           root.style.colorScheme = isDark ? 'dark' : 'light';
           var meta = document.createElement('meta');
           meta.name = 'theme-color';
-          meta.content = isDark ? '#0B1120' : '#F8FAFC';
+          meta.content = isDark ? '#000000' : '#ffffff';
           document.head.appendChild(meta);
         } catch (e) {}
       })();

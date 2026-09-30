@@ -55,7 +55,7 @@ export function Card({
   ...props
 }: CardProps) {
   const classes = [
-    "rounded-lg bg-surface",
+    "rounded-[1.3rem] bg-surface",
     frame ? FRAME[frame] : "border border-border-hairline",
     interactive ? "transition-colors hover:border-border-strong hover:shadow-elevation" : "",
     PAD[pad],

@@ -43,7 +43,7 @@ export function Inlines({ nodes, resolvable, onCite }: { nodes: Inline[]; resolv
           <button
             key={i}
             type="button"
-            className="mono mx-0.5 rounded border border-brand-secondary px-1 text-sm font-semibold text-brand-secondary transition-colors hover:bg-brand-secondary/10"
+            className="mono mx-0.5 rounded-full border border-brand/30 bg-accent/60 px-2 py-0.5 text-sm font-semibold text-brand transition-all hover:bg-brand hover:text-white"
             aria-label={`Open evidence for claim ${n.id}`}
             onClick={() => onCite(n.id)}
           >

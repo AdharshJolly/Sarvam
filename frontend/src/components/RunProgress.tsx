@@ -37,13 +37,17 @@ export function RunProgress({
 
   return (
     <Card as="section" aria-labelledby="progress-h" pad="md" className="no-print hidden md:block">
-      <p id="progress-h" className="label flex items-center gap-1.5">
-        <Icon name="Activity" size={14} className={live ? "blink" : undefined} aria-hidden />
-        {live ? "Now" : "Last step"}
-      </p>
-      <p className="font-display mt-1 text-2xl font-semibold leading-snug">{now}</p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p id="progress-h" className="font-mono text-sm tracking-wider uppercase text-text-muted flex items-center gap-1.5">
+            <Icon name="Activity" size={14} className={live ? "blink text-brand" : "text-text-muted"} aria-hidden />
+            <span>{live ? "Now" : "Last step"}</span>
+          </p>
+          <p className="font-display mt-1 text-xl sm:text-2xl font-semibold leading-snug text-text">{now}</p>
+        </div>
+      </div>
 
-      <ol className="mt-4 flex gap-1" aria-label="Phases">
+      <ol className="mt-4 flex gap-1.5" aria-label="Phases">
         {PHASE_ORDER.map((p, i) => {
           const status = phaseStatus(i, idx, false);
           return (
@@ -51,7 +55,7 @@ export function RunProgress({
               <div
                 aria-hidden="true"
                 className={`h-1.5 rounded-full transition-colors ${
-                  status === "done" ? "bg-ok-fg" : status === "active" ? "bg-brand-secondary" : "bg-surface-2"
+                  status === "done" ? "bg-ok-fg" : status === "active" ? "bg-brand" : "bg-surface-2"
                 }`}
               />
               <span
@@ -60,7 +64,7 @@ export function RunProgress({
                 }`}
               >
                 {status === "done" ? <Icon name="Check" size={14} className="shrink-0 text-ok-fg" aria-hidden /> : null}
-                {status === "active" ? <Icon name="Play" size={14} className="shrink-0 text-brand-secondary" aria-hidden /> : null}
+                {status === "active" ? <Icon name="Play" size={14} className="shrink-0 text-brand" aria-hidden /> : null}
                 <span className="truncate">{phaseLabel(p)}</span>
                 <span className="sr-only"> ({status === "done" ? "done" : status === "active" ? "current" : "not started"})</span>
               </span>
@@ -70,7 +74,7 @@ export function RunProgress({
       </ol>
 
       {budget ? (
-        <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 lg:grid-cols-5">
+        <div className="mt-4 pt-3 border-t border-border-hairline grid grid-cols-2 gap-x-6 gap-y-2 lg:grid-cols-5">
           <Meter label="Searches" used={usage.searches ?? 0} max={budget.max_searches} fmt={n} onClick={() => onOpenMeter("searches")} />
           <Meter label="Fetches" used={usage.fetches ?? 0} max={budget.max_fetches} fmt={n} onClick={() => onOpenMeter("fetches")} />
           <Meter label="LLM calls" used={usage.llm_calls ?? 0} max={budget.max_llm_calls} fmt={n} onClick={() => onOpenMeter("llm")} />

@@ -231,6 +231,9 @@ export const mockApi: RunApi = {
     restart(r);
     return summaryOf(r);
   },
+  async listRuns() {
+    return Array.from(runs.values()).map((r) => baseRun(r));
+  },
 };
 
 export const openMockStream: OpenStream = (runId, handlers, after = 0) => {

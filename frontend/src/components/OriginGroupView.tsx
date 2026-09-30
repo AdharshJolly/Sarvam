@@ -55,16 +55,16 @@ export function OriginGroupView({
   const settled = useSettled();
   return (
     <section aria-label={`Origin groups for ${slotName}`}>
-      <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+      <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-3 p-4 bg-surface rounded-[1.3rem] border border-border-hairline">
         <div className="flex items-center gap-4">
-          <div>
+          <div className="px-3 py-1.5 rounded-xl bg-surface-2 border border-border-hairline text-center">
             <p className="text-3xl font-bold leading-none">{total}</p>
-            <p className="label">{plural(total, "source")}</p>
+            <p className="label text-sm mt-0.5">{plural(total, "source")}</p>
           </div>
-          <Icon name="ArrowRight" size={24} className="text-text-muted" aria-hidden />
-          <div>
-            <p className="text-3xl font-bold leading-none text-brand-secondary">{groups.length}</p>
-            <p className="label">independent {plural(groups.length, "origin")}</p>
+          <Icon name="ArrowRight" size={20} className="text-brand shrink-0" aria-hidden />
+          <div className="px-3 py-1.5 rounded-xl bg-accent text-center border border-border-hairline">
+            <p className="text-3xl font-bold leading-none text-brand">{groups.length}</p>
+            <p className="label text-sm text-brand-secondary mt-0.5">independent {plural(groups.length, "origin")}</p>
           </div>
         </div>
         <p className="sr-only">

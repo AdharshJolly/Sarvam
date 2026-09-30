@@ -18,6 +18,7 @@ export function nextFocusedElement(
   if (focusable.length === 0) return null;
   const first = focusable[0];
   const last = focusable[focusable.length - 1];
+  if (!first || !last) return null;
 
   if (isShift && active === first) return last;
   if (!isShift && active === last) return first;

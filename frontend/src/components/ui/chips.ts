@@ -6,6 +6,7 @@ import type {
   FinalState,
   SourceStatus,
   Verdict,
+  RunStatus,
 } from "@contracts/types";
 import { stateStyle } from "../../lib/format";
 import { StatusIconMap } from "./Icon";
@@ -108,3 +109,19 @@ export function finalStateChip(f: FinalState): ChipSpec {
       return { icon: "Circle", label: "INSUFFICIENT", tone: "bad" };
   }
 }
+
+export function runStatusChip(status: RunStatus | string | undefined): ChipSpec {
+  switch (status) {
+    case "completed":
+      return { icon: "CheckCircle", label: "Completed", tone: "ok" };
+    case "running":
+      return { icon: "RefreshCw", label: "Running", tone: "brand" };
+    case "failed":
+      return { icon: "AlertTriangle", label: "Failed", tone: "bad" };
+    case "queued":
+      return { icon: "Clock", label: "Queued", tone: "info" };
+    default:
+      return { icon: "Clock", label: status || "Pending", tone: "muted" };
+  }
+}
+

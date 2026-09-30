@@ -5,12 +5,12 @@ import { getFocusableElements, nextFocusedElement, saveFocus, restoreFocus } fro
 export type DialogPlacement = "center" | "right" | "left" | "bottom";
 
 const PLACEMENT: Record<DialogPlacement, string> = {
-  center: "anim-in m-auto rounded-lg border border-border-strong",
+  center: "anim-in m-auto rounded-[1.3rem] border border-border-hairline shadow-elevation bg-surface p-0",
   right:
-    "anim-drawer fixed inset-y-0 right-0 z-30 m-0 h-full max-h-dvh w-full max-w-[30rem] border-l border-border-strong",
-  left: "anim-in fixed inset-y-0 left-0 z-30 m-0 h-full max-h-dvh w-full max-w-[22rem] border-r border-border-strong",
+    "anim-drawer fixed inset-y-0 right-0 z-30 m-0 h-full max-h-dvh w-full max-w-[32rem] border-l border-border-hairline bg-surface/95 backdrop-blur-md shadow-elevation",
+  left: "anim-in fixed inset-y-0 left-0 z-30 m-0 h-full max-h-dvh w-full max-w-[22rem] border-r border-border-hairline bg-surface",
   bottom:
-    "anim-in fixed inset-x-0 bottom-0 z-30 m-0 max-h-[85dvh] w-full max-w-none rounded-t-lg border-t border-border-strong",
+    "anim-in fixed inset-x-0 bottom-0 z-30 m-0 max-h-[85dvh] w-full max-w-none rounded-t-[1.3rem] border-t border-border-hairline bg-surface",
 };
 
 export interface DialogProps {
@@ -100,9 +100,12 @@ export function Dialog({ isOpen, onClose, title, children, placement = "center",
       className={`bg-bg p-0 text-text shadow-elevation outline-none backdrop:bg-black/40 backdrop:backdrop-blur-sm ${PLACEMENT[placement]}`}
     >
       <div className={`flex h-full flex-col ${placement === "center" ? "p-6" : "p-4"}`}>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="label">{title}</h2>
-          <Button onClick={onClose}>Close</Button>
+        <div className="mb-4 flex items-center justify-between pb-3 border-b border-border-hairline">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-brand" />
+            <h2 className="text-base font-semibold text-text uppercase tracking-wider">{title}</h2>
+          </div>
+          <Button onClick={onClose} className="rounded-lg px-3 py-1 text-sm font-semibold">Close</Button>
         </div>
         <div className="flex-1 overflow-y-auto">{children}</div>
       </div>

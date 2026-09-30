@@ -36,37 +36,37 @@ export function RailContent({
   const finished = run?.status === "completed";
 
   return (
-    <div className="flex flex-col gap-6 p-4 pt-2">
+    <div className="flex flex-col gap-4 p-3.5 pt-1">
       <section aria-labelledby="question-h">
         {showMode ? (
-          <div className="mb-3">
+          <div className="mb-2.5">
             <ModeBadge mode={run?.mode ?? null} pulsing={running} />
           </div>
         ) : null}
-        <h2 id="question-h" className="label mb-2">
-          Research question
+        <h2 id="question-h" className="font-mono text-sm tracking-wider uppercase text-text-muted mb-1">
+          Research Question
         </h2>
         {hydrating ? (
           <SkeletonLines rows={3} label="Loading run..." />
         ) : run ? (
           <>
-            <p className="font-medium leading-snug">{run.question}</p>
+            <p className="font-medium text-sm leading-snug text-text line-clamp-3">{run.question}</p>
             {scope?.geography || scope?.time_horizon || scope?.constraints ? (
-              <p className="mt-1 text-sm text-text-muted">
+              <p className="mt-1 text-sm text-text-muted font-mono">
                 {[scope?.geography, scope?.time_horizon, scope?.constraints].filter(Boolean).join(" · ")}
               </p>
             ) : null}
           </>
         ) : (
-          <p className="text-text-muted">No run started.</p>
+          <p className="text-sm text-text-muted">No run started.</p>
         )}
       </section>
 
       {run ? (
         // Announced once by the shell's live region, so this box is not a live region itself.
-        <section aria-label="Now" className="rounded-md border border-border-hairline bg-brand-secondary/10 p-3">
-          <h2 className="label mb-1">Now</h2>
-          <p className="text-base">{view.nowReason || (running ? "Waiting for the first step..." : "No further steps.")}</p>
+        <section aria-label="Now" className="rounded-lg border border-border-hairline bg-surface-2/60 p-3">
+          <h2 className="font-mono text-sm tracking-wider uppercase text-text-muted mb-1">Now</h2>
+          <p className="text-sm text-text leading-snug">{view.nowReason || (running ? "Waiting for the first step..." : "No further steps.")}</p>
         </section>
       ) : null}
 

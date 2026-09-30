@@ -19,7 +19,7 @@ const whyItMatters: Record<ConflictKind, string> = {
 };
 
 function valueText(c: Claim | undefined): string {
-  if (!c) return "—";
+  if (!c) return "-";
   if (c.value_num == null) return c.id;
   const unit = c.unit ? ` ${c.unit}` : "";
   return `${c.value_num.toLocaleString()}${unit}${c.period ? ` / ${c.period}` : ""}`;

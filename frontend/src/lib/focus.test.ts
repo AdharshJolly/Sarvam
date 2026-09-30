@@ -1,5 +1,5 @@
-import { describe, expect, test, afterEach } from "bun:test";
-import { nextFocusedElement, saveFocus, restoreFocus } from "./focus";
+import { describe, expect, test } from "bun:test";
+import { nextFocusedElement } from "./focus";
 
 describe("focus helpers", () => {
   test("nextFocusedElement wraps around forward and backward", () => {

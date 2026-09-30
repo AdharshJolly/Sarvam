@@ -28,17 +28,19 @@ export interface CoverageMatrixProps {
 
 type Tone = "ok" | "warn" | "bad" | "muted";
 const TONE_OF: Record<CoverageState, Tone> = { RED: "bad", AMBER: "warn", GREEN: "ok" };
-const CELL_FILL: Record<Tone, string> = {
-  ok: "bg-ok-bg border-ok-border",
-  warn: "bg-warn-bg border-warn-border",
-  bad: "bg-bad-bg border-bad-border",
-  muted: "bg-surface-2 border-border-hairline",
+
+const CELL_BORDER: Record<Tone, string> = {
+  ok: "border-l-4 border-l-ok-fg border-y-border-hairline border-r-border-hairline bg-surface hover:bg-surface-2",
+  warn: "border-l-4 border-l-warn-fg border-y-border-hairline border-r-border-hairline bg-surface hover:bg-surface-2",
+  bad: "border-l-4 border-l-bad-fg border-y-border-hairline border-r-border-hairline bg-surface hover:bg-surface-2",
+  muted: "border-l-4 border-l-border-hairline border-y-border-hairline border-r-border-hairline bg-surface hover:bg-surface-2",
 };
-const CELL_TEXT: Record<Tone, string> = {
-  ok: "text-ok-fg",
-  warn: "text-warn-fg",
-  bad: "text-bad-fg",
-  muted: "text-text-muted",
+
+const BADGE_STYLE: Record<Tone, string> = {
+  ok: "bg-ok-bg text-ok-fg border border-ok-border",
+  warn: "bg-warn-bg text-warn-fg border border-warn-border",
+  bad: "bg-bad-bg text-bad-fg border border-bad-border",
+  muted: "bg-surface-2 text-text-muted border border-border-hairline",
 };
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
@@ -118,17 +120,24 @@ export function CoverageMatrix(p: CoverageMatrixProps) {
             key={dim.id}
             role="row"
             aria-label={`Dimension ${dim.name}`}
-            className={`grid gap-3 p-3 lg:grid-cols-[13rem_1fr] ${row === 0 ? "" : "border-t border-border-hairline"}`}
+            className={`grid gap-4 p-4 lg:grid-cols-[13rem_1fr] items-start ${
+              row === 0 ? "" : "border-t border-border-hairline"
+            }`}
           >
-            <div role="rowheader" className="flex flex-col gap-1">
-              <h3 className="font-semibold">{dim.name}</h3>
-              <div className="flex flex-wrap items-center gap-1">
+            <div role="rowheader" className="flex flex-col gap-1.5 pr-2">
+              <h3 className="font-semibold text-base text-text">{dim.name}</h3>
+              <div className="flex flex-wrap items-center gap-1.5">
                 {dim.critical ? <Badge>critical</Badge> : null}
                 {roll ? <StateChip spec={coverageChip(roll.state)} /> : null}
               </div>
-              {roll ? <p className="text-sm text-text-muted">{roll.reason}</p> : null}
+              {roll ? (
+                <p className="text-sm text-text-muted leading-relaxed line-clamp-3 mt-0.5 font-normal">
+                  {roll.reason}
+                </p>
+              ) : null}
             </div>
-            <div role="none" className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+
+            <div role="none" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {slots.map((s, col) => {
                 const cell = cellBySlot.get(s.id);
                 const st = p.stats[s.id] ?? { sources: 0, origins: 0 };
@@ -153,17 +162,18 @@ export function CoverageMatrix(p: CoverageMatrixProps) {
                       onClick={() => p.onSelect(selected ? null : s.id)}
                       onFocus={() => setActive({ row, col })}
                       onKeyDown={(e) => onKeyDown(e, { row, col })}
-                      className={`matrix-cell flex min-h-11 w-full flex-col gap-1 rounded-lg border p-3 text-left transition-colors ${
-                        CELL_FILL[tone]
+                      className={`matrix-cell flex min-h-11 w-full flex-col rounded-lg border p-3.5 text-left transition-all ${
+                        CELL_BORDER[tone]
                       } ${selected ? "ring-2 ring-brand-secondary ring-offset-2 ring-offset-surface" : ""} ${
                         flashing.has(s.id) ? "anim-flash" : ""
                       }`}
                     >
-                      <span className="flex items-center justify-between gap-2">
-                        <span className={`flex items-center gap-1.5 font-semibold ${CELL_TEXT[tone]}`}>
-                          <Icon name={cell ? coverageChip(cell.state).icon : "Circle"} size={16} aria-hidden />
-                          {cell ? coverageChip(cell.state).label : "NO DATA"}
+                      <div className="flex items-center justify-between gap-2 w-full">
+                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-sm font-mono font-medium ${BADGE_STYLE[tone]}`}>
+                          <Icon name={cell ? coverageChip(cell.state).icon : "Circle"} size={13} aria-hidden />
+                          <span>{cell ? cell.state : "NO DATA"}</span>
                         </span>
+
                         {change ? (
                           <span className="flex items-center gap-1 text-sm font-semibold text-brand-secondary">
                             {change === "improved" ? <Icon name="TrendingUp" size={14} aria-hidden /> : null}
@@ -171,23 +181,28 @@ export function CoverageMatrix(p: CoverageMatrixProps) {
                             {change === "new" ? "new this round" : change}
                           </span>
                         ) : null}
+                      </div>
+
+                      <span className="font-medium text-base text-text leading-snug mt-2">
+                        {s.name}
                       </span>
-                      <span className="font-medium leading-snug">{s.name}</span>
-                      <span className="mono flex flex-wrap items-center gap-x-1.5 text-text-muted">
+
+                      <div className="font-mono text-sm text-text-muted mt-1 flex flex-wrap items-center gap-2">
                         <span>
-                          <strong className="text-text">{st.sources}</strong> {st.sources === 1 ? "source" : "sources"}
+                          <strong className="text-text font-semibold">{st.sources}</strong> {st.sources === 1 ? "source" : "sources"}
                         </span>
-                        <Icon name="ArrowRight" size={14} aria-hidden />
+                        <span className="text-border-hairline">/</span>
                         <span>
-                          <strong className="text-text">{st.origins}</strong> {st.origins === 1 ? "origin" : "origins"}
+                          <strong className="text-text font-semibold">{st.origins}</strong> {st.origins === 1 ? "origin" : "origins"}
                         </span>
                         {conflicts > 0 ? (
-                          <span className="inline-flex items-center gap-1 font-semibold text-bad-fg">
-                            <Icon name="Zap" size={14} aria-hidden /> {conflicts}
+                          <span className="inline-flex items-center gap-1 font-semibold text-bad-fg ml-auto">
+                            <Icon name="Zap" size={13} aria-hidden /> {conflicts}
                           </span>
                         ) : null}
-                      </span>
-                      <span className="line-clamp-2 text-sm text-text-muted">
+                      </div>
+
+                      <span className="line-clamp-2 text-sm text-text-muted mt-1.5 leading-relaxed font-normal">
                         {cell ? cell.reason : "Awaiting coverage analysis."}
                       </span>
                     </button>
@@ -215,7 +230,7 @@ export function MatrixTable(p: CoverageMatrixProps) {
         <thead>
           <tr className="border-b border-border-hairline text-text-muted">
             {["Dimension", "Slot", "State", "Sources", "Origins", "Conflicts", "Reason"].map((h) => (
-              <th key={h} scope="col" className="label p-2">
+              <th key={h} scope="col" className="label p-2.5">
                 {h}
               </th>
             ))}
@@ -231,8 +246,8 @@ export function MatrixTable(p: CoverageMatrixProps) {
                 const selected = p.selected === s.id;
                 return (
                   <tr key={s.id} className={`border-b border-border-hairline align-top ${selected ? "bg-surface-2" : ""}`}>
-                    <td className="p-2 font-semibold">{dim.name}</td>
-                    <td className="p-2">
+                    <td className="p-2.5 font-semibold">{dim.name}</td>
+                    <td className="p-2.5">
                       <button
                         type="button"
                         aria-pressed={selected}
@@ -242,11 +257,11 @@ export function MatrixTable(p: CoverageMatrixProps) {
                         {s.name}
                       </button>
                     </td>
-                    <td className="p-2">{cell ? <StateChip spec={coverageChip(cell.state)} /> : "No data"}</td>
-                    <td className="mono p-2">{st.sources}</td>
-                    <td className="mono p-2">{st.origins}</td>
-                    <td className="mono p-2">{cell?.open_conflicts ?? 0}</td>
-                    <td className="p-2 text-text-muted">{cell ? cell.reason : "Awaiting coverage analysis."}</td>
+                    <td className="p-2.5">{cell ? <StateChip spec={coverageChip(cell.state)} /> : "No data"}</td>
+                    <td className="mono p-2.5">{st.sources}</td>
+                    <td className="mono p-2.5">{st.origins}</td>
+                    <td className="mono p-2.5">{cell?.open_conflicts ?? 0}</td>
+                    <td className="p-2.5 text-text-muted">{cell ? cell.reason : "Awaiting coverage analysis."}</td>
                   </tr>
                 );
               }),

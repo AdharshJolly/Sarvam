@@ -144,7 +144,7 @@ function useRunSessionState(): Session {
 
   const reattach = useCallback(() => setAttempt((n) => n + 1), []);
   const newRun = useCallback(() => {
-    window.location.hash = "";
+    window.location.hash = "#/workspace";
     setRunId(null);
   }, []);
 

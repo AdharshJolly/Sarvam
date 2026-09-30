@@ -35,7 +35,8 @@ export function ClaimList({
             {list.map((c) => {
               const v = verdicts[c.id];
               const numeric = c.value_num != null;
-              const source = c.source_id ? sources[c.source_id] : undefined;
+              const sourceId = (c as unknown as { source_id?: string }).source_id;
+              const source = sourceId ? sources[sourceId] : undefined;
               return (
                 <li key={c.id}>
                   <Card

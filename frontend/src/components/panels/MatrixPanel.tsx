@@ -105,52 +105,55 @@ export function MatrixPanel({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-border-hairline/60">
+        <div className="flex flex-wrap items-center gap-3">
           {rounds.length > 1 ? (
             <label className="flex items-center gap-2">
-              <span className="font-semibold text-base">Round:</span>
+              <span className="font-semibold text-sm text-text-muted">Round:</span>
               <input
                 type="range"
                 min={0}
                 max={rounds.length - 1}
                 value={rounds.indexOf(round)}
-                onChange={(e) => setPicked(rounds[parseInt(e.target.value, 10)])}
+                onChange={(e) => setPicked(rounds[parseInt(e.target.value, 10)] ?? null)}
                 className="accent-brand cursor-pointer"
                 aria-label="Select round"
               />
-              <span className="mono min-w-4 text-center">{round}</span>
+              <span className="mono text-sm font-semibold">{round}</span>
             </label>
           ) : (
-            <span className="font-semibold text-base">Round {round}</span>
+            <span className="font-semibold text-sm text-text-muted">Round {round}</span>
           )}
+
+          <div role="group" aria-label="Matrix view" className="inline-flex overflow-hidden rounded-md border border-border-hairline bg-surface p-0.5 shadow-sm">
+            {(["grid", "table"] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                aria-pressed={matrixView === v}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 text-sm rounded transition-all pointer-coarse:min-h-11 ${
+                  matrixView === v ? "bg-brand text-on-brand font-semibold shadow-sm" : "bg-transparent text-text-muted hover:text-text"
+                }`}
+                onClick={() => setMatrixView(v)}
+              >
+                <Icon name={v === "grid" ? "Grid" : "Table"} size={14} aria-hidden />
+                {v === "grid" ? "Grid" : "Table"}
+              </button>
+            ))}
+          </div>
+
+          {prevRound !== undefined ? (
+            <label className="text-sm text-text-muted flex items-center gap-2 cursor-pointer hover:text-text">
+              <input type="checkbox" checked={compare} onChange={(e) => setCompare(e.target.checked)} className="rounded" /> Compare with previous round
+            </label>
+          ) : null}
         </div>
-        <div role="group" aria-label="Matrix view" className="inline-flex overflow-hidden rounded-md border border-border-strong">
-          {(["grid", "table"] as const).map((v) => (
-            <button
-              key={v}
-              type="button"
-              aria-pressed={matrixView === v}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 text-base transition-colors pointer-coarse:min-h-11 ${
-                matrixView === v ? "bg-brand text-on-brand font-bold" : "bg-surface text-text hover:bg-surface-2"
-              }`}
-              onClick={() => setMatrixView(v)}
-            >
-              <Icon name={v === "grid" ? "Grid" : "Table"} size={16} aria-hidden />
-              {v === "grid" ? "Grid" : "Table"}
-            </button>
-          ))}
-        </div>
-        {prevRound !== undefined ? (
-          <label className="text-base flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={compare} onChange={(e) => setCompare(e.target.checked)} /> Compare with previous round
-          </label>
-        ) : null}
-        <div className="ml-auto flex flex-wrap items-center gap-2" aria-label="Legend and totals">
+
+        <div className="flex flex-wrap items-center gap-2" aria-label="Legend and totals">
           {(["GREEN", "AMBER", "RED"] as const).map((s) => (
-            <span key={s} className="inline-flex items-center gap-1">
+            <span key={s} className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-sm bg-surface border border-border-hairline">
               <StateChip spec={coverageChip(s)} />
-              <span className="mono">{counts[s]}</span>
+              <span className="mono font-semibold">{counts[s]}</span>
             </span>
           ))}
         </div>
