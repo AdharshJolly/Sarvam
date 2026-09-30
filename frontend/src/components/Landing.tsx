@@ -53,7 +53,7 @@ function BackendStatus() {
             <Icon name="ServerOff" size={14} aria-hidden /> Backend not reachable
           </span>
           <span className="font-normal text-text-muted">
-            Start it with <code className="mono">make backend</code>, then check again.
+            Tried <code className="mono">{env.apiBaseUrl}</code>. Start it with <code className="mono">make backend</code>, then check again.
           </span>
           <Button size="sm" onClick={check}>
             Check again
