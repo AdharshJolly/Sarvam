@@ -21,7 +21,7 @@ import { Icon } from "../ui/Icon";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
 
-function countChange(changes: Record<string, string>, kind: string): number {
+export function countChange(changes: Record<string, string>, kind: string): number {
   return Object.values(changes).filter((c) => c === kind).length;
 }
 
@@ -106,20 +106,24 @@ export function MatrixPanel({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <div role="group" aria-label="Coverage round" className="inline-flex overflow-hidden rounded-md border border-border-strong">
-          {rounds.map((r) => (
-            <button
-              key={r}
-              type="button"
-              aria-pressed={round === r}
-              className={`px-3 py-1 text-base transition-colors pointer-coarse:min-h-11 ${
-                round === r ? "bg-brand text-on-brand font-bold" : "bg-surface text-text hover:bg-surface-2"
-              }`}
-              onClick={() => setPicked(r)}
-            >
-              Round {r}
-            </button>
-          ))}
+        <div className="flex items-center gap-3">
+          {rounds.length > 1 ? (
+            <label className="flex items-center gap-2">
+              <span className="font-semibold text-base">Round:</span>
+              <input
+                type="range"
+                min={0}
+                max={rounds.length - 1}
+                value={rounds.indexOf(round)}
+                onChange={(e) => setPicked(rounds[parseInt(e.target.value, 10)])}
+                className="accent-brand cursor-pointer"
+                aria-label="Select round"
+              />
+              <span className="mono min-w-4 text-center">{round}</span>
+            </label>
+          ) : (
+            <span className="font-semibold text-base">Round {round}</span>
+          )}
         </div>
         <div role="group" aria-label="Matrix view" className="inline-flex overflow-hidden rounded-md border border-border-strong">
           {(["grid", "table"] as const).map((v) => (

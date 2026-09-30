@@ -162,7 +162,7 @@ export function CoverageMatrix(p: CoverageMatrixProps) {
                       <span className="flex items-center justify-between gap-2">
                         <span className={`flex items-center gap-1.5 font-semibold ${CELL_TEXT[tone]}`}>
                           <Icon name={cell ? coverageChip(cell.state).icon : "Circle"} size={16} aria-hidden />
-                          {cell ? cell.state : "NO DATA"}
+                          {cell ? coverageChip(cell.state).label : "NO DATA"}
                         </span>
                         {change ? (
                           <span className="flex items-center gap-1 text-sm font-semibold text-brand-secondary">
