@@ -3,7 +3,7 @@
 # added by task T25 when the commands behind them exist.
 
 .PHONY: help dev backend frontend install lint typecheck test test-backend test-frontend \
-        build contracts contracts-check check graph fixtures gates
+        build contracts contracts-check check graph fixtures gates benchmark-llm
 
 help:
 	@echo "Targets: install dev backend frontend lint typecheck test build contracts contracts-check check graph fixtures gates"
@@ -44,6 +44,11 @@ fixtures:
 # Offline gate suites (G0 needs provider keys for its live cases; G1-G3 are deterministic).
 gates:
 	uv run pytest tests/gates/g1/test_g1.py tests/gates/g2 tests/gates/g3
+
+# Live LLM benchmark (needs provider keys): LABEL=baseline RUNS=3 make benchmark-llm. Env overrides
+# (SARVAM_LLM_MAX_TOKENS, SARVAM_VERIFIER_BATCH_SIZE, ...) select the configuration under test.
+benchmark-llm:
+	uv run python -m scripts.benchmark_llm --label $(or $(LABEL),baseline) --runs $(or $(RUNS),3)
 
 build:
 	bun run build

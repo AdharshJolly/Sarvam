@@ -145,8 +145,7 @@ async def run_discover(
     budget_error: BudgetExceeded | None = None
     stored = 0
 
-    async def one(task: Task) -> None:
-        nonlocal budget_error, stored
+    def started(task: Task) -> None:
         slot = slots.get(task.slot_id)
         em.emit(
             EventType.TASK_STARTED,
@@ -159,11 +158,16 @@ async def run_discover(
             ),
             round=round,
         )
-        queries = queries_for(task, slot, scope, t.queries_per_task)
-        results = await asyncio.gather(
+
+    async def search(task: Task) -> list:
+        queries = queries_for(task, slots.get(task.slot_id), scope, t.queries_per_task)
+        return await asyncio.gather(
             *(gateway.search(q, max_results=t.results_per_query) for q in queries),
             return_exceptions=True,
         )
+
+    def persist(task: Task, results: list) -> None:
+        nonlocal budget_error, stored
         found: list[_Found] = []
         errors: list[GatewayError] = []
         for res in results:
@@ -193,7 +197,14 @@ async def run_discover(
         stored += _store_sources(conn, em, settings, run_id, task, found, round)
         repo.set_task_status(conn, run_id, task.id, "done")
 
-    await asyncio.gather(*(one(task) for task in tasks))
+    # Searches run concurrently, but everything stored or emitted happens in task order after they
+    # all finish: source ids, duplicate ownership and event order never depend on which provider
+    # call answered first, so a replay (which answers instantly) reproduces a live run (FR-26).
+    for task in tasks:
+        started(task)
+    outcomes = await asyncio.gather(*(search(task) for task in tasks))
+    for task, results in zip(tasks, outcomes, strict=True):
+        persist(task, results)
     if budget_error is not None:
         raise budget_error
     return stored

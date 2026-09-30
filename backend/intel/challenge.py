@@ -288,7 +288,9 @@ async def resolve_challenges(
     done: list[Challenge] = []
     fatal: GatewayError | None = None
 
-    async def one(ch: Challenge) -> None:
+    async def one(ch: Challenge) -> tuple[Challenge, ChallengeOutcome | None, CallMetrics | None]:
+        """Judge one challenge. Nothing is stored here: outcomes are persisted in challenge order
+        by the caller, so event order never depends on which verifier call answered first."""
         nonlocal fatal
         found = [p for s in sources if s.task_id in ch.followup_task_ids
                  for p in repo.list_passages(conn, s.id)]  # fmt: skip
@@ -326,17 +328,20 @@ async def resolve_challenges(
             metrics_list.append(res.metrics)
         outcome = outcome_by_rule(verdicts)
         if incomplete and outcome is not ChallengeOutcome.WEAKENED:
-            return
+            return ch, None, None
+        return ch, outcome, metrics_list[0] if metrics_list else None
+
+    for ch, outcome, metrics in await asyncio.gather(*(one(c) for c in pending)):
+        if outcome is None:
+            continue
         repo.set_challenge_outcome(conn, ch.id, outcome.value)
         em.emit(
             EventType.CHALLENGE_OUTCOME,
             ChallengeOutcomePayload(challenge_id=ch.id, outcome=outcome),
             round=round,
-            metrics=metrics_list[0] if metrics_list else None,
+            metrics=metrics,
         )
         done.append(ch)
-
-    await asyncio.gather(*(one(c) for c in pending))
     if fatal is not None:
         raise fatal
     return done

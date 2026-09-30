@@ -107,7 +107,8 @@ async def run_verify(
         round=round,
     )
     todo = _pairs(conn, repo.list_unverified_claims(conn, run_id))
-    batches = [todo[i : i + BATCH_SIZE] for i in range(0, len(todo), BATCH_SIZE)]
+    size = getattr(settings, "verifier_batch_size", BATCH_SIZE)
+    batches = [todo[i : i + size] for i in range(0, len(todo), size)]
     stored = 0
     fatal: GatewayError | None = None
 
@@ -126,33 +127,39 @@ async def run_verify(
         )
         stored += 1
 
-    async def one(batch: list[Pair]) -> None:
-        nonlocal fatal
+    async def one(
+        batch: list[Pair],
+    ) -> tuple[list[tuple[Pair, VerdictOut, CallMetrics | None]], GatewayError | None]:
+        """Judge one batch (with its re-asks). Nothing is stored here: the caller persists batch
+        results in batch order, so event order never depends on which call answered first."""
         pending = batch
+        judged: list[tuple[Pair, VerdictOut, CallMetrics | None]] = []
         for _ in range(MAX_CALLS_PER_BATCH):
             try:
                 res = await gateway.llm(
                     LLMRole.VERIFIER, "verifier.v1", VerdictBatch, build_payload(pending)
                 )
             except BudgetExceeded as exc:
-                fatal = fatal or exc
-                return
+                return judged, exc
             except GatewayError as exc:
                 if exc.failure in (FailureType.STEP_FAILED, FailureType.RATE_LIMITED):
-                    return  # these claims stay pending and are counted in the warning below
-                fatal = fatal or exc
-                return
+                    return judged, None  # these claims stay pending and are counted below
+                return judged, exc
             got = accept(pending, res.value)
             metrics: CallMetrics | None = res.metrics
             for pair in pending:
                 if pair.key in got:
-                    store(pair, got[pair.key], metrics)
+                    judged.append((pair, got[pair.key], metrics))
                     metrics = None  # the call's usage is recorded once
             pending = [p for p in pending if p.key not in got]
             if not pending:
-                return
+                break
+        return judged, None
 
-    await asyncio.gather(*(one(b) for b in batches))
+    for judged, error in await asyncio.gather(*(one(b) for b in batches)):
+        for pair, verdict, metrics in judged:
+            store(pair, verdict, metrics)
+        fatal = fatal or error
     remaining = len(repo.list_unverified_claims(conn, run_id))
     if remaining:
         em.emit(

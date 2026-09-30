@@ -45,7 +45,10 @@ class Thresholds(BaseModel):
     default_min_independent: int = 2  # 9.8
     passage_words_min: int = 120  # FR-07
     passage_words_max: int = 200  # FR-07
-    passages_per_slot_source: int = 6  # 5.1
+    passages_per_slot_source: int = 5  # 5.1; 6 before the LLM optimisation (decision B-32)
+    # B-35: an extractor job for a source's OTHER slots needs this many slot words in its best
+    # passage (0 = off; the own slot is never gated). Offline: 3 skips ~21% of passages, loses ~4%.
+    extractor_min_overlap: int = Field(default=0, ge=0)
     source_char_cap: int = 60_000  # 5.1
     queries_per_task: int = 2  # FR-04, CL-05
     results_per_query: int = 6  # CL-05
@@ -92,6 +95,17 @@ class Settings(BaseModel):
     llm_model_fast: str = ""
     llm_model_strong: str = ""
 
+    # USD per 1M tokens (input, output) for local cost estimation when the provider reports no cost.
+    # Unset means "no estimate": such calls are labelled unavailable, never guessed.
+    llm_price_fast: tuple[float, float] | None = None
+    llm_price_strong: tuple[float, float] | None = None
+    llm_max_tokens: dict[str, int] = Field(default_factory=dict)  # per-role output ceiling override
+    llm_compact_json: bool = True  # compact JSON in LLM payloads (decision B-32)
+    verifier_batch_size: int = 5  # claim/passage pairs per verifier call (decision B-25)
+    # Slots per extractor call for one source. 1 = the legacy one-call-per-(source, slot) path
+    # (default); more = batched extraction (decision B-33, CL-09).
+    extractor_batch_size: int = Field(default=1, ge=1)
+
     fetch_concurrency: int = 8
     llm_concurrency: int = 8
 
@@ -106,6 +120,21 @@ class Settings(BaseModel):
 
         def get(name: str, default: str) -> str:
             return e.get(f"SARVAM_{name}", default)
+
+        def pair(name: str) -> tuple[float, float] | None:
+            raw = get(name, "")
+            if not raw:
+                return None
+            a, _, c = raw.partition(",")
+            return float(a), float(c)
+
+        def kv_ints(name: str) -> dict[str, int]:
+            out: dict[str, int] = {}
+            for item in get(name, "").split(","):
+                if "=" in item:
+                    k, _, v = item.partition("=")
+                    out[k.strip()] = int(v)
+            return out
 
         d = cls()
         b = d.budget
@@ -127,6 +156,21 @@ class Settings(BaseModel):
             llm_api_key=SecretStr(get("LLM_API_KEY", "")),
             llm_model_fast=get("LLM_MODEL_FAST", ""),
             llm_model_strong=get("LLM_MODEL_STRONG", ""),
+            llm_price_fast=pair("LLM_PRICE_FAST"),
+            llm_price_strong=pair("LLM_PRICE_STRONG"),
+            llm_max_tokens=kv_ints("LLM_MAX_TOKENS"),
+            llm_compact_json=get("LLM_COMPACT_JSON", "1" if d.llm_compact_json else "0")
+            in ("1", "true", "True"),
+            verifier_batch_size=int(get("VERIFIER_BATCH_SIZE", str(d.verifier_batch_size))),
+            extractor_batch_size=int(get("EXTRACTOR_BATCH_SIZE", str(d.extractor_batch_size))),
+            thresholds=Thresholds(
+                passages_per_slot_source=int(
+                    get("PASSAGES_PER_SLOT", str(d.thresholds.passages_per_slot_source))
+                ),
+                extractor_min_overlap=int(
+                    get("EXTRACTOR_MIN_OVERLAP", str(d.thresholds.extractor_min_overlap))
+                ),
+            ),
             fetch_concurrency=int(get("FETCH_CONCURRENCY", str(d.fetch_concurrency))),
             llm_concurrency=int(get("LLM_CONCURRENCY", str(d.llm_concurrency))),
             budget=Budget(

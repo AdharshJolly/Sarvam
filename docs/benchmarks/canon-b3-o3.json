@@ -1,0 +1,173 @@
+{
+ "label": "canon-b3-o3",
+ "question": "Should a company launch an electric scooter subscription service in Bengaluru in 2027?",
+ "knobs": {
+  "max_tokens": {},
+  "compact_json": true,
+  "passages_per_slot": 5,
+  "verifier_batch": 5,
+  "extractor_batch": 3,
+  "extractor_min_overlap": 3,
+  "llm_concurrency": 2,
+  "models": [
+   "gemini-3.1-flash-lite",
+   "gemini-3.6-flash"
+  ],
+  "budget": {
+   "max_searches": 24,
+   "max_fetches": 40,
+   "max_llm_calls": 150,
+   "max_cost_usd": 3.0,
+   "max_wall_seconds_soft": 480,
+   "max_wall_seconds_hard": 600,
+   "max_followup_rounds": 2
+  }
+ },
+ "runs": [
+  {
+   "run_id": "R_BENCH_canon-b3-o3_1_179e",
+   "wall_seconds": 137.9,
+   "status": "completed",
+   "stop_state": "SUFFICIENT_WITH_CAVEATS",
+   "termination_reason": "budget",
+   "searches": 22,
+   "fetches": 40,
+   "llm_calls_budget_counter": 53,
+   "llm_operations": 52,
+   "validation_retries": 1,
+   "provider_requests": 53,
+   "provider_retries": 0,
+   "input_tokens": 135054,
+   "output_tokens": 12782,
+   "total_tokens": 155419,
+   "cost_reported_usd": 0.0,
+   "cost_estimated_usd": 0.0,
+   "cost_unavailable_ops": 52,
+   "claims": {
+    "rejected": 1,
+    "supported": 57
+   },
+   "coverage_last_round": {
+    "AMBER": 1,
+    "GREEN": 8,
+    "RED": 1
+   },
+   "rounds": 1,
+   "conflicts": {
+    "explained": 6
+   },
+   "challenges": {
+    "none": 1
+   },
+   "events": {
+    "budget.warning": 3,
+    "challenge.created": 1,
+    "claim.created": 58,
+    "claim.rejected": 5,
+    "claim.verified": 58,
+    "conflict.detected": 6,
+    "coverage.updated": 2,
+    "origin.updated": 28,
+    "passages.created": 32,
+    "phase.entered": 13,
+    "plan.created": 1,
+    "report.draft": 1,
+    "report.verified": 1,
+    "round.started": 1,
+    "run.completed": 1,
+    "source.failed": 8,
+    "source.fetched": 32,
+    "source.found": 44,
+    "stop.decided": 1,
+    "task.started": 11
+   },
+   "report_verified": {
+    "version": 1,
+    "dropped_count": 0,
+    "certainty_state": "SUFFICIENT_WITH_CAVEATS"
+   },
+   "by_role": {
+    "planner": {
+     "ops": 1,
+     "validation_attempts": 1,
+     "provider_requests": 1,
+     "provider_retries": 0,
+     "input_tokens": 1350,
+     "output_tokens": 1224,
+     "total_tokens": 4748,
+     "cost_usd": 0.0,
+     "latency_ms": 17171,
+     "failed": 0
+    },
+    "extractor": {
+     "ops": 31,
+     "validation_attempts": 32,
+     "provider_requests": 32,
+     "provider_retries": 0,
+     "input_tokens": 93611,
+     "output_tokens": 6404,
+     "total_tokens": 100015,
+     "cost_usd": 0.0,
+     "latency_ms": 59930,
+     "failed": 0
+    },
+    "verifier": {
+     "ops": 12,
+     "validation_attempts": 12,
+     "provider_requests": 12,
+     "provider_retries": 0,
+     "input_tokens": 22970,
+     "output_tokens": 3449,
+     "total_tokens": 26419,
+     "cost_usd": 0.0,
+     "latency_ms": 25083,
+     "failed": 0
+    },
+    "explainer": {
+     "ops": 6,
+     "validation_attempts": 6,
+     "provider_requests": 6,
+     "provider_retries": 0,
+     "input_tokens": 8834,
+     "output_tokens": 271,
+     "total_tokens": 9105,
+     "cost_usd": 0.0,
+     "latency_ms": 8372,
+     "failed": 0
+    },
+    "challenger": {
+     "ops": 1,
+     "validation_attempts": 1,
+     "provider_requests": 1,
+     "provider_retries": 0,
+     "input_tokens": 4025,
+     "output_tokens": 434,
+     "total_tokens": 6164,
+     "cost_usd": 0.0,
+     "latency_ms": 12636,
+     "failed": 0
+    },
+    "writer": {
+     "ops": 1,
+     "validation_attempts": 1,
+     "provider_requests": 1,
+     "provider_retries": 0,
+     "input_tokens": 4264,
+     "output_tokens": 1000,
+     "total_tokens": 8968,
+     "cost_usd": 0.0,
+     "latency_ms": 21680,
+     "failed": 0
+    }
+   },
+   "extractor_batching": {
+    "batch_size": 3,
+    "ops": 31,
+    "slots": 87,
+    "unique_passages": 233
+   },
+   "failed_ops": [],
+   "harness_error": null
+  }
+ ]
+}

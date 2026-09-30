@@ -51,6 +51,7 @@ logs/
 *.log
 temp/
 tmp/
+cache/
 
 # ---- IDE ----
 .idea/

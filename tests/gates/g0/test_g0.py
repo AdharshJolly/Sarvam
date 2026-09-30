@@ -152,9 +152,22 @@ def test_g0_fixtures_folder_committed():
         for n in ("plan", "claims", "sources", "origins", "conflicts", "coverage")
     ]
     assert set(corpus + expected + ["fixtures/corpus/manifest.json"]) <= set(tracked)
-    assert "cache/recorded/.gitkeep" in tracked
+    # cache/ is local-only: recordings are never tracked and no placeholder is needed
+    assert not [t for t in tracked if t.startswith("cache/")]
+    ignored = subprocess.run(
+        ["git", "check-ignore", "-q", "cache/recorded/fetch-0000000000000000.json"], cwd=ROOT
+    )
+    assert ignored.returncode == 0, "cache/ must be git-ignored"
     text = (ROOT / "fixtures/questions.yaml").read_text(encoding="utf-8")
     assert len(re.findall(r"^\s+- id: Q\d", text, re.M)) == 5  # SSOT 16.4: five golden questions
+
+
+def test_g0_recorder_creates_missing_record_dir(tmp_path):
+    from backend.gateway.record_replay import RecordMode, RecordReplay
+
+    target = tmp_path / "fresh" / "recorded"  # a fresh checkout has no cache/recorded
+    RecordReplay(target, RecordMode.RECORD)._write(target / "x.json", {"ok": True})
+    assert (target / "x.json").exists()
 
 
 # --- 7. secrets ---

@@ -122,6 +122,8 @@ class OpenAICompatLLM:
             int((time.perf_counter() - start) * 1000),
             tokens=usage.get("total_tokens"),
             cost_usd=float(cost) if cost is not None else None,
+            input_tokens=usage.get("prompt_tokens"),
+            output_tokens=usage.get("completion_tokens"),
         )
         if self._on_call:
             self._on_call(metrics)
@@ -166,15 +168,26 @@ SYSTEM_PREFIX = (
 )
 
 
+def max_tokens_for(role: LLMRole, settings: Settings) -> int:
+    """Output ceiling for a role: the SSOT-era default unless Settings overrides it."""
+    return settings.llm_max_tokens.get(role.value, ROLE_SETTINGS[role].max_tokens)
+
+
 def model_for(role: LLMRole, settings: Settings) -> str:
     tier = ROLE_SETTINGS[role].tier
     return settings.llm_model_strong if tier is LLMTier.STRONG else settings.llm_model_fast
 
 
-def render_payload(payload: dict[str, Any]) -> str:
-    """Render the user message. Untrusted text only ever appears inside escaped <source> blocks."""
+def render_payload(payload: dict[str, Any], *, compact: bool = False) -> str:
+    """Render the user message. Untrusted text only ever appears inside escaped <source> blocks.
+
+    `compact` drops indentation whitespace from the JSON part (same data, fewer tokens)."""
     rest = {k: v for k, v in payload.items() if k != "untrusted"}
-    parts = [json.dumps(rest, ensure_ascii=False, indent=1)]
+    parts = [
+        json.dumps(rest, ensure_ascii=False, separators=(",", ":"))
+        if compact
+        else json.dumps(rest, ensure_ascii=False, indent=1)
+    ]
     for item in payload.get("untrusted", []):
         text = str(item["text"]).replace("</source", "<\\/source")
         parts.append(f'<source id="{item["id"]}" untrusted="true">\n{text}\n</source>')
@@ -182,14 +195,14 @@ def render_payload(payload: dict[str, Any]) -> str:
 
 
 def build_messages(
-    prompt_id: str, schema: type[BaseModel], payload: dict[str, Any]
+    prompt_id: str, schema: type[BaseModel], payload: dict[str, Any], *, compact: bool = False
 ) -> list[dict[str, str]]:
     prompt = (PROMPTS_DIR / f"{prompt_id}.md").read_text(encoding="utf-8")
     schema_json = json.dumps(schema.model_json_schema(), separators=(",", ":"))
     system = SYSTEM_PREFIX.format(prompt_id=prompt_id, schema=schema_json) + prompt
     return [
         {"role": "system", "content": system},
-        {"role": "user", "content": render_payload(payload)},
+        {"role": "user", "content": render_payload(payload, compact=compact)},
     ]
 
 
