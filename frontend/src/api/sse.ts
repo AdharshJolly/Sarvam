@@ -8,29 +8,36 @@ export interface RunEventStream {
   close: () => void;
 }
 
+export interface StreamHandlers {
+  onEvent: (event: Event) => void;
+  onState?: (state: ConnectionState) => void;
+}
+
+/** Same signature for the real stream and the mock stream. */
+export type OpenStream = (runId: string, handlers: StreamHandlers, after?: number) => RunEventStream;
+
 /**
- * Subscribe to a run's event stream (SSOT section 11). Native EventSource reconnects and sends
- * Last-Event-ID automatically, so the server can resume from the last seen event id.
- * The stream carries the canonical Event envelope from the generated contracts.
+ * Subscribe to a run's event stream (SSOT section 11). The server sends unnamed `data:` messages with
+ * `id:`, so `onmessage` receives everything. Native EventSource reconnects and sends Last-Event-ID;
+ * `after` resumes the first connect after hydrating from /state (EventSource cannot set headers).
  */
-export function openRunEvents(
-  runId: string,
-  handlers: {
-    onEvent: (event: Event) => void;
-    onState?: (state: ConnectionState) => void;
-  },
-): RunEventStream {
-  const es = new EventSource(apiUrl(env.apiBaseUrl, routes.events(runId)));
+export const openRealStream: OpenStream = (runId, handlers, after) => {
+  const q = after !== undefined ? `?after=${after}` : "";
+  const es = new EventSource(apiUrl(env.apiBaseUrl, routes.events(runId)) + q);
   handlers.onState?.("connecting");
   es.onopen = () => handlers.onState?.("open");
   es.onerror = () => handlers.onState?.(es.readyState === EventSource.CLOSED ? "closed" : "connecting");
-  // Server sends each event with `event: <type>`; a generic message handler covers unnamed ones.
-  const parse = (m: MessageEvent<string>) => handlers.onEvent(JSON.parse(m.data) as Event);
-  es.onmessage = parse;
+  es.onmessage = (m: MessageEvent<string>) => {
+    try {
+      handlers.onEvent(JSON.parse(m.data) as Event);
+    } catch (err) {
+      console.error("Sarvam: unparseable event frame", err);
+    }
+  };
   return {
     close: () => {
       es.close();
       handlers.onState?.("closed");
     },
   };
-}
+};
