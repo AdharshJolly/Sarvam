@@ -218,6 +218,27 @@ stays 1 until the audit sheet is scored. Verifier batch 8 gave no measurable ben
 Offline relevance-floor analysis (`scripts/extractor_gate_analysis.py`, no credits): see OP-04. Candidate floor
 `own slot, or overlap >= 3` skips 25 percent of jobs at a 4 percent loss of yielding jobs; not implemented.
 
+## Canonical recording: batch 3 + floor 3 (1 Oct 2026, n=1)
+
+`SARVAM_EXTRACTOR_BATCH_SIZE=3`, `SARVAM_EXTRACTOR_MIN_OVERLAP=3`, `SARVAM_RECORD=1`; raw data
+`docs/benchmarks/canon-b3-o3.json`; recording in local `cache/recorded_canon1`.
+
+| Metric | Value |
+| --- | --- |
+| LLM calls / tokens / wall | 53 / 155,419 (135k in, 12.8k out) / 138 s |
+| Extractor | 31 ops, 87 slots, 233 unique passages, 93.6k input tokens |
+| Verifier / explainer / challenger / writer / planner | 12 / 6 / 1 / 1 / 1 ops |
+| Searches / fetches | 22 / 40 |
+| Stop | SUFFICIENT_WITH_CAVEATS (budget); coverage 8 GREEN, 1 AMBER, 1 RED |
+| Claims | 57 supported, 1 rejected; 6 conflicts explained; report verified, 0 dropped |
+
+Against the baseline mean (286k tokens, 115 calls): about -46 percent tokens, -54 percent calls. Against the
+batch-3 runs (153k, 49) it is level: the floor trimmed the extractor, but more claims meant more verifier and
+explainer work. One run, so neither the floor's effect nor quality is established.
+
+**Replay fidelity (OP-01): verified.** `scripts/replay_check.py` replayed the recording offline with keys
+blanked: 307 of 307 events and all stored rows match.
+
 ## Files changed in this work
 
 `backend/gateway/{__init__,core,llm}.py`, `backend/controller.py`, `backend/intel/verify.py`,
