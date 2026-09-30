@@ -21,4 +21,4 @@ the same commit (SSOT section 21).
 
 | ID | Hour | Change | Reason | Impact |
 | --- | --- | --- | --- | --- |
-| CL-01 | | | | |
+| CL-01 | 0 | G0: providers fixed as Tavily (search) and an OpenAI-compatible LLM endpoint; httpx moved from dev to runtime dependencies; stdlib `.env` reader added to `contracts/config.py`; `RunCreate` request model lives in `backend/app.py` (not yet in `contracts/`). | SSOT names no provider; gateway needs httpx at runtime; `.env.example` needs a loader. | No schema or event change. `RunCreate` TS type pending until Bun is available for `make contracts`. |
