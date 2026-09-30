@@ -28,6 +28,7 @@ the same commit (SSOT section 21).
 | B-17 | If the writer fails or the budget is exhausted, the report is rendered evidence-only (each verified claim cites itself) and says why. With no eligible claims the writer is not called. | Wrap-up must still produce a cited report (SSOT 7.1). |
 | B-18 | M0 claims stay `pending` with `quote_verified=1`; the writer accepts them via `writer.eligible_statuses()`. Quote-guard rejects are events only. | No judge exists before M1 and `claims.passage_id` is NOT NULL (decision D6). |
 | B-19 | LLM 429s with no `Retry-After` wait 5, 15, 30 s (cap 60 s) and a Google-style `retryDelay` in the error body is honoured. The live setup uses Gemini through its OpenAI-compatible endpoint with `SARVAM_LLM_CONCURRENCY=2`. | Gemini free tiers limit requests per minute (10-15), so short retries would fail. No new environment variable. |
+| B-20 | LLM calls also retry transient provider overload (HTTP 500/502/503/504) with the same 5, 15, 30 s backoff; other 4xx are not retried. Strong model pinned to `gemini-3.6-flash` (3.7 and 3.8 returned 503 "high demand", 2.5 Flash returned 404 for new users). | Gemini capacity spikes are common and would otherwise fail the planner and end the run. |
 
 ## Change log (SSOT section 21)
 

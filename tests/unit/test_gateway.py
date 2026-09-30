@@ -194,3 +194,18 @@ def test_retry_hint_is_read_from_header_or_google_style_body():
     assert failure(httpx.Response(429, json=body)).retry_after == 23.5
     plain = failure(httpx.Response(429, text="slow down"))
     assert plain.failure is FailureType.RATE_LIMITED and plain.retry_after is None
+
+
+def test_5xx_overload_is_marked_transient_and_other_statuses_are_not():
+    from backend.gateway import http_failure
+
+    def failure(code):
+        response = httpx.Response(code)
+        exc = httpx.HTTPStatusError(
+            "x", request=httpx.Request("POST", "https://x"), response=response
+        )
+        return http_failure("gemini", exc)
+
+    assert failure(503).transient and failure(500).transient and failure(504).transient
+    assert not failure(400).transient and not failure(404).transient
+    assert failure(503).failure is FailureType.STEP_FAILED
