@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useSession } from "../../state/useRunSession";
 import { BudgetMeters, type MeterKind } from "../BudgetMeters";
-import { PhaseStepper } from "../PhaseStepper";
-import { SkeletonLines } from "../ui/Skeleton";
-import { Icon, type IconName } from "../ui/Icon";
-import { Banner } from "../ui/Banner";
 import { ModeBadge } from "../ModeBadge";
+import { PhaseStepper } from "../PhaseStepper";
+import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
+import { Icon, type IconName } from "../ui/Icon";
+import { SkeletonLines } from "../ui/Skeleton";
+import { Tooltip } from "../ui/Tooltip";
 
 type Conn = "open" | "connecting" | "closed";
 const connectionIcons: Record<Conn, { icon: IconName; label: string; className: string }> = {
@@ -15,39 +16,33 @@ const connectionIcons: Record<Conn, { icon: IconName; label: string; className: 
   closed: { icon: "Circle", label: "Stream closed", className: "text-text-muted" },
 };
 
-/** Left rail: the orientation layer. Question, phase stepper, Now line, budget meters, stop (SSOT section 12). */
-export function LeftRail({ onOpenMeter }: { onOpenMeter: (k: MeterKind) => void }) {
+/**
+ * The orientation layer (SSOT section 12): question, Now line, phase stepper, budget meters, stream
+ * state and stop. Used inside the desktop rail and inside the small-screen status sheet.
+ * `showMode` adds the LIVE/REPLAY badge for places where the header is not already showing it.
+ */
+export function RailContent({
+  onOpenMeter,
+  showMode,
+}: {
+  onOpenMeter: (k: MeterKind) => void;
+  showMode: boolean;
+}) {
   const { view, stop, stopping, hydrating, runId } = useSession();
   const [confirming, setConfirming] = useState(false);
-  const [open, setOpen] = useState(false);
   const run = view.run;
   const running = run?.status === "running" || run?.status === "queued";
   const scope = run?.scope;
   const finished = run?.status === "completed";
-  
-  return (
-    <aside
-      aria-label="Research status"
-      className="left-rail flex flex-col border-b border-border-hairline lg:border-r lg:border-b-0 bg-surface"
-    >
-      <button 
-        type="button"
-        className="flex items-center justify-between p-4 font-semibold lg:hidden hover:bg-surface-2 transition-colors" 
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
-      >
-        <span className="flex items-center gap-2">
-          <Icon name="Activity" size={16} aria-hidden />
-          Research status
-        </span>
-        <Icon name={open ? "ChevronUp" : "ChevronDown"} size={16} aria-hidden />
-      </button>
 
-      <div className={`flex-col gap-6 p-4 pt-0 lg:p-4 lg:flex ${open ? "flex" : "hidden"}`}>
-        <section aria-labelledby="question-h">
-        <div className="mb-3">
-          <ModeBadge mode={run?.mode ?? null} pulsing={running} />
-        </div>
+  return (
+    <div className="flex flex-col gap-6 p-4 pt-2">
+      <section aria-labelledby="question-h">
+        {showMode ? (
+          <div className="mb-3">
+            <ModeBadge mode={run?.mode ?? null} pulsing={running} />
+          </div>
+        ) : null}
         <h2 id="question-h" className="label mb-2">
           Research question
         </h2>
@@ -68,11 +63,8 @@ export function LeftRail({ onOpenMeter }: { onOpenMeter: (k: MeterKind) => void 
       </section>
 
       {run ? (
-        <section
-          aria-label="Now"
-          aria-live="polite"
-          className="rounded-md p-3 bg-brand-secondary/10 border border-border-hairline"
-        >
+        // Announced once by the shell's live region, so this box is not a live region itself.
+        <section aria-label="Now" className="rounded-md border border-border-hairline bg-brand-secondary/10 p-3">
           <h2 className="label mb-1">Now</h2>
           <p className="text-base">{view.nowReason || (running ? "Waiting for the first step..." : "No further steps.")}</p>
         </section>
@@ -88,7 +80,9 @@ export function LeftRail({ onOpenMeter }: { onOpenMeter: (k: MeterKind) => void 
       ) : null}
 
       {run ? (
-        <div className={`flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider ${connectionIcons[view.connection].className}`}>
+        <div
+          className={`flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wider ${connectionIcons[view.connection].className}`}
+        >
           <Icon name={connectionIcons[view.connection].icon} size={14} aria-hidden />
           {connectionIcons[view.connection].label}
         </div>
@@ -126,7 +120,78 @@ export function LeftRail({ onOpenMeter }: { onOpenMeter: (k: MeterKind) => void 
           </Button>
         )
       ) : null}
+    </div>
+  );
+}
+
+/** The icon strip shown when the rail is collapsed: mode, current step, warnings and stream state. */
+function CollapsedRail() {
+  const { view } = useSession();
+  const run = view.run;
+  const running = run?.status === "running" || run?.status === "queued";
+  const conn = connectionIcons[view.connection];
+  const stepText = view.nowReason || (running ? "Waiting for the first step..." : "No further steps.");
+
+  return (
+    <div className="flex flex-col items-center gap-4 pb-4">
+      <ModeBadge mode={run?.mode ?? null} pulsing={running} iconOnly />
+      <Tooltip text={`${view.phase ?? "No phase"}: ${stepText}`} side="right" focusable>
+        <span className="flex h-9 w-9 items-center justify-center rounded-md bg-brand-secondary/10 text-brand-secondary">
+          <Icon name="Activity" size={18} label={`Current step: ${view.phase ?? "none"}`} />
+        </span>
+      </Tooltip>
+      {view.budgetWarnings.length > 0 ? (
+        <Tooltip
+          text={`Budget warning: ${view.budgetWarnings.map((w) => `${w.limit} ${w.used}/${w.max}`).join("; ")}`}
+          side="right"
+          focusable
+        >
+          <span className="text-warn-fg">
+            <Icon name="AlertTriangle" size={18} label="Budget warning" />
+          </span>
+        </Tooltip>
+      ) : null}
+      <Tooltip text={conn.label} side="right" focusable>
+        <span className={conn.className}>
+          <Icon name={conn.icon} size={18} label={conn.label} />
+        </span>
+      </Tooltip>
+    </div>
+  );
+}
+
+/**
+ * Desktop research-status rail (lg and up). Expanded it holds the full orientation layer; collapsed
+ * it is an icon strip. Below lg the same content appears in a sheet opened from the header.
+ */
+export function LeftRail({
+  collapsed,
+  onToggle,
+  onOpenMeter,
+}: {
+  collapsed: boolean;
+  onToggle: () => void;
+  onOpenMeter: (k: MeterKind) => void;
+}) {
+  return (
+    <aside
+      aria-label="Research status"
+      className={`left-rail hidden border-r border-border-hairline bg-surface lg:sticky lg:top-14 lg:z-10 lg:block lg:max-h-[calc(100dvh-3.5rem)] lg:self-start ${
+        // The collapsed strip must not clip its tooltips, so only the expanded rail scrolls.
+        collapsed ? "" : "lg:overflow-y-auto"
+      }`}
+    >
+      <div className={`flex p-2 ${collapsed ? "justify-center" : "justify-end"}`}>
+        <Button
+          size="icon"
+          variant="ghost"
+          aria-label={collapsed ? "Expand research status" : "Collapse research status"}
+          aria-expanded={!collapsed}
+          icon={<Icon name={collapsed ? "PanelLeftOpen" : "PanelLeftClose"} size={18} aria-hidden />}
+          onClick={onToggle}
+        />
       </div>
+      {collapsed ? <CollapsedRail /> : <RailContent onOpenMeter={onOpenMeter} showMode />}
     </aside>
   );
 }
