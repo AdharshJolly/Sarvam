@@ -45,6 +45,17 @@ class CallMetrics:
     latency_ms: int
     tokens: int | None = None
     cost_usd: float | None = None
+    role: str | None = None  # LLM calls: planner, extractor, ...
+    prompt_id: str | None = None  # LLM calls: e.g. planner.v1
+
+
+@dataclass(frozen=True)
+class BudgetWarning:
+    """A limit reached 80 percent of its maximum (emitted once per limit as budget.warning)."""
+
+    limit: str
+    used: float
+    max: float
 
 
 MetricsSink = Callable[[CallMetrics], None]
