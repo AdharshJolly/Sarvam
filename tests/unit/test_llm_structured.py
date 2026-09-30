@@ -95,3 +95,39 @@ def test_role_to_tier_model_and_temperature():
     assert ROLE_SETTINGS[LLMRole.CHALLENGER].temperature == 0.4
     assert ROLE_SETTINGS[LLMRole.EXTRACTOR].tier is LLMTier.FAST
     assert ROLE_SETTINGS[LLMRole.EXTRACTOR].temperature == 0.0
+
+
+def test_llm_rate_limit_waits_for_retry_after_then_succeeds():
+    sleeps: list[float] = []
+
+    async def sleep(seconds):
+        sleeps.append(seconds)
+
+    limited = GatewayError(FailureType.RATE_LIMITED, "429", retry_after=12.0)
+    llm = FakeLLM({"planner.v1": [limited, limited, '{"ok": true}']})
+    gateway = ToolGateway(
+        settings=Settings(env="test", llm_model_fast="f", llm_model_strong="s"),
+        budget=Budget(),
+        mode=Mode.LIVE,
+        llm=llm,
+        sleep=sleep,
+    )
+    res = asyncio.run(gateway.llm(LLMRole.PLANNER, "planner.v1", Pong, {}))
+    assert res.value.ok is True and sleeps == [12.0, 12.0]
+
+
+def test_llm_rate_limit_gives_up_after_three_retries_with_typed_error():
+    async def sleep(seconds):
+        pass
+
+    llm = FakeLLM({"planner.v1": GatewayError(FailureType.RATE_LIMITED, "429")})
+    gateway = ToolGateway(
+        settings=Settings(env="test", llm_model_fast="f", llm_model_strong="s"),
+        budget=Budget(),
+        mode=Mode.LIVE,
+        llm=llm,
+        sleep=sleep,
+    )
+    with pytest.raises(GatewayError) as ei:
+        asyncio.run(gateway.llm(LLMRole.PLANNER, "planner.v1", Pong, {}))
+    assert ei.value.failure is FailureType.RATE_LIMITED and len(llm.calls) == 4
