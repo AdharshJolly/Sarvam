@@ -220,7 +220,7 @@ describe("views", () => {
   });
 
   test("HealthView lists typed failures or says there are none", () => {
-    expect(html(<HealthView health={health} />)).toContain("STEP_FAILED");
+    expect(html(<HealthView health={health} />)).toContain("A step failed");
     expect(html(<HealthView health={{ ...health, failures: {} }} />)).toContain("No failures recorded");
     expect(html(<HealthView health={{ ...health, status: "degraded", db_ok: false }} />)).toContain("System degraded");
   });
