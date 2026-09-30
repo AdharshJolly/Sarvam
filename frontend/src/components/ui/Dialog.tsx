@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { type KeyboardEvent, type MouseEvent, type ReactNode, type SyntheticEvent, useEffect, useRef } from "react";
 import { Button } from "./Button";
 
 export interface DialogProps {
@@ -6,10 +6,17 @@ export interface DialogProps {
   onClose: () => void;
   title: string;
   children: ReactNode;
-  isDrawer?: boolean; // false = centered modal, true = side drawer
-  docked?: boolean; // if true, it's not modal (no backdrop, no focus trap)
+  /** false = centred modal, true = side drawer. */
+  isDrawer?: boolean;
+  /** Non-modal: the page behind stays usable (no backdrop, no focus trap, no scroll lock). */
+  docked?: boolean;
 }
 
+/**
+ * Built on the native <dialog>. In modal mode (showModal) the browser provides the focus trap, an
+ * inert background, Escape handling and focus return to the opener. Docked mode uses show(), which
+ * has none of those, so Escape is handled here on the element itself.
+ */
 export function Dialog({ isOpen, onClose, title, children, isDrawer = false, docked = false }: DialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -17,58 +24,61 @@ export function Dialog({ isOpen, onClose, title, children, isDrawer = false, doc
     const dialog = dialogRef.current;
     if (!dialog) return;
 
+    // Always start from closed, so a change of `docked` while open (a window resize) reopens the
+    // dialog in the right mode instead of leaving it stuck in the old one.
+    if (dialog.open) dialog.close();
     if (isOpen) {
       if (docked) {
-        if (!dialog.open) dialog.show();
+        dialog.show();
       } else {
-        if (!dialog.open) dialog.showModal();
-        document.body.style.overflow = "hidden"; // scroll lock
+        dialog.showModal();
+        document.body.style.overflow = "hidden"; // scroll lock while modal
       }
-    } else {
-      if (dialog.open) dialog.close();
-      document.body.style.overflow = "";
     }
-
     return () => {
       document.body.style.overflow = "";
     };
   }, [isOpen, docked]);
 
-  const handleCancel = (e: React.SyntheticEvent) => {
+  // Modal: the native cancel event (Escape). We close through props so React state stays the truth.
+  const onCancel = (e: SyntheticEvent) => {
     e.preventDefault();
     onClose();
   };
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (dialogRef.current && e.target === dialogRef.current && !docked) {
+  // Docked dialogs get no native Escape handling; listen on the element (works while focus is inside).
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (docked && e.key === "Escape") {
+      e.stopPropagation();
       onClose();
     }
   };
 
-  // We use native <dialog> which provides Esc handling and focus trapping automatically when showModal() is used!
+  // The dialog has no padding of its own, so a click whose target is the <dialog> itself can only
+  // be on the backdrop.
+  const onBackdropClick = (e: MouseEvent) => {
+    if (!docked && e.target === dialogRef.current) onClose();
+  };
+
   return (
     <dialog
       ref={dialogRef}
-      onCancel={handleCancel}
-      onClick={handleBackdropClick}
       aria-label={title}
-      className={`
-        bg-bg text-text p-0 outline-none
-        ${isDrawer 
-          ? `fixed inset-y-0 right-0 z-30 m-0 h-full w-full max-w-[30rem] border-l border-border-strong shadow-elevation anim-drawer ${docked ? 'static xl:fixed' : ''}` 
-          : "m-auto rounded-lg border border-border-strong p-6 shadow-elevation anim-in"}
-        backdrop:bg-black/40 backdrop:backdrop-blur-sm
-      `}
-      style={isDrawer ? { maxHeight: '100dvh' } : {}}
+      onCancel={onCancel}
+      onKeyDown={onKeyDown}
+      onClick={onBackdropClick}
+      className={`bg-bg p-0 text-text shadow-elevation outline-none backdrop:bg-black/40 backdrop:backdrop-blur-sm ${
+        isDrawer
+          ? "anim-drawer fixed inset-y-0 right-0 z-30 m-0 h-full max-h-dvh w-full max-w-[30rem] border-l border-border-strong"
+          : "anim-in m-auto rounded-lg border border-border-strong"
+      }`}
     >
-      <div className={`flex h-full flex-col ${isDrawer ? 'p-4' : ''}`}>
+      <div className={`flex h-full flex-col ${isDrawer ? "p-4" : "p-6"}`}>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="label">{title}</h2>
           <Button onClick={onClose}>Close</Button>
         </div>
-        <div className="flex-1 overflow-y-auto">
-          {children}
-        </div>
+        <div className="flex-1 overflow-y-auto">{children}</div>
       </div>
     </dialog>
   );
