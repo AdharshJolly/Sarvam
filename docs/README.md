@@ -4,6 +4,7 @@
 | --- | --- | --- |
 | [`ssot/SSOT_v2.docx`](ssot/SSOT_v2.docx) | ResearchOps 24-Hour MVP Single Source of Truth v2.0: scope, requirements, architecture, data model, algorithms, gates. | **Canonical.** Wins every conflict. |
 | [`ssot/SSOT_v2.extracted.md`](ssot/SSOT_v2.extracted.md) | Plain-text extraction of the .docx for agents and diffing (no diagrams). | Derived; the .docx wins. |
+| [`STATUS.md`](STATUS.md) | Build status by task card and gate, and the plan for what is next. | Update whenever a task lands. |
 | [`architecture/`](architecture/README.md) | Concise architecture of Sarvam as built. | Must match the SSOT. |
 | [`architecture/security.md`](architecture/security.md) | Security boundaries and what is implemented vs. planned. | Implements SSOT section 17. |
 | [`decisions/`](decisions/README.md) | ADRs and the change log (SSOT sections 20-21). | Log every contract/schema/threshold change. |

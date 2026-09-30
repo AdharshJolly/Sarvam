@@ -22,7 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
 from backend import __version__
-from backend.controller import RunHandle, run_m0
+from backend.controller import RunHandle, run_research
 from backend.pipeline.claims import locate_quote
 from backend.store import repo
 from backend.store.db import connect, init_db
@@ -50,7 +50,7 @@ TERMINAL_STATUSES = {"completed", "failed"}
 
 
 async def default_runner(run_id: str, settings: Settings, handle: RunHandle) -> None:
-    await run_m0(run_id, settings=settings, handle=handle)
+    await run_research(run_id, settings=settings, handle=handle)
 
 
 def _fail_stale_runs(conn: sqlite3.Connection) -> None:

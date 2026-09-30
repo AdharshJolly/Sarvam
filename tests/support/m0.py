@@ -7,7 +7,7 @@ import re
 import time
 from pathlib import Path
 
-from backend.controller import RunnerDeps, run_m0
+from backend.controller import RunnerDeps, run_research
 from backend.gateway.search import SearchHit
 from tests.support.data import plan_dict
 from tests.support.fakes import FakeFetcher, FakeLLM, FakeSearch, html_result
@@ -96,6 +96,25 @@ def verifier(messages):
     return json.dumps({"verdicts": verdicts})
 
 
+def challenger(messages):
+    """One attack on the weakest slot with a query that was not tried before (unique per round)."""
+    head = json.loads(messages[1]["content"].split("\n\n<source")[0])
+    slot = head["coverage"][0]["slot_id"]
+    return json.dumps(
+        {
+            "attacks": [
+                {
+                    "attack_hypothesis": "Rival operators charge far less than the leader",
+                    "target": {"slot_id": slot},
+                    "required_evidence": "A rival price list",
+                    "followup_queries": [f"rival scooter price comparison round {head['round']}"],
+                    "would_change_conclusion_if": "Rivals charge much less",
+                }
+            ]
+        }
+    )
+
+
 def scenario_deps(*, hits=None, fetch=None, llm_script=None, sleep=None) -> RunnerDeps:
     hit_list = hits or [SearchHit(url=u, title=u, snippet="s") for u in URLS]
     pages = fetch or {u: html_result(u, ARTICLE) for u in URLS}
@@ -104,6 +123,7 @@ def scenario_deps(*, hits=None, fetch=None, llm_script=None, sleep=None) -> Runn
         "extractor.v1": extractor,
         "verifier.v1": verifier,
         "writer.v1": writer,
+        "challenger.v1": challenger,
     }
     script.update(llm_script or {})
     return RunnerDeps(
@@ -116,7 +136,7 @@ def scenario_deps(*, hits=None, fetch=None, llm_script=None, sleep=None) -> Runn
 
 def runner_for(deps: RunnerDeps):
     async def runner(run_id, settings, handle):
-        await run_m0(run_id, settings=settings, handle=handle, deps=deps)
+        await run_research(run_id, settings=settings, handle=handle, deps=deps)
 
     return runner
 

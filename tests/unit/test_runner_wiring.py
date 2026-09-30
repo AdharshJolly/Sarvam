@@ -3,7 +3,7 @@ import time
 from fastapi.testclient import TestClient
 
 from backend.app import create_app
-from backend.controller import RunnerDeps, run_m0
+from backend.controller import RunnerDeps, run_research
 from backend.store import repo
 from backend.store.db import init_db
 from backend.store.emit import Emitter
@@ -47,17 +47,20 @@ def test_injected_runner_plans_and_completes(tmp_path):
         db_path=tmp_path / "t.db", env="test", llm_model_fast="f", llm_model_strong="s"
     )
     deps = RunnerDeps(
-        search=FakeSearch(), fetcher=FakeFetcher(), llm=FakeLLM({"planner.v1": plan_dict(4)})
+        search=FakeSearch(),
+        fetcher=FakeFetcher(),
+        llm=FakeLLM({"planner.v1": plan_dict(4), "challenger.v1": {"attacks": []}}),
     )
 
     async def runner(run_id, settings, handle):
-        await run_m0(run_id, settings=settings, handle=handle, deps=deps)
+        await run_research(run_id, settings=settings, handle=handle, deps=deps)
 
     with TestClient(create_app(settings, runner=runner)) as c:
         rid = c.post("/api/runs", json={"question": "Should we launch X?"}).json()["id"]
         summary = wait_for_status(c, rid)
         assert summary["run"]["status"] == "completed" and summary["phase"] == "SYNTHESIZE"
-        assert summary["usage"]["llm_calls"] == 1  # planner only: no claims, so no writer call
+        # planner and one challenger call (round 2 has no search budget left); no writer call
+        assert summary["usage"]["llm_calls"] == 2
         report = c.get(f"/api/runs/{rid}/report").json()
         assert "no findings" in report["markdown"] and report["citations"] == []
         types = event_types(c, rid)
@@ -96,7 +99,7 @@ def test_planner_failure_becomes_run_failed_not_a_crash(tmp_path):
 
 def partial_runner(deps):
     async def runner(run_id, settings, handle):
-        await run_m0(run_id, settings=settings, handle=handle, deps=deps)
+        await run_research(run_id, settings=settings, handle=handle, deps=deps)
 
     return runner
 

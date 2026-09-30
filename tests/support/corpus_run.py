@@ -14,6 +14,7 @@ from backend.pipeline.discover import second_query
 from contracts.models import FailureType, Scope
 from tests.support.corpus import CORPUS_DIR, expected, manifest
 from tests.support.fakes import FakeFetcher, FakeLLM, FakeSearch, html_result
+from tests.support.m0 import challenger as m0_challenger
 from tests.support.m0 import writer as m0_writer
 
 
@@ -64,13 +65,13 @@ def verifier(messages: list[dict[str, str]]) -> str:
     by_text = {c["text"]: c for c in expected("claims")["claims"]}
     out = []
     for pair in _head(messages)["pairs"]:
-        spec = by_text[pair["claim_text"]]
+        spec = by_text.get(pair["claim_text"])  # not a seeded claim: a challenge attack
         out.append(
             {
                 "claim_id": pair["claim_id"],
                 "passage_id": pair["passage_id"],
-                "verdict": spec["verdict"],
-                "rationale": spec["rationale"],
+                "verdict": spec["verdict"] if spec else "irrelevant",
+                "rationale": spec["rationale"] if spec else "The passage does not address it.",
             }
         )
     return json.dumps({"verdicts": out})
@@ -89,27 +90,57 @@ def explainer(messages: list[dict[str, str]]) -> str:
 class CorpusSearch(FakeSearch):
     """A provider that finds the pages relevant to each slot: the fixtures whose seeded claims
     target the slot (plus F14 for charging infrastructure). A query is matched to its task by text
-    (the task query or its differently phrased second query)."""
+    (the task query or its differently phrased second query). Pages held back from round 0 are
+    found by follow-up queries: a gap query that names a slot finds that slot's held-back pages, any
+    other follow-up query (a challenge) finds `challenge_hits`."""
 
-    def __init__(self, hits_by_slot: dict[str, list[SearchHit]], slot_of_query: dict[str, str]):
+    def __init__(
+        self,
+        hits_by_slot: dict[str, list[SearchHit]],
+        slot_of_query: dict[str, str],
+        followup_by_slot: dict[str, list[SearchHit]] | None = None,
+        slot_names: dict[str, str] | None = None,
+        challenge_hits: list[SearchHit] | None = None,
+    ):
         super().__init__()
         self.hits_by_slot = hits_by_slot
         self.slot_of_query = slot_of_query
+        self.followup_by_slot = followup_by_slot or {}
+        self.slot_names = slot_names or {}
+        self.challenge_hits = challenge_hits or []
 
     async def search(self, query: str, *, max_results: int = 8) -> list[SearchHit]:
         self.calls.append(query)
-        return list(self.hits_by_slot.get(self.slot_of_query.get(query, ""), []))
+        if query in self.slot_of_query:
+            return list(self.hits_by_slot.get(self.slot_of_query[query], []))
+        for slot_id, name in self.slot_names.items():
+            if name.lower() in query.lower():
+                return list(self.followup_by_slot.get(slot_id, []))
+        return list(self.challenge_hits)
 
 
-def corpus_deps(*, llm_script: dict | None = None, sleep=None) -> RunnerDeps:
+def corpus_deps(
+    *,
+    llm_script: dict | None = None,
+    sleep=None,
+    withhold: frozenset[str] = frozenset(),
+    challenge_pages: frozenset[str] = frozenset(),
+) -> RunnerDeps:
     docs = manifest()["documents"]
     plan = {**expected("plan"), "budget": {"max_searches": 999}}
     hit_of = {fid: SearchHit(url=d["url"], title=fid, snippet="s") for fid, d in docs.items()}
     hits_by_slot: dict[str, list[SearchHit]] = {}
     for spec in expected("claims")["claims"]:
+        if spec["fixture"] in withhold:
+            continue  # held back from round 0: only a follow-up search can find it
         bucket = hits_by_slot.setdefault(spec["slot"], [])
         if hit_of[spec["fixture"]] not in bucket:
             bucket.append(hit_of[spec["fixture"]])
+    followup_by_slot: dict[str, list[SearchHit]] = {}
+    for spec in expected("claims")["claims"]:
+        if spec["fixture"] in withhold and spec["fixture"] not in challenge_pages:
+            followup_by_slot.setdefault(spec["slot"], []).append(hit_of[spec["fixture"]])
+    slot_names = {s["id"]: s["name"] for d in plan["dimensions"] for s in d["slots"]}
     hits_by_slot["D4S2"] = [hit_of["F14"]]  # the page that answers 403
     slot_of_query: dict[str, str] = {}
     for dim in plan["dimensions"]:
@@ -130,10 +161,17 @@ def corpus_deps(*, llm_script: dict | None = None, sleep=None) -> RunnerDeps:
         "verifier.v1": verifier,
         "explainer.v1": explainer,
         "writer.v1": m0_writer,
+        "challenger.v1": m0_challenger,
     }
     script.update(llm_script or {})
     return RunnerDeps(
-        search=CorpusSearch(hits_by_slot, slot_of_query),
+        search=CorpusSearch(
+            hits_by_slot,
+            slot_of_query,
+            followup_by_slot,
+            slot_names,
+            [hit_of[f] for f in sorted(challenge_pages)],
+        ),
         fetcher=FakeFetcher(pages),
         llm=FakeLLM(script, tokens=10, cost_usd=0.001),
         sleep=sleep,

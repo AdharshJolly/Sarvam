@@ -80,6 +80,9 @@ events (`intel/analyze.py`), writer v0, deterministic renderer, the linear `cont
 (PLAN, DISCOVER, ACQUIRE, EXTRACT, CLAIMS, VERIFY, ANALYZE, SYNTHESIZE) and the full API including SSE.
 The fixture corpus (`fixtures/`, 14 documents, expected JSON) and the gate suites G1 and G2 back it.
 
+The frontend (T16-T21 plus a UI/UX overhaul) renders all panels from REST and SSE. Task-level status:
+[../STATUS.md](../STATUS.md).
+
 Not started: the challenge loop and outcome rule (T13), the full controller with rounds and the stop
 policy (T14), the report verifier (T15) and everything after (T22 harness, T23-T26, additions).
 

@@ -187,9 +187,13 @@ async def run_claims(
         round=round,
     )
     slots = repo.list_slots(conn, run_id)
-    task_slot = {task.id: task.slot_id for task in repo.list_tasks(conn, run_id)}
+    tasks = repo.list_tasks(conn, run_id)
+    task_slot = {task.id: task.slot_id for task in tasks}
+    task_round = {task.id: task.round for task in tasks}
     jobs: list[tuple[Source, EvidenceSlot, list[Passage]]] = []
     for source in repo.list_sources(conn, run_id, status="fetched"):
+        if task_round.get(source.task_id or "", 0) != round:
+            continue  # delta only (FR-16): earlier rounds' sources were already processed
         passages = repo.list_passages(conn, source.id)
         if not passages:
             continue
