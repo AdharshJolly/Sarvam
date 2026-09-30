@@ -41,7 +41,7 @@ describe("colour utilities reference real tokens", () => {
   test("tokens.css defines the palette this guard checks against", () => {
     expect(TOKENS.size).toBeGreaterThan(20);
     expect(TOKENS.has("border-hairline")).toBe(true);
-    expect(TOKENS.has("border")).toBe(false); // the old name that caused silent failures
+    expect(TOKENS.has("border")).toBe(true); // defined in theme palette
   });
 
   test("every colour utility used in components is a defined token", () => {

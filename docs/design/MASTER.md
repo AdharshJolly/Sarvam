@@ -175,8 +175,10 @@ Breakpoints: phone below 768 px (`md`), tablet 768 to 1023 px, desktop from 1024
   doing), a horizontal ten-phase stepper (done/current/not started in words for screen readers) and
   the five budget meters. Meter warnings carry an icon and the word 80%+ or LIMIT. Hidden below md,
   where the Now strip covers it.
-- **Coverage, origins, stop card:** see the component notes in section 8. The stop card is the verdict.
-- **Evidence drawer reading order:** claim, verdict, stored passage with the quote highlighted, origin, source.
+- **Coverage, origins, stop card:** see the component notes in section 8. The matrix has an always-visible legend and a round scrubber. The stop card is the verdict.
+- **Evidence drawer reading order:** claim (with verdict, value, unit, and period), stored passage with the quote highlighted, origin, source (with domain).
+- **Dialogs:** Dialogs use native `<dialog>` methods to handle focus traps, inert backgrounds, and return focus safely.
+- **Filtering:** Filter feedback (e.g., "Showing N of M") is provided with a clear-filter button when active.
 - **Conflicts:** two labelled sides (A and B) with value, unit and period, and the difference between them.
 - **Challenge:** follow-up queries show their status as icon and word (`taskStatusView`).
 - **Report:** Newsreader reading column of about 70 characters (`report/ReportBody`), contents

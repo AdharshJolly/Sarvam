@@ -6,78 +6,232 @@
 
 /* Semantic tokens only. Raw hex goes here. */
 :root {
-  /* Brand */
-  --color-brand: #1E3A5F;
-  --color-on-brand: #FFFFFF; /* text and icons on a brand-coloured fill */
-  --color-brand-secondary: #2563EB;
+  --card: #f7f8f8;
+  --ring: #1da1f2;
+  --input: #f7f9fa;
+  --muted: #E5E5E6;
+  --accent: #E3ECF6;
+  --border: #e1eaef;
+  --radius: 1.3rem;
+  --chart-1: #1e9df1;
+  --chart-2: #00b87a;
+  --chart-3: #f7b928;
+  --chart-4: #17bf63;
+  --chart-5: #e0245e;
+  --popover: #ffffff;
+  --primary: #1e9df1;
+  --sidebar: #f7f8f8;
+  --font-mono: Menlo, monospace;
+  --font-sans: Open Sans, sans-serif;
+  --secondary: #0f1419;
+  --background: #ffffff;
+  --font-serif: Georgia, serif;
+  --foreground: #0f1419;
+  --destructive: #f4212e;
+  --shadow-blur: 0px;
+  --shadow-color: rgba(29,161,242,0.15);
+  --sidebar-ring: #1da1f2;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0;
+  --sidebar-accent: #E3ECF6;
+  --sidebar-border: #e1e8ed;
+  --card-foreground: #0f1419;
+  --shadow-offset-x: 0px;
+  --shadow-offset-y: 2px;
+  --sidebar-primary: #1e9df1;
+  --muted-foreground: #0f1419;
+  --accent-foreground: #1e9df1;
+  --popover-foreground: #0f1419;
+  --primary-foreground: #ffffff;
+  --sidebar-foreground: #0f1419;
+  --secondary-foreground: #ffffff;
+  --destructive-foreground: #ffffff;
+  --sidebar-accent-foreground: #1e9df1;
+  --sidebar-primary-foreground: #ffffff;
 
-  /* Neutrals (Light) */
-  --color-bg: #F8FAFC;
-  --color-surface: #FFFFFF;
-  --color-surface-2: #F1F5F9;
-  --color-text: #0F172A;
-  --color-text-muted: #475569;
-  --color-border-hairline: #E2E8F0;
-  --color-border-strong: #7C8CA3; /* control edges: >= 3:1 (WCAG 1.4.11) */
+  /* App Semantic Tokens (Light) */
+  --color-brand: #1e9df1;
+  --color-on-brand: #ffffff;
+  --color-brand-secondary: #1da1f2;
+
+  --color-bg: #ffffff;
+  --color-surface: #f7f8f8;
+  --color-surface-2: #f7f9fa;
+  --color-text: #0f1419;
+  --color-text-muted: #495763;
+  --color-border-hairline: #e1eaef;
+  --color-border-strong: #cfd9de;
 
   /* Status */
-  /* Green */
-  --color-ok-fg: #15803d;
-  --color-ok-bg: #f0fdf4;
-  --color-ok-border: #bbf7d0;
-  /* Amber (Ochre) */
-  --color-warn-fg: #b45309;
-  --color-warn-bg: #fffbeb;
-  --color-warn-border: #fde68a;
-  /* Red */
-  --color-bad-fg: #b91c1c;
-  --color-bad-bg: #fef2f2;
-  --color-bad-border: #fecaca;
-  /* Info */
-  --color-info-fg: #0369a1;
-  --color-info-bg: #f0f9ff;
-  --color-info-border: #bae6fd;
+  --color-ok-fg: #00875a;
+  --color-ok-bg: #e6f8f2;
+  --color-ok-border: #99e3ca;
 
-  --shadow-elevation: 0 1px 2px rgb(0 0 0 / 0.05), 0 4px 6px rgb(0 0 0 / 0.05);
+  --color-warn-fg: #a16207;
+  --color-warn-bg: #fef8e9;
+  --color-warn-border: #fce3a9;
+
+  --color-bad-fg: #c5221f;
+  --color-bad-bg: #fee9ea;
+  --color-bad-border: #fba6ab;
+
+  --color-info-fg: #0284c7;
+  --color-info-bg: #e8f5fd;
+  --color-info-border: #a5d8fa;
+
+  --shadow-elevation: 0 2px 10px rgba(29, 161, 242, 0.12), 0 1px 3px rgba(15, 20, 25, 0.06);
 }
 
 :root[data-theme="dark"] {
-  /* Brand (Dark): lighter blue so it stands out from the navy-ink surfaces */
-  --color-brand: #60A5FA;
-  --color-on-brand: #0B1120;
-  --color-brand-secondary: #93C5FD; /* links and focus rings on dark surfaces */
+  --card: #17181c;
+  --ring: #1da1f2;
+  --input: #22303c;
+  --muted: #181818;
+  --accent: #061622;
+  --border: #242628;
+  --chart-1: #1e9df1;
+  --chart-2: #00b87a;
+  --chart-3: #f7b928;
+  --chart-4: #17bf63;
+  --chart-5: #e0245e;
+  --popover: #000000;
+  --primary: #1c9cf0;
+  --sidebar: #17181c;
+  --secondary: #f0f3f4;
+  --background: #000000;
+  --foreground: #e7e9ea;
+  --destructive: #f4212e;
+  --shadow-color: rgba(29,161,242,0.25);
+  --sidebar-ring: #1da1f2;
+  --sidebar-accent: #061622;
+  --sidebar-border: #38444d;
+  --card-foreground: #d9d9d9;
+  --sidebar-primary: #1da1f2;
+  --muted-foreground: #9ca3af;
+  --accent-foreground: #1c9cf0;
+  --popover-foreground: #e7e9ea;
+  --primary-foreground: #ffffff;
+  --sidebar-foreground: #d9d9d9;
+  --secondary-foreground: #0f1419;
+  --destructive-foreground: #ffffff;
+  --sidebar-accent-foreground: #1c9cf0;
+  --sidebar-primary-foreground: #ffffff;
 
-  /* Neutrals (Dark - navy-ink background) */
-  --color-bg: #0B1120;
-  --color-surface: #1E293B;
-  --color-surface-2: #334155;
-  --color-text: #F8FAFC;
-  --color-text-muted: #A7B5C9;
-  --color-border-hairline: #334155;
-  --color-border-strong: #7C8DA5; /* control edges: >= 3:1 */
+  /* App Semantic Tokens (Dark) */
+  --color-brand: #1c9cf0;
+  --color-on-brand: #ffffff;
+  --color-brand-secondary: #1da1f2;
+
+  --color-bg: #000000;
+  --color-surface: #17181c;
+  --color-surface-2: #22303c;
+  --color-text: #f0f3f4;
+  --color-text-muted: #9ca3af;
+  --color-border-hairline: #242628;
+  --color-border-strong: #38444d;
 
   /* Status (Dark) */
-  /* Green */
-  --color-ok-fg: #4ade80;
-  --color-ok-bg: #14532d;
-  --color-ok-border: #166534;
-  /* Amber */
-  --color-warn-fg: #fbbf24;
-  --color-warn-bg: #78350f;
-  --color-warn-border: #92400e;
-  /* Red */
-  --color-bad-fg: #fca5a5;
-  --color-bad-bg: #7f1d1d;
-  --color-bad-border: #991b1b;
-  /* Info */
-  --color-info-fg: #7dd3fc;
-  --color-info-bg: #0c4a6e;
-  --color-info-border: #075985;
+  --color-ok-fg: #22c55e;
+  --color-ok-bg: #052614;
+  --color-ok-border: #0e6233;
 
-  --shadow-elevation: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.35);
+  --color-warn-fg: #fbbf24;
+  --color-warn-bg: #312508;
+  --color-warn-border: #7c5d14;
+
+  --color-bad-fg: #f87171;
+  --color-bad-bg: #310709;
+  --color-bad-border: #7a1117;
+
+  --color-info-fg: #38bdf8;
+  --color-info-bg: #061f30;
+  --color-info-border: #0e4e78;
+
+  --shadow-elevation: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(29, 161, 242, 0.15);
 }
 
-@theme {
+.dark {
+  --card: #17181c;
+  --ring: #1da1f2;
+  --input: #22303c;
+  --muted: #181818;
+  --accent: #061622;
+  --border: #242628;
+  --chart-1: #1e9df1;
+  --chart-2: #00b87a;
+  --chart-3: #f7b928;
+  --chart-4: #17bf63;
+  --chart-5: #e0245e;
+  --popover: #000000;
+  --primary: #1c9cf0;
+  --sidebar: #17181c;
+  --secondary: #f0f3f4;
+  --background: #000000;
+  --foreground: #e7e9ea;
+  --destructive: #f4212e;
+  --shadow-color: rgba(29,161,242,0.25);
+  --sidebar-ring: #1da1f2;
+  --sidebar-accent: #061622;
+  --sidebar-border: #38444d;
+  --card-foreground: #d9d9d9;
+  --sidebar-primary: #1da1f2;
+  --muted-foreground: #9ca3af;
+  --accent-foreground: #1c9cf0;
+  --popover-foreground: #e7e9ea;
+  --primary-foreground: #ffffff;
+  --sidebar-foreground: #d9d9d9;
+  --secondary-foreground: #0f1419;
+  --destructive-foreground: #ffffff;
+  --sidebar-accent-foreground: #1c9cf0;
+  --sidebar-primary-foreground: #ffffff;
+}
+
+
+@theme inline {
+  --color-card: var(--card);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --color-radius: var(--radius);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-popover: var(--popover);
+  --color-primary: var(--primary);
+  --color-sidebar: var(--sidebar);
+  --color-font-mono: var(--font-mono);
+  --color-font-sans: var(--font-sans);
+  --color-secondary: var(--secondary);
+  --color-background: var(--background);
+  --color-font-serif: var(--font-serif);
+  --color-foreground: var(--foreground);
+  --color-destructive: var(--destructive);
+  --color-shadow-blur: var(--shadow-blur);
+  --color-shadow-color: var(--shadow-color);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-shadow-spread: var(--shadow-spread);
+  --color-shadow-opacity: var(--shadow-opacity);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-card-foreground: var(--card-foreground);
+  --color-shadow-offset-x: var(--shadow-offset-x);
+  --color-shadow-offset-y: var(--shadow-offset-y);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+
+  /* Semantic UI Tokens */
   --color-brand: var(--color-brand);
   --color-on-brand: var(--color-on-brand);
   --color-brand-secondary: var(--color-brand-secondary);
@@ -107,18 +261,16 @@
 
   --shadow-elevation: var(--shadow-elevation);
 
-  /* Font roles (Tailwind: font-sans, font-mono, font-display).
-     sans: UI text. mono: ids, numbers, quotes, timestamps. display: headline moments and the report. */
-  --font-sans: "Fira Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Fira Code", ui-monospace, "Cascadia Mono", Consolas, monospace;
-  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-sans: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --font-serif: Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-display: Georgia, "Newsreader", serif;
 
-  /* Shape scale */
   --radius-4: 4px;
   --radius-8: 8px;
-  --radius-12: 12px;
+  --radius-12: 1.3rem;
+  --radius: 1.3rem;
 
-  /* Motion tokens: 120 / 200 / 320 ms */
   --animate-enter-fast: 120ms ease-out;
   --animate-enter: 200ms ease-out;
   --animate-enter-slow: 320ms ease-out;

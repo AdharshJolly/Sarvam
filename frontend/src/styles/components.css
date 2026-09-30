@@ -11,3 +11,52 @@
   text-transform: uppercase;
   color: var(--color-text-muted);
 }
+
+/* Polished Surface & Typography Utilities */
+
+.glass-card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 20px -2px var(--shadow-color), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: var(--radius);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root[data-theme="light"] .glass-card,
+:root:not(.dark) .glass-card {
+  box-shadow: 0 2px 12px -2px var(--shadow-color), 0 0 0 1px rgba(0, 0, 0, 0.02);
+}
+
+.glass-card-hover:hover {
+  border-color: var(--ring);
+  box-shadow: 0 8px 30px -4px var(--shadow-color), 0 0 20px var(--shadow-color);
+  transform: translateY(-1px);
+}
+
+.hero-gradient-text {
+  background: linear-gradient(135deg, var(--foreground) 30%, var(--primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-icon-gradient {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--ring) 100%);
+}
+
+.brand-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  background: var(--accent);
+  color: var(--accent-foreground);
+  border: 1px solid var(--border);
+  box-shadow: 0 0 15px var(--shadow-color);
+}
+
+.cta-gradient-card {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--card) 100%);
+}
