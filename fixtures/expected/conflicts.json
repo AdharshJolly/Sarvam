@@ -1,0 +1,13 @@
+{
+  "note": "Expected numeric conflicts (SSOT 9.7) after the explainer ran. Claims are fixture claim keys (unordered pair). `explained_by`: `rule` = deterministic (normalisation resolved it), `llm` = the conflict explainer (scripted in fixture tests). Exactly these three conflicts may exist (recall 3/3, zero false positives).",
+  "conflicts": [
+    {"claims": ["F07.basic", "F08.basic"], "kind": "genuine", "status": "open", "explained_by": "llm", "delta_pct": 18.76, "slot": "D2S1"},
+    {"claims": ["F07.premium", "F09.premium"], "kind": "unit_error", "status": "explained", "explained_by": "rule", "delta_pct": 96.67, "slot": "D2S2"},
+    {"claims": ["F11.broad", "F11.narrow"], "kind": "definition", "status": "explained", "explained_by": "llm", "delta_pct": 76.0, "slot": "D3S1"}
+  ],
+  "contested_claims": ["F02.basic", "F03.basic", "F04.basic", "F05.basic", "F06.basic", "F07.basic", "F08.basic"],
+  "llm_explainer_script": {
+    "F07.basic|F08.basic": {"kind": "genuine", "explanation": "The company page and the news article give different monthly prices for the same plan and no scope, unit or date difference explains it."},
+    "F11.broad|F11.narrow": {"kind": "definition", "explanation": "The report counts all shared micro-mobility in one figure and only e-scooter rentals in the other."}
+  }
+}

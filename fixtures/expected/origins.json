@@ -1,0 +1,26 @@
+{
+  "note": "Expected origin clustering (SSOT 9.6). `sources` are fixture ids. A cluster that contains an S4 unretrieved primary is labelled with that entity; any other label is the most primary member's publisher. `edges` are pairs on which a signal must fire (the test checks they are a subset of the fired signals). F14 failed to fetch and belongs to no origin.",
+  "origins": [
+    {"sources": ["F01"], "method": "none", "label": "transport.karnataka.gov.in"},
+    {"sources": ["F02", "F03", "F04", "F05", "F06"], "method": "near_duplicate", "label": "VoltRide Mobility"},
+    {"sources": ["F07"], "method": "none", "label": "voltride-india.example"},
+    {"sources": ["F08"], "method": "none", "label": "cityledger.example"},
+    {"sources": ["F09"], "method": "none", "label": "cityridesdaily.example"},
+    {"sources": ["F10"], "method": "none", "label": "urbanwheels-archive.example"},
+    {"sources": ["F11"], "method": "none", "label": "marketscope-research.example"},
+    {"sources": ["F12"], "method": "none", "label": "rideforum.example"},
+    {"sources": ["F13"], "method": "none", "label": "recipehub.example"}
+  ],
+  "edges": [
+    {"a": "F02", "b": "F03", "signal": "near_duplicate"},
+    {"a": "F02", "b": "F04", "signal": "near_duplicate"},
+    {"a": "F03", "b": "F04", "signal": "near_duplicate"},
+    {"a": "F05", "b": "F02", "signal": "shared_number"},
+    {"a": "F05", "b": "F03", "signal": "shared_number"},
+    {"a": "F05", "b": "F04", "signal": "shared_number"},
+    {"a": "F06", "b": "entity:VoltRide Mobility", "signal": "attribution"},
+    {"a": "F02", "b": "entity:VoltRide Mobility", "signal": "attribution"}
+  ],
+  "never_merged": [["F07", "F02"], ["F07", "F08"], ["F08", "F02"], ["F01", "F07"]],
+  "unestablished": ["F01", "F07", "F08", "F09", "F10", "F11", "F12", "F13"]
+}

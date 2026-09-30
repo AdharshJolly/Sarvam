@@ -1,0 +1,33 @@
+{
+  "dimensions": [
+    {
+      "id": "D1", "name": "Regulation", "description": "Permits and rules for operating", "critical": true,
+      "slots": [
+        {"id": "D1S1", "name": "Rental permit requirement", "description": "Which permits or licences an e-scooter rental operator needs and what they cost", "critical": true, "attributes": ["licence_fee_inr"], "min_independent": 2, "primary_ok": true, "tasks": [{"id": "tD1S1", "query": "Karnataka rental permit electric scooter operators"}]},
+        {"id": "D1S2", "name": "Insurance requirements", "description": "Insurance an operator must carry for each rental vehicle", "critical": true, "attributes": ["insurance_cost_inr"], "min_independent": 2, "primary_ok": false, "tasks": [{"id": "tD1S2", "query": "rental scooter insurance requirement Bengaluru"}]}
+      ]
+    },
+    {
+      "id": "D2", "name": "Economics", "description": "Pricing of subscription plans", "critical": true,
+      "slots": [
+        {"id": "D2S1", "name": "Basic plan pricing", "description": "Monthly price of the entry level scooter subscription plan", "critical": true, "attributes": ["monthly_price_inr"], "min_independent": 2, "primary_ok": false, "tasks": [{"id": "tD2S1", "query": "VoltRide basic plan monthly price"}]},
+        {"id": "D2S2", "name": "Premium plan pricing", "description": "Monthly price of the premium scooter subscription plan", "critical": true, "attributes": ["monthly_price_inr"], "min_independent": 2, "primary_ok": false, "tasks": [{"id": "tD2S2", "query": "VoltRide premium plan price"}]}
+      ]
+    },
+    {
+      "id": "D3", "name": "Demand", "description": "Size and appetite of the market", "critical": false,
+      "slots": [
+        {"id": "D3S1", "name": "Market size", "description": "Annual value of the Indian micro-mobility market", "critical": false, "attributes": ["market_size_inr_crore"], "min_independent": 2, "primary_ok": false, "tasks": [{"id": "tD3S1", "query": "India micro-mobility market size"}]},
+        {"id": "D3S2", "name": "Customer demand signals", "description": "What riders say about choosing a subscription over buying", "critical": false, "attributes": [], "min_independent": 2, "primary_ok": false, "tasks": [{"id": "tD3S2", "query": "scooter subscription versus buying rider opinions"}]}
+      ]
+    },
+    {
+      "id": "D4", "name": "Operations", "description": "Fleet and charging needs", "critical": true,
+      "slots": [
+        {"id": "D4S1", "name": "Competitor fleet benchmarks", "description": "Fleet sizes of competing rental operators", "critical": true, "attributes": ["fleet_size"], "min_independent": 2, "primary_ok": false, "tasks": [{"id": "tD4S1", "query": "scooter rental operator fleet size Bengaluru"}]},
+        {"id": "D4S2", "name": "Charging infrastructure", "description": "Charging and battery swap infrastructure needed", "critical": false, "attributes": ["charging_stations"], "min_independent": 2, "primary_ok": false, "tasks": [{"id": "tD4S2", "query": "battery swap stations Bengaluru"}]}
+      ]
+    }
+  ],
+  "budget": {}
+}

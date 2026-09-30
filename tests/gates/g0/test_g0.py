@@ -145,7 +145,13 @@ def test_g0_fixtures_folder_committed():
         ["git", "ls-files", "fixtures", "cache/recorded"], cwd=ROOT, capture_output=True, text=True
     ).stdout.split()
     assert "fixtures/questions.yaml" in tracked
-    assert "fixtures/corpus/.gitkeep" in tracked and "fixtures/expected/.gitkeep" in tracked
+    # T08 replaced the placeholders with the real corpus and its expected results (SSOT 16.2)
+    corpus = [f"fixtures/corpus/F{i:02d}.html" for i in range(1, 15)]
+    expected = [
+        f"fixtures/expected/{n}.json"
+        for n in ("plan", "claims", "sources", "origins", "conflicts", "coverage")
+    ]
+    assert set(corpus + expected + ["fixtures/corpus/manifest.json"]) <= set(tracked)
     assert "cache/recorded/.gitkeep" in tracked
     text = (ROOT / "fixtures/questions.yaml").read_text(encoding="utf-8")
     assert len(re.findall(r"^\s+- id: Q\d", text, re.M)) == 5  # SSOT 16.4: five golden questions
