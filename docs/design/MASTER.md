@@ -42,6 +42,10 @@ Each status family also has a `-border` token.
 and control pairs in `tokens.css` were checked in both themes and pass. A permanent test that fails
 the build on regression is planned for P5.
 
+**Token names:** a Tailwind colour utility that names a missing token (`border-border`, `bg-good`)
+produces no CSS and silently loses its styling. `src/design/tokens.test.ts` fails the build on any such
+class, so a renamed or mistyped token is caught immediately.
+
 ## 3. State language
 
 | State | Icon | Word | Colour family |
@@ -103,15 +107,21 @@ make sense when static.
 
 ## 8. Components
 
-| Component | Status | Notes |
-|---|---|---|
-| `Icon`, `Button`, `Banner`, `Dialog`, `Meter`, `Metric`, `Panel`, `Skeleton`, `EmptyState`, `Badge`, `StateChip` | Done | `Button`: primary, secondary, ghost, danger; 44 px touch target on coarse pointers. `Dialog` traps focus. |
-| `Tabs` | Planned (P1) | Tab bar currently hand-built in `CenterTabs` (already keyboard accessible) |
-| `Tooltip` | Planned (P1) | Not needed until a control lacks visible text |
-| `Card` | Planned (P1) | The raw `.card` class is still used in about 14 places |
+All live in `frontend/src/components/ui/`.
 
-Rules: use `Button`, not raw `<button>`, for actions. Custom controls (tabs, matrix cells) keep a
-raw element but must have `type`, a visible focus ring and 44 px touch targets on touch devices.
+| Component | Notes |
+|---|---|
+| `Icon` | Strict registry, see section 6 |
+| `Button` | primary, secondary, ghost, danger; sizes sm, md, lg, icon; 44 px touch target on coarse pointers; icon-only buttons need `aria-label` |
+| `Card` | The one surface: hairline border, 8 px radius. `pad` (xs to lg), `accent` (4 px status edge), `frame` (full 2 px status frame), `interactive` (hover), `as` (div, section, article, li, button) |
+| `Tabs` | WAI-ARIA tabs with the keyboard model in `lib/tabs.ts`; scrolls sideways on narrow screens |
+| `Dialog` | Native `<dialog>`: modal (browser focus trap, inert background, Escape) or docked (non-modal, Escape handled on the element) |
+| `Tooltip` | Hover, focus and Escape (WCAG 1.4.13); use for explanations, never for the only copy of a fact. `Badge` with a `title` uses it |
+| `Banner`, `Meter`, `Metric`, `Panel`, `Skeleton`, `EmptyState`, `Badge`, `StateChip` | As named; `StateChip` is the single place state is turned into icon + word + colour |
+
+Rules: use `Button`, not a raw `<button>`, for actions. Custom controls (tabs, matrix cells) keep a raw
+element but must have `type`, a visible focus ring and 44 px touch targets on touch devices. Do not
+hand-build a card with border classes; use `Card`.
 
 ## 9. Theme mechanics
 
