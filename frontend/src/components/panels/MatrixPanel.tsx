@@ -9,8 +9,11 @@ import {
   roundsAvailable,
   slotStats,
   slotsOf,
+  worstCriticalSlots,
 } from "../../state/selectors";
 import { useSession } from "../../state/useRunSession";
+import { showsCoverageGrid, useReadingMode } from "../../lib/readingMode";
+import { GapList } from "../StopCard";
 import { CoverageMatrix, MatrixTable } from "../CoverageMatrix";
 import { OriginGroupView } from "../OriginGroupView";
 import { EmptyState } from "../ui/EmptyState";
@@ -59,6 +62,8 @@ export function MatrixPanel({
   const [picked, setPicked] = useState<number | null>(null);
   const [compare, setCompare] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const mode = useReadingMode();
+  const [expanded, setExpanded] = useState(false);
   const [matrixView, setMatrixView] = useState<"grid" | "table">("grid");
   const round = picked !== null && rounds.includes(picked) ? picked : latest;
 
@@ -103,13 +108,49 @@ export function MatrixPanel({
   const counts = { GREEN: 0, AMBER: 0, RED: 0 };
   for (const c of cells) counts[c.state] += 1;
 
+  const detailToggle = (
+    <Button
+      aria-expanded={expanded}
+      icon={<Icon name={expanded ? "Minus" : "Plus"} size={16} aria-hidden />}
+      onClick={() => setExpanded(!expanded)}
+    >
+      {expanded ? "Hide details" : "Show details"}
+    </Button>
+  );
+
+  if (!showsCoverageGrid(mode, expanded)) {
+    const gaps = worstCriticalSlots(view);
+    return (
+      <Card as="section" pad="md" aria-label="Coverage summary" className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center gap-2" aria-label="Totals">
+          {(["GREEN", "AMBER", "RED"] as const).map((s) => (
+            <span key={s} className="inline-flex items-center gap-1.5 rounded border border-border-hairline bg-surface px-2 py-0.5 text-sm">
+              <StateChip spec={coverageChip(s)} />
+              <span className="mono font-semibold">{counts[s]}</span>
+            </span>
+          ))}
+        </div>
+        {gaps.length > 0 ? (
+          <div>
+            <p className="label mb-1">What is missing</p>
+            <GapList gaps={gaps} onOpenSlot={onOpenClaims} />
+          </div>
+        ) : (
+          <p className="text-base text-text-muted">Every key point is well supported.</p>
+        )}
+        <div>{detailToggle}</div>
+      </Card>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-4">
+      {mode === "simple" ? <div>{detailToggle}</div> : null}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-border-hairline/60">
         <div className="flex flex-wrap items-center gap-3">
           {rounds.length > 1 ? (
             <label className="flex items-center gap-2">
-              <span className="font-semibold text-sm text-text-muted">Round:</span>
+              <span className="font-semibold text-sm text-text-muted">Research round:</span>
               <input
                 type="range"
                 min={0}
@@ -117,12 +158,12 @@ export function MatrixPanel({
                 value={rounds.indexOf(round)}
                 onChange={(e) => setPicked(rounds[parseInt(e.target.value, 10)] ?? null)}
                 className="accent-brand cursor-pointer"
-                aria-label="Select round"
+                aria-label="Select research round"
               />
               <span className="mono text-sm font-semibold">{round}</span>
             </label>
           ) : (
-            <span className="font-semibold text-sm text-text-muted">Round {round}</span>
+            <span className="font-semibold text-sm text-text-muted">Research round {round}</span>
           )}
 
           <div role="group" aria-label="Matrix view" className="inline-flex overflow-hidden rounded-md border border-border-hairline bg-surface p-0.5 shadow-sm">
@@ -144,7 +185,7 @@ export function MatrixPanel({
 
           {prevRound !== undefined ? (
             <label className="text-sm text-text-muted flex items-center gap-2 cursor-pointer hover:text-text">
-              <input type="checkbox" checked={compare} onChange={(e) => setCompare(e.target.checked)} className="rounded" /> Compare with previous round
+              <input type="checkbox" checked={compare} onChange={(e) => setCompare(e.target.checked)} className="rounded" /> Compare with previous research round
             </label>
           ) : null}
         </div>
@@ -161,7 +202,7 @@ export function MatrixPanel({
 
       {changes && prevRound !== undefined ? (
         <p className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border border-border-hairline bg-surface-2 px-3 py-2 text-base">
-          <span className="font-semibold">Round {round} compared with round {prevRound}:</span>
+          <span className="font-semibold">Research round {round} compared with round {prevRound}:</span>
           <span className="inline-flex items-center gap-1 text-ok-fg">
             <Icon name="TrendingUp" size={16} aria-hidden /> {countChange(changes, "improved")} improved
           </span>
@@ -192,7 +233,7 @@ export function MatrixPanel({
       })()}
 
       {sel ? (
-        <Card as="section" pad="md" aria-label="Slot detail">
+        <Card as="section" pad="md" aria-label="Key point detail">
           <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
             <div>
               <p className="label">
@@ -212,7 +253,7 @@ export function MatrixPanel({
           ) : null}
           <div className="mb-4 flex flex-wrap gap-2">
             <Button onClick={() => onOpenClaims(sel.id)}>
-              View evidence ({selCell?.supporting_claims ?? 0} claims)
+              View evidence ({selCell?.supporting_claims ?? 0} statements)
             </Button>
             {(selCell?.open_conflicts ?? 0) > 0 ? (
               <Button
@@ -220,7 +261,7 @@ export function MatrixPanel({
                 icon={<Icon name="Zap" size={16} aria-hidden />}
                 onClick={onOpenConflicts}
               >
-                {selCell?.open_conflicts} open conflict{selCell?.open_conflicts === 1 ? "" : "s"}
+                {selCell?.open_conflicts} {selCell?.open_conflicts === 1 ? "disagreement" : "disagreements"} not yet explained
               </Button>
             ) : null}
             <Button onClick={() => setSelected(null)}>Close</Button>
@@ -229,7 +270,7 @@ export function MatrixPanel({
         </Card>
       ) : (
         <p className="text-base text-text-muted">
-          Select a cell to see why it has that state, and how its sources collapse into independent origins.
+          Select a cell to see why it has that status, and how its sources collapse into independent sources.
         </p>
       )}
     </div>
