@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
+import { CoverageMatrix, MatrixTable } from "../components/CoverageMatrix";
 import { ModeBadge } from "../components/ModeBadge";
 import { AppHeader } from "../components/layout/AppHeader";
 import { BottomTabBar } from "../components/layout/BottomTabBar";
@@ -180,5 +181,85 @@ describe("shell pieces", () => {
     expect(out).not.toContain("<h1"); // the landing hero owns the h1
     expect(out).not.toContain("New run");
     expect(out).toContain("SARVAM");
+  });
+});
+
+
+describe("coverage matrix", () => {
+  const dim = (id: string, name: string) => ({ id, run_id: "R1", name, description: "", critical: true });
+  const slot = (id: string, dimension_id: string, name: string) => ({
+    id,
+    run_id: "R1",
+    dimension_id,
+    name,
+    description: "d",
+    critical: true,
+    attributes: [],
+    min_independent: 2,
+    primary_ok: false,
+  });
+  const cell = (slot_id: string, state: "RED" | "AMBER" | "GREEN", open_conflicts = 0) => ({
+    id: `V-${slot_id}`,
+    run_id: "R1",
+    round: 0,
+    slot_id,
+    state,
+    independent_origins: 1,
+    supporting_claims: 2,
+    open_conflicts,
+    reason: `reason for ${slot_id}`,
+  });
+  const props = {
+    dimensions: [dim("D1", "Demand"), dim("D2", "Competition")],
+    slots: [slot("D1S1", "D1", "Demand size"), slot("D1S2", "D1", "Demand growth"), slot("D2S1", "D2", "Competitor pricing")],
+    cells: [cell("D1S1", "GREEN"), cell("D1S2", "AMBER"), cell("D2S1", "RED", 2)],
+    rollups: [{ dimension_id: "D1", state: "AMBER" as const, reason: "one slot is thin" }],
+    stats: { D1S1: { sources: 4, origins: 1 }, D1S2: { sources: 2, origins: 2 }, D2S1: { sources: 1, origins: 1 } },
+    selected: null,
+    onSelect: noop,
+  };
+
+  test("is an ARIA grid: rows with row headers and one gridcell per slot", () => {
+    const out = html(<CoverageMatrix {...props} />);
+    expect(out).toContain('role="grid"');
+    expect(out.match(/role="row"/g)?.length).toBe(2);
+    expect(out.match(/role="rowheader"/g)?.length).toBe(2);
+    expect(out.match(/role="gridcell"/g)?.length).toBe(3);
+  });
+
+  test("roving tabindex: exactly one cell is a tab stop, the first by default", () => {
+    const out = html(<CoverageMatrix {...props} />);
+    expect(out.match(/tabindex="0"/g)?.length).toBe(1);
+    expect(out.match(/tabindex="-1"/g)?.length).toBe(2);
+    expect(out.indexOf('tabindex="0"')).toBeLessThan(out.indexOf('tabindex="-1"'));
+  });
+
+  test("the selected cell is the tab stop", () => {
+    const out = html(<CoverageMatrix {...props} selected="D2S1" />);
+    expect(out.match(/tabindex="0"/g)?.length).toBe(1);
+    expect(out).toMatch(/tabindex="0"[^>]*aria-pressed="true"|aria-pressed="true"[^>]*tabindex="0"/);
+  });
+
+  test("every cell states its state in words, counts and conflicts (never colour alone)", () => {
+    const out = html(<CoverageMatrix {...props} />);
+    expect(out).toContain("Demand size: GREEN. 4 sources, 1 independent origin.");
+    expect(out).toContain("Competitor pricing: RED. 1 source, 1 independent origin, 2 open conflicts.");
+    for (const word of ["GREEN", "AMBER", "RED"]) expect(out).toContain(word);
+    expect(out).toContain("<svg");
+  });
+
+  test("a slot with no analysis yet says so", () => {
+    const out = html(<CoverageMatrix {...props} cells={[]} />);
+    expect(out).toContain("NO DATA");
+    expect(out).toContain("Awaiting coverage analysis.");
+  });
+
+  test("the table version has column headers, a caption and one row per slot", () => {
+    const out = html(<MatrixTable {...props} />);
+    expect(out).toContain("<caption");
+    for (const h of ["Dimension", "Slot", "State", "Sources", "Origins", "Conflicts", "Reason"]) expect(out).toContain(h);
+    expect(out.match(/<th scope="col"/g)?.length).toBe(7);
+    expect(out.match(/<tr/g)?.length).toBe(1 + 3); // header row plus a row per slot
+    expect(out).toContain("reason for D2S1");
   });
 });

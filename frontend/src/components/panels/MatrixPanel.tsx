@@ -11,7 +11,7 @@ import {
   slotsOf,
 } from "../../state/selectors";
 import { useSession } from "../../state/useRunSession";
-import { CoverageMatrix } from "../CoverageMatrix";
+import { CoverageMatrix, MatrixTable } from "../CoverageMatrix";
 import { OriginGroupView } from "../OriginGroupView";
 import { EmptyState } from "../ui/EmptyState";
 import { Skeleton } from "../ui/Skeleton";
@@ -20,6 +20,10 @@ import { coverageChip } from "../ui/chips";
 import { Icon } from "../ui/Icon";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+
+function countChange(changes: Record<string, string>, kind: string): number {
+  return Object.values(changes).filter((c) => c === kind).length;
+}
 
 function MatrixSkeleton({ phase }: { phase: string }) {
   return (
@@ -55,6 +59,7 @@ export function MatrixPanel({
   const [picked, setPicked] = useState<number | null>(null);
   const [compare, setCompare] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
+  const [matrixView, setMatrixView] = useState<"grid" | "table">("grid");
   const round = picked !== null && rounds.includes(picked) ? picked : latest;
 
   const slots = useMemo(() => slotsOf(view), [view.plan, view.run?.id]);
@@ -107,12 +112,28 @@ export function MatrixPanel({
               key={r}
               type="button"
               aria-pressed={round === r}
-              className={`px-3 py-1 text-base transition-colors ${
+              className={`px-3 py-1 text-base transition-colors pointer-coarse:min-h-11 ${
                 round === r ? "bg-brand text-on-brand font-bold" : "bg-surface text-text hover:bg-surface-2"
               }`}
               onClick={() => setPicked(r)}
             >
               Round {r}
+            </button>
+          ))}
+        </div>
+        <div role="group" aria-label="Matrix view" className="inline-flex overflow-hidden rounded-md border border-border-strong">
+          {(["grid", "table"] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              aria-pressed={matrixView === v}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 text-base transition-colors pointer-coarse:min-h-11 ${
+                matrixView === v ? "bg-brand text-on-brand font-bold" : "bg-surface text-text hover:bg-surface-2"
+              }`}
+              onClick={() => setMatrixView(v)}
+            >
+              <Icon name={v === "grid" ? "Grid" : "Table"} size={16} aria-hidden />
+              {v === "grid" ? "Grid" : "Table"}
             </button>
           ))}
         </div>
@@ -131,16 +152,37 @@ export function MatrixPanel({
         </div>
       </div>
 
-      <CoverageMatrix
-        dimensions={dims}
-        slots={slots}
-        cells={cells}
-        rollups={rollupsForRound(view, round)}
-        stats={stats}
-        {...(changes ? { changes } : {})}
-        selected={selected}
-        onSelect={setSelected}
-      />
+      {changes && prevRound !== undefined ? (
+        <p className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-md border border-border-hairline bg-surface-2 px-3 py-2 text-base">
+          <span className="font-semibold">Round {round} compared with round {prevRound}:</span>
+          <span className="inline-flex items-center gap-1 text-ok-fg">
+            <Icon name="TrendingUp" size={16} aria-hidden /> {countChange(changes, "improved")} improved
+          </span>
+          <span className="inline-flex items-center gap-1 text-bad-fg">
+            <Icon name="TrendingDown" size={16} aria-hidden /> {countChange(changes, "worse")} worse
+          </span>
+          <span className="inline-flex items-center gap-1 text-brand-secondary">
+            <Icon name="Plus" size={16} aria-hidden /> {countChange(changes, "new")} new
+          </span>
+          <span className="inline-flex items-center gap-1 text-text-muted">
+            <Icon name="Minus" size={16} aria-hidden /> {countChange(changes, "same")} unchanged
+          </span>
+        </p>
+      ) : null}
+
+      {(() => {
+        const props = {
+          dimensions: dims,
+          slots,
+          cells,
+          rollups: rollupsForRound(view, round),
+          stats,
+          ...(changes ? { changes } : {}),
+          selected,
+          onSelect: setSelected,
+        };
+        return matrixView === "grid" ? <CoverageMatrix {...props} /> : <MatrixTable {...props} />;
+      })()}
 
       {sel ? (
         <Card as="section" pad="md" aria-label="Slot detail" className="anim-in">

@@ -52,7 +52,9 @@ describe("colour utilities reference real tokens", () => {
         .forEach((line, index) => {
           for (const m of line.matchAll(UTILITY)) {
             const prefix = m[1] as string;
-            const name = (m[2] as string).replace(/-$/, "");
+            let name = (m[2] as string).replace(/-$/, "");
+            // ring-offset-2 (a width) and ring-offset-surface (a colour) carry their value after "offset-".
+            if (prefix === "ring" && name.startsWith("offset-")) name = name.slice("offset-".length);
             if (NOT_A_COLOUR.test(name) || /^[trblxyse]-\d/.test(name) || /^\d/.test(name)) continue;
             if (prefix === "text" && /^(?:xs|sm|base|lg|xl)/.test(name)) continue;
             if (!TOKENS.has(name) && !BUILT_IN.has(name)) {
