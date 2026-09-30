@@ -41,14 +41,13 @@ export function ClaimList({
                 <li key={c.id}>
                   <button
                     type="button"
-                    className="card card-hover flex w-full flex-wrap items-center gap-2 p-2 text-left text-base"
-                    style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+                    className="card card-hover flex w-full flex-wrap items-center gap-2 p-2 text-left text-base border-border bg-surface"
                     onClick={() => onOpenClaim(c.id)}
                   >
                     <strong>{c.id}</strong>
                     <span>{c.text}</span>
                     {numeric ? (
-                      <span style={{ color: "var(--text-muted)" }}>
+                      <span className="text-text-muted">
                         [{c.entity ?? "?"} / {c.attribute ?? "?"} = {c.value_num} {c.unit ?? ""} {c.period ?? ""}]
                       </span>
                     ) : null}
@@ -63,7 +62,7 @@ export function ClaimList({
       <details>
         <summary className="cursor-pointer font-semibold">Rejected by quote guard ({rejected.length})</summary>
         {rejected.length === 0 ? (
-          <p className="text-base" style={{ color: "var(--text-muted)" }}>
+          <p className="text-base text-text-muted">
             Nothing rejected so far.
           </p>
         ) : (
@@ -72,7 +71,7 @@ export function ClaimList({
               <li key={`${r.slot_id}-${i}`} className="mb-1">
                 <strong>{slotNames.get(r.slot_id) ?? r.slot_id}</strong>: {'"'}
                 {r.quote}
-                {'"'} <span style={{ color: "var(--text-muted)" }}>{r.reason}</span>
+                {'"'} <span className="text-text-muted">{r.reason}</span>
               </li>
             ))}
           </ul>

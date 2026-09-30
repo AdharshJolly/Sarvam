@@ -23,7 +23,7 @@ export function SourcesTable({
     <div className="overflow-x-auto">
       <table className="w-full text-left text-base">
         <thead>
-          <tr style={{ color: "var(--text-muted)" }}>
+          <tr className="text-text-muted">
             <th className="p-1">ID</th>
             <th className="p-1">Domain</th>
             <th className="p-1">Type</th>
@@ -36,13 +36,13 @@ export function SourcesTable({
         </thead>
         <tbody>
           {sources.map((s) => (
-            <tr key={s.id} id={`source-${s.id}`} className="border-t" style={{ borderColor: "var(--border)" }}>
+            <tr key={s.id} id={`source-${s.id}`} className="border-t border-border">
               <td className="mono p-1">{s.id}</td>
               <td className="p-1">
-                <a href={safeHref(s.url)} target="_blank" rel="noopener noreferrer" className="underline">
+                <a href={safeHref(s.url)} target="_blank" rel="noopener noreferrer" className="underline hover:text-brand transition-colors">
                   {s.domain || domainOf(s.url)}
                 </a>
-                {slotBySource?.[s.id] ? <span className="text-sm"> ({slotBySource[s.id]})</span> : null}
+                {slotBySource?.[s.id] ? <span className="text-sm text-text-muted"> ({slotBySource[s.id]})</span> : null}
               </td>
               <td className="p-1">
                 <Badge>{s.source_type ?? "unknown"}</Badge>
@@ -52,7 +52,7 @@ export function SourcesTable({
               </td>
               <td className="p-1">
                 <StateChip spec={sourceStatusChip(s.status ?? "found")} />
-                {s.fail_reason ? <div className="text-sm">{s.fail_reason}</div> : null}
+                {s.fail_reason ? <div className="text-sm text-bad-fg">{s.fail_reason}</div> : null}
               </td>
               <td className="p-1">
                 <Badge>{ageBucket(s.published_at, now)}</Badge>

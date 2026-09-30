@@ -1,6 +1,7 @@
 import type { Dimension, EvidenceSlot, Task } from "@contracts/types";
 import { Badge } from "./ui/Badge";
 import { EmptyState } from "./ui/EmptyState";
+import { Icon } from "./ui/Icon";
 
 export function PlanTree({
   dimensions,
@@ -23,7 +24,7 @@ export function PlanTree({
             {d.critical ? <Badge>critical</Badge> : null}
           </div>
           {d.description ? (
-            <p className="text-base" style={{ color: "var(--text-muted)" }}>
+            <p className="text-base text-text-muted">
               {d.description}
             </p>
           ) : null}
@@ -41,15 +42,18 @@ export function PlanTree({
                       <Badge key={a}>{a}</Badge>
                     ))}
                   </div>
-                  <p className="text-base" style={{ color: "var(--text-muted)" }}>
+                  <p className="text-base text-text-muted">
                     {s.description}
                   </p>
                   <ul className="ml-4 text-base">
                     {tasks
                       .filter((t) => t.slot_id === s.id)
                       .map((t) => (
-                        <li key={t.id}>
-                          {"→"} {t.query_text} <Badge>{t.status ?? "pending"}</Badge>
+                        <li key={t.id} className="flex items-start gap-1.5 mt-0.5">
+                          <Icon name="ArrowRight" size={14} className="mt-1 shrink-0 text-text-muted" aria-hidden />
+                          <span>
+                            {t.query_text} <Badge>{t.status ?? "pending"}</Badge>
+                          </span>
                         </li>
                       ))}
                   </ul>
