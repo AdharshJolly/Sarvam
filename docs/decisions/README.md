@@ -22,6 +22,11 @@ the same commit (SSOT section 21).
 | B-11 | SSE frames carry `id:` and `data:` only (no `event:` field); heartbeat is a `: keepalive` comment every 15 s. | `EventSource.onmessage` does not receive named events. |
 | B-12 | Planner is limited to 4-5 dimensions x 2 slots x 1 task; discover uses exactly 2 queries per task (16-20 searches in round 0 against MAX_SEARCHES=24). | FR-02 plus FR-04 can exceed the budget in round 0. The default cap is not changed; G1 measures and reports. |
 | B-13 | Gateway retries LLM HTTP 429 up to 3 times, honouring `Retry-After` (capped at 30 s); per-role `max_tokens` are 3000-6000. | Groq free tier allows 8,000 tokens per minute for `gpt-oss-120b`; unhandled 429s failed the live planner test. |
+| B-14 | Quote guard keeps SSOT 9.4 (exact substring or partial ratio >= 0.95) and adds two rejections only: fewer than 4 words, and a fuzzy match must contain every number the quote states. | One altered digit scores about 0.97 on a short quote, which would let a changed price pass. Never loosens the guard. |
+| B-15 | An extractor call is made per (source, relevant slot): own slot first, then other slots sharing content words, at most 3 slots per source. | Keeps LLM calls inside MAX_LLM_CALLS=250. The cap of 3 is a backend constant, not an SSOT value. |
+| B-16 | A task whose searches all fail is marked `blocked` and a second `task.started` event carries the typed reason ("Task blocked (RATE_LIMITED): ..."). | No event type exists for task failure and none may be invented; reducers already key on task id. |
+| B-17 | If the writer fails or the budget is exhausted, the report is rendered evidence-only (each verified claim cites itself) and says why. With no eligible claims the writer is not called. | Wrap-up must still produce a cited report (SSOT 7.1). |
+| B-18 | M0 claims stay `pending` with `quote_verified=1`; the writer accepts them via `writer.eligible_statuses()`. Quote-guard rejects are events only. | No judge exists before M1 and `claims.passage_id` is NOT NULL (decision D6). |
 
 ## Change log (SSOT section 21)
 

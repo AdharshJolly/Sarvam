@@ -70,11 +70,15 @@ generated from the Pydantic models. It never defines its own domain shapes.
 
 ## Status
 
-Done: contracts (incl. the shared addendum), SQLite store and helpers, ToolGateway (T02: budgets, SSRF
-guard, fetch, structured LLM, record/replay), planner (T03) and the full API surface including SSE.
-The controller currently runs PLAN only (interim `run_m0`); discover, acquire, extract, claims and
-synthesis (T04-T07) are in progress. Intel (Stream B) and T13-T15 are not started.
+M0 backend (tasks T02-T07, gate G1) is implemented: contracts incl. the shared addendum, SQLite store
+and helpers, ToolGateway (budgets, SSRF guard, fetch, structured LLM, record/replay), planner,
+discover, acquire, extract, claims with the quote guard, writer v0, deterministic renderer, the
+linear `controller.run_m0` and the full API including SSE.
+
+Not started: Stream B intelligence (verifier, origins, conflicts, coverage, challenge; T08-T12), the
+full controller and stop policy (T13-T14), the report verifier (T15) and everything after.
 
 Run execution: `POST /api/runs` creates the run and, outside the test env, starts `controller.run_m0`
 as an asyncio task on its own DB connection. SSE (`GET /runs/{id}/events`) polls the events table on
-a separate connection and sends `id:` + `data:` frames only.
+a separate connection and sends `id:` + `data:` frames only. Wrap-up (stop request, soft time, budget
+limit, provider outage) skips the remaining stages and synthesizes from the evidence already stored.
