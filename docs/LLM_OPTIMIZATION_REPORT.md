@@ -198,6 +198,26 @@ Analysis only; nothing below was implemented. "Readiness" is relative to the cur
 
 `SARVAM_EXTRACTOR_BATCH_SIZE` (default 1, decision B-33, CL-09) batches up to N slots of one source into one extractor call. Size 1 is the unchanged legacy path. Sizes above 1 are implemented and unit-tested (grouping, size limit, shared-passage dedup, per-slot passage and attribute checks, quote guard, STEP_FAILED, budget, determinism, completion-order independence) but **not measured**: this report makes no claim that batching saves cost or preserves quality. The harness output now includes `extractor_batching` (batch size, extractor operations, slots, unique passages) next to the existing per-role operation, validation-attempt and token counts. The `extractor.v1` prompt text changed, so recorded runs made before this change must be re-recorded before a replay comparison.
 
+## Extractor batching: measured results (1 Oct 2026)
+
+Raw data: `docs/benchmarks/extractor-batch-{1,2,3}.json`, `verifier-batch-8.json`. Same question, n=3 (verifier n=2).
+
+| Config | Mean tokens | LLM calls | Wall (s) | Claims per run | Stop states |
+| --- | --- | --- | --- | --- | --- |
+| Baseline (batch 1, old prompt) | 285,914 | 115 | 176 | 27, 34, 33 | INSUFF, SWC, SWC |
+| Extractor batch 1 (new prompt) | 298,556 | 126 | 210 | 40, 65, 45 | SWC x3 |
+| Extractor batch 2 | 235,400 | 88 | 171 | 49, 27, 75 | SWC, INSUFF, SWC |
+| Extractor batch 3 | 153,289 | 49 | 131 | 35, 28, 27 | SWC, INSUFF, INSUFF |
+| Verifier batch 8 | 257,915 | 109 | 177 | 48, 30 | INSUFF x2 |
+
+Batch 3 cuts tokens about 46 percent and calls about 57 percent, far outside the roughly 20 percent noise
+of the earlier knobs. **Quality is NOT VERIFIED:** claim counts vary widely at one config, and batch 3 ended
+INSUFFICIENT twice (coverage was 7 GREEN / 2 AMBER / 1 RED in run 1; the search budget binds, OP-03). Default
+stays 1 until the audit sheet is scored. Verifier batch 8 gave no measurable benefit.
+
+Offline relevance-floor analysis (`scripts/extractor_gate_analysis.py`, no credits): see OP-04. Candidate floor
+`own slot, or overlap >= 3` skips 25 percent of jobs at a 4 percent loss of yielding jobs; not implemented.
+
 ## Files changed in this work
 
 `backend/gateway/{__init__,core,llm}.py`, `backend/controller.py`, `backend/intel/verify.py`,
