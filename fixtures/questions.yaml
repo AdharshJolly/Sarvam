@@ -1,0 +1,15 @@
+# Golden questions (SSOT 16.4). Tune thresholds on Q2-Q5; keep Q1 as the untouched acceptance check.
+questions:
+  - id: Q1
+    canonical: true
+    text: Should a company launch an electric scooter subscription service in Bengaluru in 2027?
+  - id: Q2
+    text: Should a D2C brand enter quick commerce in tier-2 Indian cities in 2027?
+  - id: Q3
+    text: Is a franchise model for EV charging stations in Karnataka viable?
+  - id: Q4
+    text: Should a mid-size SaaS company adopt usage-based pricing?
+    note: non-India; tests generality
+  - id: Q5
+    text: Can a fintech launch a buy-now-pay-later product in India under current RBI rules?
+    note: regulation-heavy; tier-1 sources

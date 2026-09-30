@@ -1,0 +1,71 @@
+# ---- Python ----
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+# Python lockfile is intentionally not tracked (see CLAUDE.md, Git Rules)
+uv.lock
+
+# ---- Frontend / Bun ----
+node_modules/
+dist/
+build/
+.vite/
+*.tsbuildinfo
+.bun/
+bun-debug.log*
+# Lockfiles from other package managers must never appear
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ---- Environment / secrets ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---- Databases (local runtime state) ----
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+/data/*
+!/data/.gitkeep
+/artifacts/
+
+# ---- Runtime ----
+logs/
+*.log
+temp/
+tmp/
+
+# ---- IDE ----
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Claude / local agent artifacts ----
+.claude/settings.local.json
+.claude/worktrees/
+
+# ---- Graphify (generated index; regenerate with `make graph`) ----
+graphify-out/

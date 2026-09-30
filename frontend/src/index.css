@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/* Theme tokens. Dark follows the OS unless the user forces a theme via data-theme. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --surface-2: #efefeb;
+  --border: #d6d6cf;
+  --text: #16181d;
+  --text-muted: #565b66;
+  --accent: #0b5cad;
+  --ok: #17693a;
+  --warn: #8a5a00;
+  --bad: #a3231f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1216;
+    --surface: #171b21;
+    --surface-2: #1f242c;
+    --border: #2f3640;
+    --text: #e8eaee;
+    --text-muted: #9aa1ad;
+    --accent: #6cb0f2;
+    --ok: #5ec98a;
+    --warn: #e0b04a;
+    --bad: #f0857f;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0f1216;
+  --surface: #171b21;
+  --surface-2: #1f242c;
+  --border: #2f3640;
+  --text: #e8eaee;
+  --text-muted: #9aa1ad;
+  --accent: #6cb0f2;
+  --ok: #5ec98a;
+  --warn: #e0b04a;
+  --bad: #f0857f;
+}
+
+html {
+  font-size: 16px; /* projector-readable body text (SSOT NFR-10) */
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
