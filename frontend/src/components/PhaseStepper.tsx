@@ -22,7 +22,7 @@ export function PhaseStepper({ current }: { current: Phase | null }) {
       <ol className="flex flex-col gap-1">
         {PHASES.map((p, i) => {
           const status = i < idx ? "done" : i === idx ? "active" : "pending";
-          const icon = status === "done" ? "✓" : status === "active" ? "▶" : "·";
+          const icon = status === "done" ? "\u2713" : status === "active" ? "\u25B6" : "\u00B7";
           return (
             <li
               key={p}
