@@ -3,14 +3,14 @@ import { useSession } from "../../state/useRunSession";
 import { BudgetMeters, type MeterKind } from "../BudgetMeters";
 import { PhaseStepper } from "../PhaseStepper";
 import { SkeletonLines } from "../ui/Skeleton";
-import { Icon } from "../ui/Icon";
+import { Icon, type IconName } from "../ui/Icon";
 import { Banner } from "../ui/Banner";
 import { ModeBadge } from "../ModeBadge";
 import { Button } from "../ui/Button";
 
 type Conn = "open" | "connecting" | "closed";
-const connectionIcons: Record<Conn, { icon: string; label: string; className: string }> = {
-  open: { icon: "CheckCircle2", label: "Stream connected", className: "text-ok-fg" },
+const connectionIcons: Record<Conn, { icon: IconName; label: string; className: string }> = {
+  open: { icon: "CheckCircle", label: "Stream connected", className: "text-ok-fg" },
   connecting: { icon: "RefreshCw", label: "Reconnecting...", className: "text-warn-fg blink" },
   closed: { icon: "Circle", label: "Stream closed", className: "text-text-muted" },
 };
@@ -89,7 +89,7 @@ export function LeftRail({ onOpenMeter }: { onOpenMeter: (k: MeterKind) => void 
 
       {run ? (
         <div className={`flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider ${connectionIcons[view.connection].className}`}>
-          <Icon name={connectionIcons[view.connection].icon as any} size={14} aria-hidden />
+          <Icon name={connectionIcons[view.connection].icon} size={14} aria-hidden />
           {connectionIcons[view.connection].label}
         </div>
       ) : null}

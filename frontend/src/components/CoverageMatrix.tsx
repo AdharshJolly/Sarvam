@@ -104,7 +104,7 @@ export function CoverageMatrix(p: CoverageMatrixProps) {
                       <span className={`font-semibold flex items-center gap-1 ${textColor}`}>
                         {cell ? (
                           <>
-                            <Icon name={coverageChip(cell.state).icon as any} size={14} aria-hidden />
+                            <Icon name={coverageChip(cell.state).icon} size={14} aria-hidden />
                             {cell.state}
                           </>
                         ) : (
