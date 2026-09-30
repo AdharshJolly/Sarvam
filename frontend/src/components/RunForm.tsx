@@ -1,5 +1,6 @@
 import type { Mode } from "@contracts/types";
 import { type FormEvent, useEffect, useRef, useState } from "react";
+import { clearDraft, peekDraft } from "../lib/digDeeper";
 import { CANONICAL_QUESTION } from "../mocks/scenarios";
 import { errorText, useSession } from "../state/useRunSession";
 import { Banner } from "./ui/Banner";
@@ -30,10 +31,12 @@ const MAX_QUESTION = 2000;
 
 export function RunForm() {
   const { start } = useSession();
-  const [question, setQuestion] = useState("");
-  const [geography, setGeography] = useState("");
-  const [horizon, setHorizon] = useState("");
-  const [constraints, setConstraints] = useState("");
+  // A "Dig deeper" click leaves a draft here; it is read without consuming so a double render keeps it.
+  const [draft, setDraft] = useState(peekDraft);
+  const [question, setQuestion] = useState(draft?.question ?? "");
+  const [geography, setGeography] = useState(draft?.scope.geography ?? "");
+  const [horizon, setHorizon] = useState(draft?.scope.time_horizon ?? "");
+  const [constraints, setConstraints] = useState(draft?.scope.constraints ?? "");
   const [mode, setMode] = useState<Mode>("LIVE");
   const [busy, setBusy] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -74,6 +77,7 @@ export function RunForm() {
           constraints: constraints.trim() || null,
         },
       });
+      clearDraft();
     } catch (err) {
       setError(errorText(err));
     } finally {
@@ -96,6 +100,26 @@ export function RunForm() {
           <p className="text-sm text-text-muted mt-0.5">Formulate a question for autonomous evidence synthesis</p>
         </div>
       </div>
+
+      {draft ? (
+        <Banner tone="info">
+          <span>
+            Prefilled from a gap in run <span className="mono">{draft.fromRunId}</span>. Review the question, then press
+            Start run. This starts a new run, and a live run uses search and model credits.{" "}
+            <button
+              type="button"
+              className="underline font-semibold"
+              onClick={() => {
+                clearDraft();
+                setDraft(null);
+                setQuestion("");
+              }}
+            >
+              Discard
+            </button>
+          </span>
+        </Banner>
+      ) : null}
 
       {/* Main Question Animated Search Bar */}
       <div className="flex flex-col gap-1.5">

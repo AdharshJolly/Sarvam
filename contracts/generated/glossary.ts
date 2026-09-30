@@ -237,6 +237,175 @@ export const GLOSSARY = {
       "meaning": "This was inferred by the system, not stated in a source.",
       "next_step": ""
     }
+  },
+  "phase": {
+    "PLAN": {
+      "label": "Planning",
+      "meaning": "Working out which points the question needs and what to search for.",
+      "next_step": ""
+    },
+    "DISCOVER": {
+      "label": "Finding sources",
+      "meaning": "Searching the web for pages that may answer each point.",
+      "next_step": ""
+    },
+    "ACQUIRE": {
+      "label": "Reading sources",
+      "meaning": "Downloading and storing the pages that were found.",
+      "next_step": ""
+    },
+    "EXTRACT": {
+      "label": "Pulling out facts",
+      "meaning": "Picking the passages that state something useful.",
+      "next_step": ""
+    },
+    "CLAIMS": {
+      "label": "Recording statements",
+      "meaning": "Writing each fact down with the exact quote that backs it.",
+      "next_step": ""
+    },
+    "VERIFY": {
+      "label": "Checking quotes",
+      "meaning": "Confirming each quote really appears in its source and supports the statement.",
+      "next_step": ""
+    },
+    "ANALYZE": {
+      "label": "Weighing the evidence",
+      "meaning": "Counting independent sources, spotting disagreements and rating each key point.",
+      "next_step": ""
+    },
+    "CHALLENGE": {
+      "label": "Challenging the answer",
+      "meaning": "Looking for evidence that would overturn the current answer.",
+      "next_step": ""
+    },
+    "STOP_POLICY": {
+      "label": "Deciding whether to stop",
+      "meaning": "Checking whether the evidence is enough or another round is needed.",
+      "next_step": ""
+    },
+    "SYNTHESIZE": {
+      "label": "Writing the report",
+      "meaning": "Drafting the findings and checking every citation.",
+      "next_step": ""
+    }
+  },
+  "event": {
+    "run.started": {
+      "label": "Run started",
+      "meaning": "The research run was created.",
+      "next_step": ""
+    },
+    "phase.entered": {
+      "label": "New step",
+      "meaning": "The run moved to its next step.",
+      "next_step": ""
+    },
+    "plan.created": {
+      "label": "Plan ready",
+      "meaning": "The key points and search queries were decided.",
+      "next_step": ""
+    },
+    "task.started": {
+      "label": "Searching",
+      "meaning": "A search query started.",
+      "next_step": ""
+    },
+    "source.found": {
+      "label": "Source found",
+      "meaning": "A search returned a page worth reading.",
+      "next_step": ""
+    },
+    "source.fetched": {
+      "label": "Source read",
+      "meaning": "A page was downloaded and stored.",
+      "next_step": ""
+    },
+    "source.failed": {
+      "label": "Source unavailable",
+      "meaning": "A page could not be read; the reason is shown.",
+      "next_step": ""
+    },
+    "passages.created": {
+      "label": "Text saved",
+      "meaning": "Passages of a page were stored for quoting.",
+      "next_step": ""
+    },
+    "claim.created": {
+      "label": "Statement recorded",
+      "meaning": "A fact was written down with its quote.",
+      "next_step": ""
+    },
+    "claim.rejected": {
+      "label": "Statement rejected",
+      "meaning": "A statement was dropped because its quote was not in the source.",
+      "next_step": ""
+    },
+    "claim.verified": {
+      "label": "Statement checked",
+      "meaning": "A statement was checked against its quote.",
+      "next_step": ""
+    },
+    "origin.updated": {
+      "label": "Independence updated",
+      "meaning": "Sources were regrouped so copies count once.",
+      "next_step": ""
+    },
+    "conflict.detected": {
+      "label": "Disagreement found",
+      "meaning": "Two sources give different answers.",
+      "next_step": ""
+    },
+    "coverage.updated": {
+      "label": "Support updated",
+      "meaning": "Each key point was re-rated.",
+      "next_step": ""
+    },
+    "round.started": {
+      "label": "New research round",
+      "meaning": "A follow-up round started to fill gaps.",
+      "next_step": ""
+    },
+    "challenge.created": {
+      "label": "Challenge planned",
+      "meaning": "An attempt to disprove the answer was set up.",
+      "next_step": ""
+    },
+    "challenge.outcome": {
+      "label": "Challenge result",
+      "meaning": "The attempt to disprove the answer finished.",
+      "next_step": ""
+    },
+    "stop.decided": {
+      "label": "Stop decision made",
+      "meaning": "The controller decided whether the research is done.",
+      "next_step": ""
+    },
+    "report.draft": {
+      "label": "Report drafted",
+      "meaning": "The findings were written.",
+      "next_step": ""
+    },
+    "report.verified": {
+      "label": "Report checked",
+      "meaning": "Every citation in the report was checked.",
+      "next_step": ""
+    },
+    "budget.warning": {
+      "label": "Budget warning",
+      "meaning": "A limit on searches, calls, cost or time is close.",
+      "next_step": ""
+    },
+    "run.completed": {
+      "label": "Run finished",
+      "meaning": "The run ended with a result.",
+      "next_step": ""
+    },
+    "run.failed": {
+      "label": "Run failed",
+      "meaning": "The run ended with an error; the reason is shown.",
+      "next_step": ""
+    }
   }
 } as const satisfies Record<string, Record<string, GlossaryEntry>>;
 

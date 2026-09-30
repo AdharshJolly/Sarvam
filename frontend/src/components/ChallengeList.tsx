@@ -8,8 +8,8 @@ import { Card } from "./ui/Card";
 import type { Tone } from "./ui/chips";
 
 const outcomeNote = {
-  strengthened: "The attack failed: the conclusion stands after looking for counter-evidence.",
-  weakened: "The attack found evidence that weakens the conclusion.",
+  strengthened: "The test found nothing against it: the conclusion stands after looking for counter-evidence.",
+  weakened: "The test found evidence that weakens the conclusion.",
   unresolved: "Sarvam could not settle this either way with the evidence it could reach.",
 } as const;
 
@@ -56,7 +56,7 @@ export function ChallengeList({
       <EmptyState
         icon="Swords"
         title="No challenges yet"
-        why="At least one challenge round must run before a run can be SUFFICIENT; a hard budget or time limit can skip it, and the stop card says so."
+        why="At least one challenge round must run before the answer can be called solid; a hard budget or time limit can skip it, and the stop card says so."
       />
     );
   }
@@ -85,7 +85,7 @@ export function ChallengeList({
                         </button>
                       ) : null}
                     </div>
-                    <p className="label mb-1">Attack</p>
+                    <p className="label mb-1">What was tested</p>
                     <p className="text-lg leading-snug">{c.attack}</p>
                     <div className="mt-3 grid gap-3 md:grid-cols-2">
                       {c.required_evidence ? (
@@ -96,7 +96,7 @@ export function ChallengeList({
                       ) : null}
                       {(c.followup_task_ids ?? []).length > 0 ? (
                         <div>
-                          <p className="label mb-1">Follow-up queries</p>
+                          <p className="label mb-1">Follow-up searches</p>
                           <ul className="flex flex-col gap-1.5 text-base">
                             {(c.followup_task_ids ?? []).map((id) => {
                               const t = taskById.get(id);

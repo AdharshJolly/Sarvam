@@ -28,7 +28,16 @@ export interface StopGap {
 }
 
 /** One line per gap: "Name: reason." then the next step. Shared by the stop card and the matrix summary. */
-export function GapList({ gaps, onOpenSlot }: { gaps: StopGap[]; onOpenSlot: (slotId: string) => void }) {
+export function GapList({
+  gaps,
+  onOpenSlot,
+  onDigDeeper,
+}: {
+  gaps: StopGap[];
+  onOpenSlot: (slotId: string) => void;
+  /** Opens the new-run form prefilled for this gap. Hidden when absent (e.g. no run loaded). */
+  onDigDeeper?: (gap: StopGap) => void;
+}) {
   return (
     <ul className="space-y-2">
       {gaps.map((g) => (
@@ -45,6 +54,16 @@ export function GapList({ gaps, onOpenSlot }: { gaps: StopGap[]; onOpenSlot: (sl
             <span className="mt-0.5 block text-text">
               <span className="font-semibold">Next step:</span> {g.nextStep}
             </span>
+          ) : null}
+          {onDigDeeper ? (
+            <button
+              type="button"
+              className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-brand hover:underline"
+              title="Opens the new-run form with a question about this gap. Nothing runs until you press Start."
+              onClick={() => onDigDeeper(g)}
+            >
+              <Icon name="Search" size={14} aria-hidden /> Dig deeper on this
+            </button>
           ) : null}
         </li>
       ))}
@@ -109,6 +128,7 @@ export function StopCard({
   onOpenSlot,
   onOpenConflicts,
   onViewReport,
+  onDigDeeper,
 }: {
   runId: string;
   stop: StopDecision;
@@ -117,6 +137,7 @@ export function StopCard({
   onOpenSlot: (slotId: string) => void;
   onOpenConflicts: () => void;
   onViewReport?: () => void;
+  onDigDeeper?: (gap: StopGap) => void;
 }) {
   const crit = stop.critical_slots ?? {};
   const openConflicts = stop.open_conflicts ?? 0;
@@ -241,7 +262,7 @@ export function StopCard({
           </h3>
           {missing ? (
             <div className="space-y-2 text-sm text-text">
-              {gaps.length > 0 ? <GapList gaps={gaps} onOpenSlot={onOpenSlot} /> : null}
+              {gaps.length > 0 ? <GapList gaps={gaps} onOpenSlot={onOpenSlot} onDigDeeper={onDigDeeper} /> : null}
               {caveats.length > 0 ? (
                 <ul className="list-disc pl-4 space-y-1 text-text-muted">
                   {caveats.map((c) => (

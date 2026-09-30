@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
+from contracts.events import EventType
 from contracts.models import (
     CertaintyLabel,
     ChallengeOutcome,
@@ -23,6 +24,7 @@ from contracts.models import (
     CoverageState,
     FailureType,
     FinalState,
+    Phase,
     SourceStatus,
     TerminationReason,
     Verdict,
@@ -230,6 +232,98 @@ GLOSSARY: dict[str, dict[str, GlossaryEntry]] = {
             "This was inferred by the system, not stated in a source.",
         ),
     },
+    # The ten lifecycle steps the progress view shows (Phase enum).
+    "phase": {
+        Phase.PLAN.value: _e(
+            "Planning", "Working out which points the question needs and what to search for."
+        ),
+        Phase.DISCOVER.value: _e(
+            "Finding sources", "Searching the web for pages that may answer each point."
+        ),
+        Phase.ACQUIRE.value: _e(
+            "Reading sources", "Downloading and storing the pages that were found."
+        ),
+        Phase.EXTRACT.value: _e(
+            "Pulling out facts", "Picking the passages that state something useful."
+        ),
+        Phase.CLAIMS.value: _e(
+            "Recording statements", "Writing each fact down with the exact quote that backs it."
+        ),
+        Phase.VERIFY.value: _e(
+            "Checking quotes",
+            "Confirming each quote really appears in its source and supports the statement.",
+        ),
+        Phase.ANALYZE.value: _e(
+            "Weighing the evidence",
+            "Counting independent sources, spotting disagreements and rating each key point.",
+        ),
+        Phase.CHALLENGE.value: _e(
+            "Challenging the answer", "Looking for evidence that would overturn the current answer."
+        ),
+        Phase.STOP_POLICY.value: _e(
+            "Deciding whether to stop",
+            "Checking whether the evidence is enough or another round is needed.",
+        ),
+        Phase.SYNTHESIZE.value: _e(
+            "Writing the report", "Drafting the findings and checking every citation."
+        ),
+    },
+    # Short label per activity-timeline event (EventType enum).
+    "event": {
+        EventType.RUN_STARTED.value: _e("Run started", "The research run was created."),
+        EventType.PHASE_ENTERED.value: _e("New step", "The run moved to its next step."),
+        EventType.PLAN_CREATED.value: _e(
+            "Plan ready", "The key points and search queries were decided."
+        ),
+        EventType.TASK_STARTED.value: _e("Searching", "A search query started."),
+        EventType.SOURCE_FOUND.value: _e("Source found", "A search returned a page worth reading."),
+        EventType.SOURCE_FETCHED.value: _e("Source read", "A page was downloaded and stored."),
+        EventType.SOURCE_FAILED.value: _e(
+            "Source unavailable", "A page could not be read; the reason is shown."
+        ),
+        EventType.PASSAGES_CREATED.value: _e(
+            "Text saved", "Passages of a page were stored for quoting."
+        ),
+        EventType.CLAIM_CREATED.value: _e(
+            "Statement recorded", "A fact was written down with its quote."
+        ),
+        EventType.CLAIM_REJECTED.value: _e(
+            "Statement rejected", "A statement was dropped because its quote was not in the source."
+        ),
+        EventType.CLAIM_VERIFIED.value: _e(
+            "Statement checked", "A statement was checked against its quote."
+        ),
+        EventType.ORIGIN_UPDATED.value: _e(
+            "Independence updated", "Sources were regrouped so copies count once."
+        ),
+        EventType.CONFLICT_DETECTED.value: _e(
+            "Disagreement found", "Two sources give different answers."
+        ),
+        EventType.COVERAGE_UPDATED.value: _e("Support updated", "Each key point was re-rated."),
+        EventType.ROUND_STARTED.value: _e(
+            "New research round", "A follow-up round started to fill gaps."
+        ),
+        EventType.CHALLENGE_CREATED.value: _e(
+            "Challenge planned", "An attempt to disprove the answer was set up."
+        ),
+        EventType.CHALLENGE_OUTCOME.value: _e(
+            "Challenge result", "The attempt to disprove the answer finished."
+        ),
+        EventType.STOP_DECIDED.value: _e(
+            "Stop decision made", "The controller decided whether the research is done."
+        ),
+        EventType.REPORT_DRAFT.value: _e("Report drafted", "The findings were written."),
+        EventType.REPORT_VERIFIED.value: _e(
+            "Report checked", "Every citation in the report was checked."
+        ),
+        EventType.BUDGET_WARNING.value: _e(
+            "Budget warning", "A limit on searches, calls, cost or time is close."
+        ),
+        EventType.RUN_COMPLETED.value: _e("Run finished", "The run ended with a result."),
+        EventType.RUN_FAILED.value: _e(
+            "Run failed", "The run ended with an error; the reason is shown."
+        ),
+    },
 }
 
 # Enum each table must cover exactly (the completeness test and the TS generator use this).
@@ -244,6 +338,8 @@ TABLE_ENUMS: dict[str, type] = {
     "failure": FailureType,
     "source_status": SourceStatus,
     "certainty": CertaintyLabel,
+    "phase": Phase,
+    "event": EventType,
 }
 
 

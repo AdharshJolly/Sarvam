@@ -11,6 +11,7 @@ import {
   slotsOf,
   worstCriticalSlots,
 } from "../../state/selectors";
+import { useDigDeeper } from "../../state/useDigDeeper";
 import { useSession } from "../../state/useRunSession";
 import { showsCoverageGrid, useReadingMode } from "../../lib/readingMode";
 import { GapList } from "../StopCard";
@@ -57,6 +58,7 @@ export function MatrixPanel({
   onOpenSource: (sourceId: string) => void;
 }) {
   const { view, hydrating } = useSession();
+  const digDeeper = useDigDeeper();
   const rounds = roundsAvailable(view);
   const latest = latestRound(view);
   const [picked, setPicked] = useState<number | null>(null);
@@ -133,7 +135,7 @@ export function MatrixPanel({
         {gaps.length > 0 ? (
           <div>
             <p className="label mb-1">What is missing</p>
-            <GapList gaps={gaps} onOpenSlot={onOpenClaims} />
+            <GapList gaps={gaps} onOpenSlot={onOpenClaims} onDigDeeper={digDeeper} />
           </div>
         ) : (
           <p className="text-base text-text-muted">Every key point is well supported.</p>

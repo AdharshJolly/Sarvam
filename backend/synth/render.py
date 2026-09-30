@@ -96,17 +96,28 @@ def render_markdown(
     lines += ["## Coverage matrix", ""]
     if cells:
         lines += [
-            "| Dimension | Slot | State | Independent origins | Why |",
+            "| Dimension | Key point | State | Independent sources | Why |",
             "| --- | --- | --- | --- | --- |",
         ]
         for cell in cells:
             slot = slots.get(cell.slot_id)
             dim = dims.get(slot.dimension_id) if slot else None
+            why = (
+                "Enough independent sources agree."
+                if cell.state.value == "GREEN"
+                else gap_text(
+                    cell.state.value,
+                    cell.independent_origins,
+                    cell.supporting_claims,
+                    cell.open_conflicts,
+                ).reason
+                + "."
+            )
             lines.append(
                 f"| {_cell(dim.name if dim else '')} | {_cell(slot.name if slot else cell.slot_id)}"
                 f"{' (critical)' if slot and slot.critical else ''} | "
                 f"{entry('coverage_state', cell.state.value).label} ({cell.state.value}) | "
-                f"{cell.independent_origins} | {_cell(cell.reason)} |"
+                f"{cell.independent_origins} | {_cell(why)} |"
             )
     else:
         lines.append("Coverage was not scored.")

@@ -15,6 +15,7 @@ import { buildHash, getRoutePage, parseRoute, type PageId } from "../../lib/rout
 import { useMediaQuery } from "../../lib/useMediaQuery";
 import { EvidenceProvider, useEvidence } from "../../state/EvidenceContext";
 import { openConflictCount, worstCriticalSlots } from "../../state/selectors";
+import { useDigDeeper } from "../../state/useDigDeeper";
 import { useSession } from "../../state/useRunSession";
 import { ActivityDock, ActivityTimeline, type DockFilter } from "../ActivityDock";
 import type { MeterKind } from "../BudgetMeters";
@@ -52,6 +53,7 @@ import { useAuth } from "../../state/useAuth";
 function Shell() {
   const { user, loading: authLoading } = useAuth();
   const { view, runId, error, newRun, reattach, hydrating } = useSession();
+  const digDeeper = useDigDeeper();
   const ev = useEvidence();
   const isLg = useMediaQuery(`(min-width: ${LG_MIN}px)`);
   const isXl = useMediaQuery(`(min-width: ${XL_MIN}px)`);
@@ -250,6 +252,7 @@ function Shell() {
                   onOpenSlot={goEvidenceForSlot}
                   onOpenConflicts={goConflicts}
                   onViewReport={goReport}
+                  onDigDeeper={digDeeper}
                 />
               ) : null}
               <CenterTabs

@@ -1,4 +1,5 @@
 import type { Dimension, EvidenceSlot, Task } from "@contracts/types";
+import { counted } from "../lib/terms";
 import { Badge } from "./ui/Badge";
 import { EmptyState } from "./ui/EmptyState";
 import { Icon } from "./ui/Icon";
@@ -36,8 +37,8 @@ export function PlanTree({
                   <div className="flex flex-wrap items-center gap-2">
                     <strong>{s.name}</strong>
                     {s.critical ? <Badge>critical</Badge> : null}
-                    <Badge>{`min ${s.min_independent ?? 2} independent`}</Badge>
-                    {s.primary_ok ? <Badge title="One primary source is enough">primary_ok</Badge> : null}
+                    <Badge>{`needs ${counted("origin", s.min_independent ?? 2)}`}</Badge>
+                    {s.primary_ok ? <Badge title="One primary source is enough">one official source is enough</Badge> : null}
                     {(s.attributes ?? []).map((a) => (
                       <Badge key={a}>{a}</Badge>
                     ))}

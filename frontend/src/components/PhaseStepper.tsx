@@ -1,4 +1,5 @@
 import type { Phase } from "@contracts/types";
+import { phaseName } from "../lib/labels";
 import { Icon } from "./ui/Icon";
 
 /** The ten lifecycle states (SSOT section 7), in order. */
@@ -15,7 +16,8 @@ export const PHASE_ORDER: Phase[] = [
   "SYNTHESIZE",
 ];
 
-export const phaseLabel = (p: Phase): string => p.replace("_", " ");
+/** Plain name of a step ("Checking quotes"), from the shared glossary. */
+export const phaseLabel = (p: Phase): string => phaseName(p);
 
 export function PhaseStepper({ current, finished = false, live = false }: { current: Phase | null; finished?: boolean; live?: boolean }) {
   const idx = current ? PHASE_ORDER.indexOf(current) : -1;

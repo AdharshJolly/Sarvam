@@ -9,6 +9,7 @@ import { collectCitationIds, parseReport, unresolvedCitations } from "../../lib/
 import type { ReportNode } from "../../lib/reportMarkdown";
 import { useEvidence } from "../../state/EvidenceContext";
 import { openConflictCount, worstCriticalSlots } from "../../state/selectors";
+import { useDigDeeper } from "../../state/useDigDeeper";
 import { errorText, useSession } from "../../state/useRunSession";
 import { StopCard } from "../StopCard";
 import { ReportBody } from "../report/ReportBody";
@@ -35,6 +36,7 @@ export function contentsEntries(nodes: ReportNode[]): ContentsEntry[] {
 /** The report tab: loads the stored report, then reads as a document with contents, sources and method. */
 export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slotId: string) => void; onOpenConflicts: () => void }) {
   const { view, runId } = useSession();
+  const digDeeper = useDigDeeper();
   const ev = useEvidence();
   const [report, setReport] = useState<ReportView | null>(null);
   const [state, setState] = useState<"idle" | "loading" | "missing" | "error">("idle");
@@ -113,6 +115,7 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
           challenges={Object.values(view.challenges)}
           onOpenSlot={onOpenSlot}
           onOpenConflicts={onOpenConflicts}
+          onDigDeeper={digDeeper}
         />
       ) : null}
       {state === "loading" ? (

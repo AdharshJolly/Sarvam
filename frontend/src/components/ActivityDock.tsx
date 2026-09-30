@@ -1,5 +1,8 @@
 import { useEffect, useRef } from "react";
 import { formatSeconds } from "../lib/format";
+import { eventHint, eventLabel } from "../lib/labels";
+import { useReadingMode } from "../lib/readingMode";
+import { termTitle } from "../lib/terms";
 import type { TimelineItem } from "../state/runStore";
 import type { MeterKind } from "./BudgetMeters";
 import { StateChip } from "./ui/StateChip";
@@ -12,10 +15,10 @@ export type DockFilter = "all" | "phases" | "sources" | "claims" | "assurance" |
 
 const CHIPS: { id: DockFilter; label: string }[] = [
   { id: "all", label: "All" },
-  { id: "phases", label: "Phases" },
+  { id: "phases", label: "Steps" },
   { id: "sources", label: "Sources" },
-  { id: "claims", label: "Claims" },
-  { id: "assurance", label: "Assurance" },
+  { id: "claims", label: termTitle("claim", 2) },
+  { id: "assurance", label: "Quality checks" },
   { id: "failures", label: "Failures" },
 ];
 
@@ -45,33 +48,6 @@ export function matchesFilter(item: TimelineItem, f: DockFilter): boolean {
       return item.stepMs !== null;
   }
 }
-
-/** Short uppercase label per event type, in the style of the plan ("PLAN CREATED", "ORIGIN UPDATED"). */
-const LABEL: Record<TimelineItem["type"], string> = {
-  "run.started": "RUN STARTED",
-  "phase.entered": "PHASE",
-  "plan.created": "PLAN CREATED",
-  "task.started": "SEARCHING",
-  "source.found": "SOURCE FOUND",
-  "source.fetched": "SOURCE FETCHED",
-  "source.failed": "SOURCE FAILED",
-  "passages.created": "PASSAGES STORED",
-  "claim.created": "CLAIM",
-  "claim.rejected": "CLAIM REJECTED",
-  "claim.verified": "CLAIM VERIFIED",
-  "origin.updated": "ORIGIN UPDATED",
-  "conflict.detected": "CONFLICT DETECTED",
-  "coverage.updated": "COVERAGE UPDATED",
-  "round.started": "NEW ROUND",
-  "challenge.created": "CHALLENGE CREATED",
-  "challenge.outcome": "CHALLENGE OUTCOME",
-  "stop.decided": "STOP DECIDED",
-  "report.draft": "REPORT DRAFT",
-  "report.verified": "REPORT VERIFIED",
-  "budget.warning": "BUDGET WARNING",
-  "run.completed": "RUN COMPLETED",
-  "run.failed": "RUN FAILED",
-};
 
 const ICON: Record<TimelineItem["kind"], IconName> = {
   phase: "Play",
@@ -109,6 +85,7 @@ export function ActivityTimeline({
   onOpenSource: (id: string) => void;
   listClassName?: string;
 }) {
+  const mode = useReadingMode();
   const listRef = useRef<HTMLOListElement | null>(null);
   const stick = useRef(true);
   const items = timeline.filter((t) => matchesFilter(t, filter));
@@ -161,12 +138,14 @@ export function ActivityTimeline({
           const offset = Number.isNaN(t0) ? "" : formatSeconds((Date.parse(it.ts) - t0) / 1000);
           const c = TEXT_COLOR[it.kind];
           return (
-            <li key={it.id} className="grid grid-cols-[3.5rem_1.5rem_10rem_1fr] items-baseline gap-x-2 py-0.5 max-sm:grid-cols-[3.5rem_1.5rem_1fr]">
+            <li key={it.id} className="grid grid-cols-[3.5rem_1.5rem_12rem_1fr] items-baseline gap-x-2 py-0.5 max-sm:grid-cols-[3.5rem_1.5rem_1fr]">
               <span className="mono text-sm text-text-muted">{offset}</span>
               <span aria-hidden="true" className={c}>
                 <Icon name={ICON[it.kind]} size={14} className="inline-block -mt-0.5" />
               </span>
-              <span className={`mono text-sm font-semibold max-sm:col-span-1 ${c}`}>{LABEL[it.type]}</span>
+              <span title={eventHint(it.type)} className={`mono text-sm font-semibold max-sm:col-span-1 ${c}`}>
+                {eventLabel(it.type, mode)}
+              </span>
               <span className="text-sm max-sm:col-start-3">
                 {it.failure ? (
                   <span className="mr-2">
@@ -229,6 +208,7 @@ export function ActivityDock({
   onOpenSource: (id: string) => void;
 }) {
   const last = timeline.at(-1);
+  const mode = useReadingMode();
   return (
     <section
       aria-label="Activity timeline"
@@ -250,7 +230,7 @@ export function ActivityDock({
         ) : null}
         {!open && last ? (
           <span className="truncate text-sm font-medium text-text-muted">
-            {LABEL[last.type]}: {last.text}
+            {eventLabel(last.type, mode)}: {last.text}
           </span>
         ) : null}
       </div>
