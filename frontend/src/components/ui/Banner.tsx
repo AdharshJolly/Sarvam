@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 import { Icon } from "./Icon";
-import type * as LucideIcons from "lucide-react";
+import type { IconName } from "./Icon";
 
 export type BannerTone = "ok" | "warn" | "bad" | "info";
 
-export function Banner({ tone, icon, children }: { tone: BannerTone; icon?: string; children: ReactNode }) {
+export function Banner({ tone, icon, children }: { tone: BannerTone; icon?: IconName; children: ReactNode }) {
   let colorClasses = "";
-  let defaultIcon = "";
+  let defaultIcon: IconName = "Info";
   switch (tone) {
     case "ok":
       colorClasses = "text-ok-fg bg-ok-bg border-ok-border";
@@ -26,7 +26,7 @@ export function Banner({ tone, icon, children }: { tone: BannerTone; icon?: stri
       break;
   }
 
-  const iconName = (icon || defaultIcon) as keyof typeof LucideIcons;
+  const iconName: IconName = icon || defaultIcon;
 
   return (
     <div role="alert" className={`flex items-start gap-2 rounded-md border p-3 font-medium ${colorClasses}`}>

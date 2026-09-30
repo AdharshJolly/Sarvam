@@ -5,7 +5,7 @@ import type { MeterKind } from "./BudgetMeters";
 import { StateChip } from "./ui/StateChip";
 import { failureChip } from "./ui/chips";
 import { Icon } from "./ui/Icon";
-import type * as LucideIcons from "lucide-react";
+import type { IconName } from "./ui/Icon";
 
 export type DockFilter = "all" | "phases" | "sources" | "claims" | "assurance" | "failures" | MeterKind;
 
@@ -72,7 +72,7 @@ const LABEL: Record<TimelineItem["type"], string> = {
   "run.failed": "RUN FAILED",
 };
 
-const ICON: Record<TimelineItem["kind"], string> = {
+const ICON: Record<TimelineItem["kind"], IconName> = {
   phase: "Play",
   source: "FileText",
   claim: "Quote",
@@ -188,7 +188,7 @@ export function ActivityDock({
                   {offset}
                 </span>
                 <span aria-hidden="true" className={c}>
-                  <Icon name={ICON[it.kind] as keyof typeof LucideIcons} size={14} className="inline-block -mt-0.5" />
+                  <Icon name={ICON[it.kind]} size={14} className="inline-block -mt-0.5" />
                 </span>
                 <span className={`mono font-semibold text-[0.7rem] ${c}`}>
                   {LABEL[it.type]}

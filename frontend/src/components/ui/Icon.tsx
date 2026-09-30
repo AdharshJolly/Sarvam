@@ -1,47 +1,108 @@
-import { createElement, forwardRef } from 'react';
-import * as LucideIcons from 'lucide-react';
-import type { LucideProps } from 'lucide-react';
+import { forwardRef } from "react";
+import {
+  Activity,
+  AlertTriangle,
+  AlignLeft,
+  ArrowDown,
+  ArrowRight,
+  Check,
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
+  Circle,
+  Clock,
+  FileText,
+  Grid,
+  HelpCircle,
+  Info,
+  Minus,
+  Monitor,
+  Moon,
+  Play,
+  Quote,
+  RefreshCw,
+  RotateCcw,
+  Search,
+  Server,
+  ServerOff,
+  ShieldCheck,
+  Square,
+  Sun,
+  Swords,
+  TrendingDown,
+  TrendingUp,
+  XOctagon,
+  Zap,
+} from "lucide-react";
+import type { LucideIcon, LucideProps } from "lucide-react";
 
-export type IconName = keyof typeof LucideIcons;
+/**
+ * Only the icons the UI uses are imported by name, so the bundler can drop the rest of the library.
+ * To add an icon, import it here; `IconName` is derived from this registry, so an unknown name is a
+ * compile error rather than a silently missing icon.
+ */
+const ICONS = {
+  Activity,
+  AlertTriangle,
+  AlignLeft,
+  ArrowDown,
+  ArrowRight,
+  Check,
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
+  Circle,
+  Clock,
+  FileText,
+  Grid,
+  HelpCircle,
+  Info,
+  Minus,
+  Monitor,
+  Moon,
+  Play,
+  Quote,
+  RefreshCw,
+  RotateCcw,
+  Search,
+  Server,
+  ServerOff,
+  ShieldCheck,
+  Square,
+  Sun,
+  Swords,
+  TrendingDown,
+  TrendingUp,
+  XOctagon,
+  Zap,
+} satisfies Record<string, LucideIcon>;
 
-export interface IconProps extends LucideProps {
-  name: keyof typeof LucideIcons;
-  label?: string; // required visually hidden label if aria-hidden is not true
-  'aria-hidden'?: boolean;
+export type IconName = keyof typeof ICONS;
+
+export interface IconProps extends Omit<LucideProps, "ref"> {
+  name: IconName;
+  /** Accessible name. Give one when the icon stands alone; omit it for decorative icons. */
+  label?: string;
+  "aria-hidden"?: boolean;
 }
 
 export const Icon = forwardRef<SVGSVGElement, IconProps>(
-  ({ name, label, 'aria-hidden': ariaHidden, ...props }, ref) => {
-    const IconComponent = LucideIcons[name] as React.FC<LucideProps>;
-
-    if (!IconComponent) {
-      console.warn(`Icon ${name} not found in lucide-react`);
-      return null;
-    }
-
-    // Require label if not explicitly hidden (accessibility constraint)
-    if (!ariaHidden && !label && process.env.NODE_ENV !== 'production') {
-      console.warn(`Icon ${name} is missing a label or aria-hidden={true}`);
-    }
-
+  ({ name, label, "aria-hidden": ariaHidden, ...props }, ref) => {
+    const Glyph = ICONS[name];
     return (
       <>
-        {createElement(IconComponent, {
-          ref,
-          'aria-hidden': ariaHidden !== false ? true : undefined,
-          ...props,
-        })}
+        <Glyph ref={ref} aria-hidden={ariaHidden !== false ? true : undefined} {...props} />
         {label && !ariaHidden && <span className="sr-only">{label}</span>}
       </>
     );
-  }
+  },
 );
 
-Icon.displayName = 'Icon';
+Icon.displayName = "Icon";
 
 export const StatusIconMap = {
-  GREEN: 'CheckCircle',
-  AMBER: 'AlertTriangle',
-  RED: 'XOctagon',
-  INFO: 'Info',
-} as const;
+  GREEN: "CheckCircle",
+  AMBER: "AlertTriangle",
+  RED: "XOctagon",
+  INFO: "Info",
+} as const satisfies Record<string, IconName>;

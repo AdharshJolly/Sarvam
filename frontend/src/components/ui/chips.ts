@@ -9,11 +9,12 @@ import type {
 } from "@contracts/types";
 import { stateStyle } from "../../lib/format";
 import { StatusIconMap } from "./Icon";
+import type { IconName } from "./Icon";
 
 export type Tone = "ok" | "warn" | "bad" | "info" | "brand" | "muted";
 
 export interface ChipSpec {
-  icon: string; // Lucide icon name or fallback string
+  icon: IconName;
   label: string;
   tone: Tone;
 }

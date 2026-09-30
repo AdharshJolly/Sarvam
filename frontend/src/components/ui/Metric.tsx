@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import { Icon } from "./Icon";
-import type * as LucideIcons from "lucide-react";
+import type { IconName } from "./Icon";
 
 export interface MetricProps {
   label: string;
   value: ReactNode;
-  icon?: keyof typeof LucideIcons;
+  icon?: IconName;
   onClick?: () => void;
   title?: string;
   trend?: "up" | "down" | "neutral";

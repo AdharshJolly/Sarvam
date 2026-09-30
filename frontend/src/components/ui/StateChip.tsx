@@ -1,6 +1,5 @@
 import { type ChipSpec } from "./chips";
 import { Icon } from "./Icon";
-import type * as LucideIcons from "lucide-react";
 
 /** State = colour + icon + text, never colour alone. Chips are at least 14 px. */
 export function StateChip({ spec, large = false }: { spec: ChipSpec; large?: boolean }) {
@@ -37,7 +36,7 @@ export function StateChip({ spec, large = false }: { spec: ChipSpec; large?: boo
       } ${colorClasses}`}
     >
       {isLucide ? (
-        <Icon name={spec.icon as keyof typeof LucideIcons} size={large ? 18 : 14} aria-hidden />
+        <Icon name={spec.icon} size={large ? 18 : 14} aria-hidden />
       ) : (
         <span aria-hidden="true" className="font-mono font-bold leading-none">{spec.icon}</span>
       )}

@@ -1,4 +1,5 @@
 import type { CoverageState } from "@contracts/types";
+import type { IconName } from "../components/ui/Icon";
 
 export function formatUsd(v: number): string {
   return `$${v.toFixed(v < 1 ? 3 : 2)}`;
@@ -32,7 +33,7 @@ export function domainOf(url: string): string {
   }
 }
 
-export function stateStyle(state: CoverageState): { icon: string; label: string; colorVar: string } {
+export function stateStyle(state: CoverageState): { icon: IconName; label: string; colorVar: string } {
   switch (state) {
     case "RED":
       return { icon: "XOctagon", label: "RED", colorVar: "var(--color-bad-fg)" };
