@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -337,3 +338,140 @@ class StopDecision(Contract):
     open_conflicts: int = 0
     challenge_rounds_completed: int = 0
     caveats: list[str] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------- shared addendum (CL-02, CL-03)
+
+
+class Phase(StrEnum):
+    """Lifecycle phase announced by the phase.entered event (SSOT FR-22, section 7)."""
+
+    PLAN = "PLAN"
+    DISCOVER = "DISCOVER"
+    ACQUIRE = "ACQUIRE"
+    EXTRACT = "EXTRACT"
+    CLAIMS = "CLAIMS"
+    VERIFY = "VERIFY"
+    ANALYZE = "ANALYZE"
+    CHALLENGE = "CHALLENGE"
+    STOP_POLICY = "STOP_POLICY"
+    SYNTHESIZE = "SYNTHESIZE"
+
+
+class RunCreate(Contract):
+    """POST /api/runs body (SSOT section 11): question, scope, mode, optional budget overrides."""
+
+    question: str = Field(min_length=1, max_length=2000)
+    scope: Scope = Field(default_factory=Scope)
+    mode: Mode = Mode.LIVE
+    budget: dict[str, int | float] | None = None
+
+
+class BudgetUsage(Contract):
+    searches: int = 0
+    fetches: int = 0
+    llm_calls: int = 0
+    cost_usd: float = 0.0
+    elapsed_seconds: float = 0.0
+
+
+class PlanTask(Contract):
+    id: str
+    query: str
+
+
+class PlanSlot(Contract):
+    id: str
+    name: str
+    description: str
+    critical: bool
+    attributes: list[str] = Field(default_factory=list)
+    min_independent: int = 2
+    primary_ok: bool = False
+    tasks: list[PlanTask] = Field(default_factory=list)
+
+
+class PlanDimension(Contract):
+    id: str
+    name: str
+    description: str = ""
+    critical: bool
+    slots: list[PlanSlot] = Field(default_factory=list)
+
+
+class Plan(Contract):
+    """Planner output (SSOT Appendix B); also the plan.created payload."""
+
+    dimensions: list[PlanDimension]
+    budget: Budget
+
+
+class DimensionRollup(Contract):
+    dimension_id: str
+    state: CoverageState
+    reason: str
+
+
+class RoundRollups(Contract):
+    round: int
+    rollups: list[DimensionRollup] = Field(default_factory=list)
+
+
+class RunSummary(Contract):
+    """GET /api/runs/{id}"""
+
+    run: Run
+    phase: Phase | None = None
+    usage: BudgetUsage = Field(default_factory=BudgetUsage)
+    stop: StopDecision | None = None
+
+
+class RunState(Contract):
+    """GET /api/runs/{id}/state: snapshot that hydrates the UI. Rejected claims are excluded."""
+
+    run: Run
+    phase: Phase | None = None
+    plan: Plan | None = None
+    tasks: list[Task] = Field(default_factory=list)
+    sources: list[Source] = Field(default_factory=list)
+    origins: list[Origin] = Field(default_factory=list)
+    claims: list[Claim] = Field(default_factory=list)
+    conflicts: list[Conflict] = Field(default_factory=list)
+    coverage: list[CoverageCell] = Field(default_factory=list)
+    rollups: list[RoundRollups] = Field(default_factory=list)
+    challenges: list[Challenge] = Field(default_factory=list)
+    stop: StopDecision | None = None
+    report_version: int | None = None
+    last_event_id: int = 0
+
+
+class ClaimEvidence(Contract):
+    """GET /api/runs/{id}/claims/{cid}: the evidence drawer."""
+
+    claim: Claim
+    passage: Passage
+    quote_start: int | None = None  # offsets of the quote inside passage.text
+    quote_end: int | None = None
+    source: Source
+    origin: Origin | None = None
+    verdict: Verdict | None = None
+    verdict_rationale: str = ""
+    independence: Literal["established", "unestablished"] = "unestablished"
+
+
+class CitationRef(Contract):
+    claim_id: str
+    passage_id: str
+    source_id: str
+    url: str
+
+
+class ReportView(Contract):
+    """GET /api/runs/{id}/report (404 until the first report exists)."""
+
+    run_id: str
+    version: int
+    markdown: str
+    certainty_state: FinalState | None = None
+    dropped_sentences: list[str] = Field(default_factory=list)
+    citations: list[CitationRef] = Field(default_factory=list)

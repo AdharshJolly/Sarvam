@@ -47,6 +47,10 @@ class Thresholds(BaseModel):
     passage_words_max: int = 200  # FR-07
     passages_per_slot_source: int = 6  # 5.1
     source_char_cap: int = 60_000  # 5.1
+    queries_per_task: int = 2  # FR-04, CL-05
+    results_per_query: int = 6  # CL-05
+    sources_per_task: int = 4  # CL-05
+    max_initial_tasks: int = 10  # CL-05
 
 
 class SSRFPolicy(BaseModel):

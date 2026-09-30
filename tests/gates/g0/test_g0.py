@@ -87,7 +87,8 @@ def test_g0_call_metrics_map_onto_event_envelope(client):
     ev = append_event(
         conn,
         run_id,
-        EventType.RUN_STARTED,
+        EventType.PHASE_ENTERED,
+        payload={"phase": "PLAN", "reason": "metrics envelope check"},
         step_ms=m.latency_ms,
         tokens=m.tokens,
         cost_usd=m.cost_usd,

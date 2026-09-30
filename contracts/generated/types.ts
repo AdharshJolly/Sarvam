@@ -8,6 +8,14 @@ export type MaxCostUsd = number
 export type MaxWallSecondsSoft = number
 export type MaxWallSecondsHard = number
 export type MaxFollowupRounds = number
+export type Searches = number
+export type Fetches = number
+export type LlmCalls = number
+export type CostUsd = number
+export type ElapsedSeconds = number
+export type Limit = string
+export type Used = number
+export type Max = number
 export type Id = string
 export type RunId = string
 export type Round = number
@@ -22,6 +30,11 @@ export type FollowupTaskIds = string[]
  * via the `definition` "ChallengeOutcome".
  */
 export type ChallengeOutcome = ("strengthened" | "weakened" | "unresolved")
+export type ChallengeId = string
+export type ClaimId = string
+export type PassageId = string
+export type SourceId = string
+export type Url = string
 export type Id1 = string
 export type RunId1 = string
 export type SlotId = string
@@ -33,17 +46,62 @@ export type ValueNum = (number | null)
 export type Unit = (string | null)
 export type Period = (string | null)
 export type Quote = string
-export type PassageId = string
+export type PassageId1 = string
 export type QuoteVerified = boolean
 export type ClaimStatus = ("pending" | "supported" | "partial" | "contested" | "rejected")
+export type Id2 = string
+export type SourceId1 = string
+export type Idx = number
+export type Text1 = string
+export type CharStart = number
+export type CharEnd = number
+export type QuoteStart = (number | null)
+export type QuoteEnd = (number | null)
+export type Id3 = string
+export type RunId2 = string
+export type Url1 = string
+export type CanonicalUrl = string
+export type Domain = string
+export type Publisher = (string | null)
+export type SourceType = ("regulator" | "company_primary" | "news" | "blog" | "unknown")
+export type AuthorityTier = number
+export type PublishedAt = (string | null)
+export type RetrievedAt = (string | null)
+export type ContentHash = (string | null)
+/**
+ * Source status: found/fetched plus the typed fetch failures from section 18.
+ */
+export type SourceStatus = ("found" | "fetched" | "SOURCE_UNAVAILABLE" | "SOURCE_EMPTY")
+export type FailReason = (string | null)
+export type OriginId = (string | null)
+export type TaskId = (string | null)
+export type Id4 = string
+export type RunId3 = string
+export type Label = string
+export type OriginMethod = ("domain" | "near_duplicate" | "shared_number" | "attribution" | "none")
+export type MemberSourceIds = string[]
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "Verdict".
+ */
+export type Verdict = ("supports" | "partial" | "contradicts" | "irrelevant")
+export type VerdictRationale = string
+export type Independence = ("established" | "unestablished")
+export type SlotId1 = string
+export type PassageId2 = (string | null)
+export type Quote1 = string
+export type Failure = "CLAIM_REJECTED"
+export type Reason = string
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "ClaimStatus".
  */
 export type ClaimStatus1 = ("pending" | "supported" | "partial" | "contested" | "rejected")
-export type Id2 = string
-export type RunId2 = string
-export type SlotId1 = string
+export type ClaimId1 = string
+export type Rationale = string
+export type Id5 = string
+export type RunId4 = string
+export type SlotId2 = string
 export type ClaimA = string
 export type ClaimB = string
 export type DeltaPct = number
@@ -60,10 +118,10 @@ export type ConflictKind1 = ("unit_error" | "scope_difference" | "temporal" | "d
  * via the `definition` "ConflictStatus".
  */
 export type ConflictStatus1 = ("open" | "explained")
-export type Id3 = string
-export type RunId3 = string
+export type Id6 = string
+export type RunId5 = string
 export type Round2 = number
-export type SlotId2 = string
+export type SlotId3 = string
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "CoverageState".
@@ -72,45 +130,52 @@ export type CoverageState = ("RED" | "AMBER" | "GREEN")
 export type IndependentOrigins = number
 export type SupportingClaims = number
 export type OpenConflicts = number
-export type Reason = string
+export type Reason1 = string
+export type Round3 = number
+export type Cells = CoverageCell[]
+export type DimensionId = string
+export type Reason2 = string
+export type Rollups = DimensionRollup[]
 export type Green = number
 export type Amber = number
 export type Red = number
-export type Id4 = string
-export type RunId4 = string
+export type Id7 = string
+export type RunId6 = string
 export type Name = string
 export type Description = string
 export type Critical = boolean
-export type Id5 = number
-export type RunId5 = string
+export type Id8 = number
+export type RunId7 = string
 export type Ts = string
-export type Round3 = number
+export type Round4 = number
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "EventType".
  */
-export type EventType = ("run.started" | "plan.created" | "task.started" | "source.found" | "source.fetched" | "source.failed" | "passages.created" | "claim.created" | "claim.rejected" | "claim.verified" | "origin.updated" | "conflict.detected" | "coverage.updated" | "round.started" | "challenge.created" | "challenge.outcome" | "stop.decided" | "report.draft" | "report.verified" | "budget.warning" | "run.completed" | "run.failed")
+export type EventType = ("run.started" | "phase.entered" | "plan.created" | "task.started" | "source.found" | "source.fetched" | "source.failed" | "passages.created" | "claim.created" | "claim.rejected" | "claim.verified" | "origin.updated" | "conflict.detected" | "coverage.updated" | "round.started" | "challenge.created" | "challenge.outcome" | "stop.decided" | "report.draft" | "report.verified" | "budget.warning" | "run.completed" | "run.failed")
 export type StepMs = (number | null)
 export type Tokens = (number | null)
-export type CostUsd = (number | null)
-export type Id6 = string
-export type ClaimId = string
-export type PassageId1 = string
-/**
- * This interface was referenced by `SarvamContracts`'s JSON-Schema
- * via the `definition` "Verdict".
- */
-export type Verdict = ("supports" | "partial" | "contradicts" | "irrelevant")
-export type VerdictRationale = string
-export type Id7 = string
-export type RunId6 = string
-export type DimensionId = string
+export type CostUsd1 = (number | null)
+export type Id9 = string
+export type ClaimId2 = string
+export type PassageId3 = string
+export type VerdictRationale1 = string
+export type Id10 = string
+export type RunId8 = string
+export type DimensionId1 = string
 export type Name1 = string
 export type Description1 = string
 export type Critical1 = boolean
 export type Attributes = string[]
 export type MinIndependent = number
 export type PrimaryOk = boolean
+/**
+ * Typed failure states (SSOT section 18). No silent failures (NFR-04).
+ * 
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "FailureType".
+ */
+export type FailureType = ("RATE_LIMITED" | "SOURCE_UNAVAILABLE" | "SOURCE_EMPTY" | "STEP_FAILED" | "CLAIM_REJECTED" | "BLOCKED")
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "FinalState".
@@ -121,28 +186,56 @@ export type FinalState = ("SUFFICIENT" | "SUFFICIENT_WITH_CAVEATS" | "INSUFFICIE
  * via the `definition` "Mode".
  */
 export type Mode = ("LIVE" | "REPLAY")
-export type Id8 = string
-export type RunId7 = string
-export type Label = string
-export type OriginMethod = ("domain" | "near_duplicate" | "shared_number" | "attribution" | "none")
-export type MemberSourceIds = string[]
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "OriginMethod".
  */
 export type OriginMethod1 = ("domain" | "near_duplicate" | "shared_number" | "attribution" | "none")
-export type Id9 = string
-export type SourceId = string
-export type Idx = number
-export type Text1 = string
-export type CharStart = number
-export type CharEnd = number
-export type Id10 = string
-export type RunId8 = string
+export type SourceId2 = string
+export type Count = number
+/**
+ * Lifecycle phase announced by the phase.entered event (SSOT FR-22, section 7).
+ * 
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "Phase".
+ */
+export type Phase = ("PLAN" | "DISCOVER" | "ACQUIRE" | "EXTRACT" | "CLAIMS" | "VERIFY" | "ANALYZE" | "CHALLENGE" | "STOP_POLICY" | "SYNTHESIZE")
+export type Reason3 = string
+export type Id11 = string
+export type Name2 = string
+export type Description2 = string
+export type Critical2 = boolean
+export type Id12 = string
+export type Name3 = string
+export type Description3 = string
+export type Critical3 = boolean
+export type Attributes1 = string[]
+export type MinIndependent1 = number
+export type PrimaryOk1 = boolean
+export type Id13 = string
+export type Query = string
+export type Tasks = PlanTask[]
+export type Slots = PlanSlot[]
+export type Dimensions = PlanDimension[]
+export type Id14 = string
+export type RunId9 = string
 export type Version = number
 export type Markdown = string
 export type DroppedSentences = string[]
-export type Id11 = string
+export type Version1 = number
+export type Version2 = number
+export type DroppedCount = number
+export type RunId10 = string
+export type Version3 = number
+export type Markdown1 = string
+export type DroppedSentences1 = string[]
+export type Citations = CitationRef[]
+export type Round5 = number
+export type Rollups1 = DimensionRollup[]
+export type Round6 = number
+export type Reason4 = string
+export type TaskIds = string[]
+export type Id15 = string
 export type Question = string
 export type Geography = (string | null)
 export type TimeHorizon = (string | null)
@@ -155,29 +248,43 @@ export type RunStatus = ("queued" | "running" | "completed" | "failed")
 export type TerminationReason = ("criteria_met" | "no_marginal_gain" | "max_rounds" | "budget" | "timeout" | "user_stopped" | "blocked")
 export type StartedAt = string
 export type EndedAt = (string | null)
+export type Question1 = string
+export type Mode1 = ("LIVE" | "REPLAY")
+export type Budget1 = ({
+[k: string]: number
+} | null)
+export type Message = string
+export type Question2 = string
+export type Id16 = string
+export type RunId11 = string
+export type SlotId4 = string
+export type QueryText = string
+export type TaskKind = ("initial" | "gap" | "challenge")
+export type Round7 = number
+export type Status = string
+export type Tasks1 = Task[]
+export type Sources = Source[]
+export type Origins = Origin[]
+export type Claims = Claim[]
+export type Conflicts = Conflict[]
+export type Coverage = CoverageCell[]
+export type Rollups2 = RoundRollups[]
+export type Challenges = Challenge[]
+export type OpenConflicts1 = number
+export type ChallengeRoundsCompleted = number
+export type Caveats = string[]
+export type ReportVersion = (number | null)
+export type LastEventId = number
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "RunStatus".
  */
 export type RunStatus1 = ("queued" | "running" | "completed" | "failed")
-export type Id12 = string
-export type RunId9 = string
-export type Url = string
-export type CanonicalUrl = string
-export type Domain = string
-export type Publisher = (string | null)
-export type SourceType = ("regulator" | "company_primary" | "news" | "blog" | "unknown")
-export type AuthorityTier = number
-export type PublishedAt = (string | null)
-export type RetrievedAt = (string | null)
-export type ContentHash = (string | null)
-/**
- * Source status: found/fetched plus the typed fetch failures from section 18.
- */
-export type SourceStatus = ("found" | "fetched" | "SOURCE_UNAVAILABLE" | "SOURCE_EMPTY")
-export type FailReason = (string | null)
-export type OriginId = (string | null)
-export type TaskId = (string | null)
+export type SourceId3 = string
+export type Reason5 = string
+export type SourceId4 = string
+export type Chars = number
+export type ContentHash1 = string
 /**
  * Source status: found/fetched plus the typed fetch failures from section 18.
  * 
@@ -190,57 +297,89 @@ export type SourceStatus1 = ("found" | "fetched" | "SOURCE_UNAVAILABLE" | "SOURC
  * via the `definition` "SourceType".
  */
 export type SourceType1 = ("regulator" | "company_primary" | "news" | "blog" | "unknown")
-export type OpenConflicts1 = number
-export type ChallengeRoundsCompleted = number
-export type Caveats = string[]
-export type Id13 = string
-export type RunId10 = string
-export type SlotId3 = string
-export type QueryText = string
-export type TaskKind = ("initial" | "gap" | "challenge")
-export type Round4 = number
-export type Status = string
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "TaskKind".
  */
 export type TaskKind1 = ("initial" | "gap" | "challenge")
+export type TaskId1 = string
+export type SlotId5 = string
+export type QueryText1 = string
+export type Reason6 = string
 
 /**
  * GENERATED by contracts/schema_export.py. Do not edit.
  */
 export interface SarvamContracts {
 Budget?: Budget
+BudgetUsage?: BudgetUsage
+BudgetWarningPayload?: BudgetWarningPayload
 Challenge?: Challenge
+ChallengeCreatedPayload?: ChallengeCreatedPayload
 ChallengeOutcome?: ChallengeOutcome
+ChallengeOutcomePayload?: ChallengeOutcomePayload
+CitationRef?: CitationRef
 Claim?: Claim
+ClaimCreatedPayload?: ClaimCreatedPayload
+ClaimEvidence?: ClaimEvidence
+ClaimRejectedPayload?: ClaimRejectedPayload
 ClaimStatus?: ClaimStatus1
+ClaimVerifiedPayload?: ClaimVerifiedPayload
 Conflict?: Conflict
+ConflictDetectedPayload?: ConflictDetectedPayload
 ConflictKind?: ConflictKind1
 ConflictStatus?: ConflictStatus1
 CoverageCell?: CoverageCell
 CoverageState?: CoverageState
+CoverageUpdatedPayload?: CoverageUpdatedPayload
 CriticalSlotCounts?: CriticalSlotCounts
 Dimension?: Dimension
+DimensionRollup?: DimensionRollup
 Event?: Event
 EventType?: EventType
 EvidenceLink?: EvidenceLink
 EvidenceSlot?: EvidenceSlot
+FailureType?: FailureType
 FinalState?: FinalState
 Mode?: Mode
 Origin?: Origin
 OriginMethod?: OriginMethod1
+OriginUpdatedPayload?: OriginUpdatedPayload
 Passage?: Passage
+PassagesCreatedPayload?: PassagesCreatedPayload
+Phase?: Phase
+PhaseEnteredPayload?: PhaseEnteredPayload
+Plan?: Plan
+PlanCreatedPayload?: PlanCreatedPayload
+PlanDimension?: PlanDimension
+PlanSlot?: PlanSlot
+PlanTask?: PlanTask
 Report?: Report
+ReportDraftPayload?: ReportDraftPayload
+ReportVerifiedPayload?: ReportVerifiedPayload
+ReportView?: ReportView
+RoundRollups?: RoundRollups
+RoundStartedPayload?: RoundStartedPayload
 Run?: Run
+RunCompletedPayload?: RunCompletedPayload
+RunCreate?: RunCreate
+RunFailedPayload?: RunFailedPayload
+RunStartedPayload?: RunStartedPayload
+RunState?: RunState
 RunStatus?: RunStatus1
+RunSummary?: RunSummary
 Scope?: Scope
 Source?: Source
+SourceFailedPayload?: SourceFailedPayload
+SourceFetchedPayload?: SourceFetchedPayload
+SourceFoundPayload?: SourceFoundPayload
 SourceStatus?: SourceStatus1
 SourceType?: SourceType1
+StopDecidedPayload?: StopDecidedPayload
 StopDecision?: StopDecision
 Task?: Task
 TaskKind?: TaskKind1
+TaskStartedPayload?: TaskStartedPayload
 TerminationReason?: TerminationReason
 Verdict?: Verdict
 }
@@ -261,6 +400,26 @@ max_followup_rounds?: MaxFollowupRounds
 }
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "BudgetUsage".
+ */
+export interface BudgetUsage {
+searches?: Searches
+fetches?: Fetches
+llm_calls?: LlmCalls
+cost_usd?: CostUsd
+elapsed_seconds?: ElapsedSeconds
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "BudgetWarningPayload".
+ */
+export interface BudgetWarningPayload {
+limit: Limit
+used: Used
+max: Max
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "Challenge".
  */
 export interface Challenge {
@@ -274,6 +433,31 @@ required_evidence?: RequiredEvidence
 would_change_if?: WouldChangeIf
 followup_task_ids?: FollowupTaskIds
 outcome?: (ChallengeOutcome | null)
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "ChallengeCreatedPayload".
+ */
+export interface ChallengeCreatedPayload {
+challenge: Challenge
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "ChallengeOutcomePayload".
+ */
+export interface ChallengeOutcomePayload {
+challenge_id: ChallengeId
+outcome: ChallengeOutcome
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "CitationRef".
+ */
+export interface CitationRef {
+claim_id: ClaimId
+passage_id: PassageId
+source_id: SourceId
+url: Url
 }
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
@@ -291,18 +475,108 @@ value_num?: ValueNum
 unit?: Unit
 period?: Period
 quote: Quote
-passage_id: PassageId
+passage_id: PassageId1
 quote_verified?: QuoteVerified
 status?: ClaimStatus
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "ClaimCreatedPayload".
+ */
+export interface ClaimCreatedPayload {
+claim: Claim
+}
+/**
+ * GET /api/runs/{id}/claims/{cid}: the evidence drawer.
+ * 
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "ClaimEvidence".
+ */
+export interface ClaimEvidence {
+claim: Claim
+passage: Passage
+quote_start?: QuoteStart
+quote_end?: QuoteEnd
+source: Source
+origin?: (Origin | null)
+verdict?: (Verdict | null)
+verdict_rationale?: VerdictRationale
+independence?: Independence
+}
+/**
+ * Immutable citation target.
+ * 
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "Passage".
+ */
+export interface Passage {
+id: Id2
+source_id: SourceId1
+idx: Idx
+text: Text1
+char_start: CharStart
+char_end: CharEnd
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "Source".
+ */
+export interface Source {
+id: Id3
+run_id: RunId2
+url: Url1
+canonical_url: CanonicalUrl
+domain: Domain
+publisher?: Publisher
+source_type?: SourceType
+authority_tier?: AuthorityTier
+published_at?: PublishedAt
+retrieved_at?: RetrievedAt
+content_hash?: ContentHash
+status?: SourceStatus
+fail_reason?: FailReason
+origin_id?: OriginId
+task_id?: TaskId
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "Origin".
+ */
+export interface Origin {
+id: Id4
+run_id: RunId3
+label: Label
+method?: OriginMethod
+member_source_ids?: MemberSourceIds
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "ClaimRejectedPayload".
+ */
+export interface ClaimRejectedPayload {
+slot_id: SlotId1
+passage_id?: PassageId2
+quote: Quote1
+failure?: Failure
+reason: Reason
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "ClaimVerifiedPayload".
+ */
+export interface ClaimVerifiedPayload {
+claim_id: ClaimId1
+verdict: Verdict
+rationale: Rationale
 }
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "Conflict".
  */
 export interface Conflict {
-id: Id2
-run_id: RunId2
-slot_id: SlotId1
+id: Id5
+run_id: RunId4
+slot_id: SlotId2
 claim_a: ClaimA
 claim_b: ClaimB
 delta_pct: DeltaPct
@@ -311,21 +585,46 @@ status?: ConflictStatus
 explanation?: Explanation
 }
 /**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "ConflictDetectedPayload".
+ */
+export interface ConflictDetectedPayload {
+conflict: Conflict
+}
+/**
  * One slot in the coverage matrix for one round.
  * 
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "CoverageCell".
  */
 export interface CoverageCell {
-id: Id3
-run_id: RunId3
+id: Id6
+run_id: RunId5
 round: Round2
-slot_id: SlotId2
+slot_id: SlotId3
 state: CoverageState
 independent_origins?: IndependentOrigins
 supporting_claims?: SupportingClaims
 open_conflicts?: OpenConflicts
-reason: Reason
+reason: Reason1
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "CoverageUpdatedPayload".
+ */
+export interface CoverageUpdatedPayload {
+round: Round3
+cells: Cells
+rollups: Rollups
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "DimensionRollup".
+ */
+export interface DimensionRollup {
+dimension_id: DimensionId
+state: CoverageState
+reason: Reason2
 }
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
@@ -341,8 +640,8 @@ red?: Red
  * via the `definition` "Dimension".
  */
 export interface Dimension {
-id: Id4
-run_id: RunId4
+id: Id7
+run_id: RunId6
 name: Name
 description?: Description
 critical?: Critical
@@ -354,14 +653,14 @@ critical?: Critical
  * via the `definition` "Event".
  */
 export interface Event {
-id: Id5
-run_id: RunId5
+id: Id8
+run_id: RunId7
 ts: Ts
-round?: Round3
+round?: Round4
 type: EventType
 step_ms?: StepMs
 tokens?: Tokens
-cost_usd?: CostUsd
+cost_usd?: CostUsd1
 payload?: Payload
 }
 export interface Payload {
@@ -372,11 +671,11 @@ export interface Payload {
  * via the `definition` "EvidenceLink".
  */
 export interface EvidenceLink {
-id: Id6
-claim_id: ClaimId
-passage_id: PassageId1
+id: Id9
+claim_id: ClaimId2
+passage_id: PassageId3
 verdict: Verdict
-verdict_rationale?: VerdictRationale
+verdict_rationale?: VerdictRationale1
 }
 /**
  * A named piece of evidence a dimension needs (glossary: Slot).
@@ -385,9 +684,9 @@ verdict_rationale?: VerdictRationale
  * via the `definition` "EvidenceSlot".
  */
 export interface EvidenceSlot {
-id: Id7
-run_id: RunId6
-dimension_id: DimensionId
+id: Id10
+run_id: RunId8
+dimension_id: DimensionId1
 name: Name1
 description: Description1
 critical?: Critical1
@@ -397,36 +696,84 @@ primary_ok?: PrimaryOk
 }
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
- * via the `definition` "Origin".
+ * via the `definition` "OriginUpdatedPayload".
  */
-export interface Origin {
-id: Id8
-run_id: RunId7
-label: Label
-method?: OriginMethod
-member_source_ids?: MemberSourceIds
+export interface OriginUpdatedPayload {
+origin: Origin
 }
 /**
- * Immutable citation target.
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "PassagesCreatedPayload".
+ */
+export interface PassagesCreatedPayload {
+source_id: SourceId2
+count: Count
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "PhaseEnteredPayload".
+ */
+export interface PhaseEnteredPayload {
+phase: Phase
+reason: Reason3
+}
+/**
+ * Planner output (SSOT Appendix B); also the plan.created payload.
  * 
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
- * via the `definition` "Passage".
+ * via the `definition` "Plan".
  */
-export interface Passage {
-id: Id9
-source_id: SourceId
-idx: Idx
-text: Text1
-char_start: CharStart
-char_end: CharEnd
+export interface Plan {
+dimensions: Dimensions
+budget: Budget
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "PlanDimension".
+ */
+export interface PlanDimension {
+id: Id11
+name: Name2
+description?: Description2
+critical: Critical2
+slots?: Slots
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "PlanSlot".
+ */
+export interface PlanSlot {
+id: Id12
+name: Name3
+description: Description3
+critical: Critical3
+attributes?: Attributes1
+min_independent?: MinIndependent1
+primary_ok?: PrimaryOk1
+tasks?: Tasks
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "PlanTask".
+ */
+export interface PlanTask {
+id: Id13
+query: Query
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "PlanCreatedPayload".
+ */
+export interface PlanCreatedPayload {
+plan: Plan
 }
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "Report".
  */
 export interface Report {
-id: Id10
-run_id: RunId8
+id: Id14
+run_id: RunId9
 version: Version
 markdown: Markdown
 certainty_state?: (FinalState | null)
@@ -434,10 +781,57 @@ dropped_sentences?: DroppedSentences
 }
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "ReportDraftPayload".
+ */
+export interface ReportDraftPayload {
+version: Version1
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "ReportVerifiedPayload".
+ */
+export interface ReportVerifiedPayload {
+version: Version2
+dropped_count: DroppedCount
+certainty_state?: (FinalState | null)
+}
+/**
+ * GET /api/runs/{id}/report (404 until the first report exists).
+ * 
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "ReportView".
+ */
+export interface ReportView {
+run_id: RunId10
+version: Version3
+markdown: Markdown1
+certainty_state?: (FinalState | null)
+dropped_sentences?: DroppedSentences1
+citations?: Citations
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "RoundRollups".
+ */
+export interface RoundRollups {
+round: Round5
+rollups?: Rollups1
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "RoundStartedPayload".
+ */
+export interface RoundStartedPayload {
+round: Round6
+reason: Reason4
+task_ids: TaskIds
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "Run".
  */
 export interface Run {
-id: Id11
+id: Id15
 question: Question
 scope?: Scope
 mode: Mode
@@ -461,24 +855,75 @@ constraints?: Constraints
 }
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
- * via the `definition` "Source".
+ * via the `definition` "RunCompletedPayload".
  */
-export interface Source {
-id: Id12
-run_id: RunId9
-url: Url
-canonical_url: CanonicalUrl
-domain: Domain
-publisher?: Publisher
-source_type?: SourceType
-authority_tier?: AuthorityTier
-published_at?: PublishedAt
-retrieved_at?: RetrievedAt
-content_hash?: ContentHash
-status?: SourceStatus
-fail_reason?: FailReason
-origin_id?: OriginId
-task_id?: TaskId
+export interface RunCompletedPayload {
+stop_state?: (FinalState | null)
+termination_reason?: (TerminationReason | null)
+}
+/**
+ * POST /api/runs body (SSOT section 11): question, scope, mode, optional budget overrides.
+ * 
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "RunCreate".
+ */
+export interface RunCreate {
+question: Question1
+scope?: Scope
+mode?: Mode1
+budget?: Budget1
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "RunFailedPayload".
+ */
+export interface RunFailedPayload {
+failure: FailureType
+message: Message
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "RunStartedPayload".
+ */
+export interface RunStartedPayload {
+question: Question2
+mode: Mode
+budget: Budget
+}
+/**
+ * GET /api/runs/{id}/state: snapshot that hydrates the UI. Rejected claims are excluded.
+ * 
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "RunState".
+ */
+export interface RunState {
+run: Run
+phase?: (Phase | null)
+plan?: (Plan | null)
+tasks?: Tasks1
+sources?: Sources
+origins?: Origins
+claims?: Claims
+conflicts?: Conflicts
+coverage?: Coverage
+rollups?: Rollups2
+challenges?: Challenges
+stop?: (StopDecision | null)
+report_version?: ReportVersion
+last_event_id?: LastEventId
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "Task".
+ */
+export interface Task {
+id: Id16
+run_id: RunId11
+slot_id: SlotId4
+query_text: QueryText
+kind?: TaskKind
+round?: Round7
+status?: Status
 }
 /**
  * Deterministic stop outcome (SSOT 9.10, Appendix B).
@@ -495,15 +940,57 @@ challenge_rounds_completed?: ChallengeRoundsCompleted
 caveats?: Caveats
 }
 /**
+ * GET /api/runs/{id}
+ * 
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
- * via the `definition` "Task".
+ * via the `definition` "RunSummary".
  */
-export interface Task {
-id: Id13
-run_id: RunId10
-slot_id: SlotId3
-query_text: QueryText
-kind?: TaskKind
-round?: Round4
-status?: Status
+export interface RunSummary {
+run: Run
+phase?: (Phase | null)
+usage?: BudgetUsage
+stop?: (StopDecision | null)
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "SourceFailedPayload".
+ */
+export interface SourceFailedPayload {
+source_id: SourceId3
+failure: FailureType
+reason: Reason5
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "SourceFetchedPayload".
+ */
+export interface SourceFetchedPayload {
+source_id: SourceId4
+chars: Chars
+content_hash: ContentHash1
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "SourceFoundPayload".
+ */
+export interface SourceFoundPayload {
+source: Source
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "StopDecidedPayload".
+ */
+export interface StopDecidedPayload {
+decision: StopDecision
+}
+/**
+ * This interface was referenced by `SarvamContracts`'s JSON-Schema
+ * via the `definition` "TaskStartedPayload".
+ */
+export interface TaskStartedPayload {
+task_id: TaskId1
+slot_id: SlotId5
+query_text: QueryText1
+kind: TaskKind1
+reason: Reason6
 }

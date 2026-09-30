@@ -7,20 +7,50 @@
     "Budget": {
       "$ref": "#/$defs/Budget"
     },
+    "BudgetUsage": {
+      "$ref": "#/$defs/BudgetUsage"
+    },
+    "BudgetWarningPayload": {
+      "$ref": "#/$defs/BudgetWarningPayload"
+    },
     "Challenge": {
       "$ref": "#/$defs/Challenge"
+    },
+    "ChallengeCreatedPayload": {
+      "$ref": "#/$defs/ChallengeCreatedPayload"
     },
     "ChallengeOutcome": {
       "$ref": "#/$defs/ChallengeOutcome"
     },
+    "ChallengeOutcomePayload": {
+      "$ref": "#/$defs/ChallengeOutcomePayload"
+    },
+    "CitationRef": {
+      "$ref": "#/$defs/CitationRef"
+    },
     "Claim": {
       "$ref": "#/$defs/Claim"
+    },
+    "ClaimCreatedPayload": {
+      "$ref": "#/$defs/ClaimCreatedPayload"
+    },
+    "ClaimEvidence": {
+      "$ref": "#/$defs/ClaimEvidence"
+    },
+    "ClaimRejectedPayload": {
+      "$ref": "#/$defs/ClaimRejectedPayload"
     },
     "ClaimStatus": {
       "$ref": "#/$defs/ClaimStatus"
     },
+    "ClaimVerifiedPayload": {
+      "$ref": "#/$defs/ClaimVerifiedPayload"
+    },
     "Conflict": {
       "$ref": "#/$defs/Conflict"
+    },
+    "ConflictDetectedPayload": {
+      "$ref": "#/$defs/ConflictDetectedPayload"
     },
     "ConflictKind": {
       "$ref": "#/$defs/ConflictKind"
@@ -34,11 +64,17 @@
     "CoverageState": {
       "$ref": "#/$defs/CoverageState"
     },
+    "CoverageUpdatedPayload": {
+      "$ref": "#/$defs/CoverageUpdatedPayload"
+    },
     "CriticalSlotCounts": {
       "$ref": "#/$defs/CriticalSlotCounts"
     },
     "Dimension": {
       "$ref": "#/$defs/Dimension"
+    },
+    "DimensionRollup": {
+      "$ref": "#/$defs/DimensionRollup"
     },
     "Event": {
       "$ref": "#/$defs/Event"
@@ -52,6 +88,9 @@
     "EvidenceSlot": {
       "$ref": "#/$defs/EvidenceSlot"
     },
+    "FailureType": {
+      "$ref": "#/$defs/FailureType"
+    },
     "FinalState": {
       "$ref": "#/$defs/FinalState"
     },
@@ -64,17 +103,77 @@
     "OriginMethod": {
       "$ref": "#/$defs/OriginMethod"
     },
+    "OriginUpdatedPayload": {
+      "$ref": "#/$defs/OriginUpdatedPayload"
+    },
     "Passage": {
       "$ref": "#/$defs/Passage"
+    },
+    "PassagesCreatedPayload": {
+      "$ref": "#/$defs/PassagesCreatedPayload"
+    },
+    "Phase": {
+      "$ref": "#/$defs/Phase"
+    },
+    "PhaseEnteredPayload": {
+      "$ref": "#/$defs/PhaseEnteredPayload"
+    },
+    "Plan": {
+      "$ref": "#/$defs/Plan"
+    },
+    "PlanCreatedPayload": {
+      "$ref": "#/$defs/PlanCreatedPayload"
+    },
+    "PlanDimension": {
+      "$ref": "#/$defs/PlanDimension"
+    },
+    "PlanSlot": {
+      "$ref": "#/$defs/PlanSlot"
+    },
+    "PlanTask": {
+      "$ref": "#/$defs/PlanTask"
     },
     "Report": {
       "$ref": "#/$defs/Report"
     },
+    "ReportDraftPayload": {
+      "$ref": "#/$defs/ReportDraftPayload"
+    },
+    "ReportVerifiedPayload": {
+      "$ref": "#/$defs/ReportVerifiedPayload"
+    },
+    "ReportView": {
+      "$ref": "#/$defs/ReportView"
+    },
+    "RoundRollups": {
+      "$ref": "#/$defs/RoundRollups"
+    },
+    "RoundStartedPayload": {
+      "$ref": "#/$defs/RoundStartedPayload"
+    },
     "Run": {
       "$ref": "#/$defs/Run"
     },
+    "RunCompletedPayload": {
+      "$ref": "#/$defs/RunCompletedPayload"
+    },
+    "RunCreate": {
+      "$ref": "#/$defs/RunCreate"
+    },
+    "RunFailedPayload": {
+      "$ref": "#/$defs/RunFailedPayload"
+    },
+    "RunStartedPayload": {
+      "$ref": "#/$defs/RunStartedPayload"
+    },
+    "RunState": {
+      "$ref": "#/$defs/RunState"
+    },
     "RunStatus": {
       "$ref": "#/$defs/RunStatus"
+    },
+    "RunSummary": {
+      "$ref": "#/$defs/RunSummary"
     },
     "Scope": {
       "$ref": "#/$defs/Scope"
@@ -82,11 +181,23 @@
     "Source": {
       "$ref": "#/$defs/Source"
     },
+    "SourceFailedPayload": {
+      "$ref": "#/$defs/SourceFailedPayload"
+    },
+    "SourceFetchedPayload": {
+      "$ref": "#/$defs/SourceFetchedPayload"
+    },
+    "SourceFoundPayload": {
+      "$ref": "#/$defs/SourceFoundPayload"
+    },
     "SourceStatus": {
       "$ref": "#/$defs/SourceStatus"
     },
     "SourceType": {
       "$ref": "#/$defs/SourceType"
+    },
+    "StopDecidedPayload": {
+      "$ref": "#/$defs/StopDecidedPayload"
     },
     "StopDecision": {
       "$ref": "#/$defs/StopDecision"
@@ -96,6 +207,9 @@
     },
     "TaskKind": {
       "$ref": "#/$defs/TaskKind"
+    },
+    "TaskStartedPayload": {
+      "$ref": "#/$defs/TaskStartedPayload"
     },
     "TerminationReason": {
       "$ref": "#/$defs/TerminationReason"
@@ -147,6 +261,62 @@
         }
       },
       "title": "Budget",
+      "type": "object"
+    },
+    "BudgetUsage": {
+      "additionalProperties": false,
+      "properties": {
+        "searches": {
+          "default": 0,
+          "title": "Searches",
+          "type": "integer"
+        },
+        "fetches": {
+          "default": 0,
+          "title": "Fetches",
+          "type": "integer"
+        },
+        "llm_calls": {
+          "default": 0,
+          "title": "Llm Calls",
+          "type": "integer"
+        },
+        "cost_usd": {
+          "default": 0.0,
+          "title": "Cost Usd",
+          "type": "number"
+        },
+        "elapsed_seconds": {
+          "default": 0.0,
+          "title": "Elapsed Seconds",
+          "type": "number"
+        }
+      },
+      "title": "BudgetUsage",
+      "type": "object"
+    },
+    "BudgetWarningPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "title": "Limit",
+          "type": "string"
+        },
+        "used": {
+          "title": "Used",
+          "type": "number"
+        },
+        "max": {
+          "title": "Max",
+          "type": "number"
+        }
+      },
+      "required": [
+        "limit",
+        "used",
+        "max"
+      ],
+      "title": "BudgetWarningPayload",
       "type": "object"
     },
     "Challenge": {
@@ -230,6 +400,19 @@
       "title": "Challenge",
       "type": "object"
     },
+    "ChallengeCreatedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "challenge": {
+          "$ref": "#/$defs/Challenge"
+        }
+      },
+      "required": [
+        "challenge"
+      ],
+      "title": "ChallengeCreatedPayload",
+      "type": "object"
+    },
     "ChallengeOutcome": {
       "enum": [
         "strengthened",
@@ -238,6 +421,53 @@
       ],
       "title": "ChallengeOutcome",
       "type": "string"
+    },
+    "ChallengeOutcomePayload": {
+      "additionalProperties": false,
+      "properties": {
+        "challenge_id": {
+          "title": "Challenge Id",
+          "type": "string"
+        },
+        "outcome": {
+          "$ref": "#/$defs/ChallengeOutcome"
+        }
+      },
+      "required": [
+        "challenge_id",
+        "outcome"
+      ],
+      "title": "ChallengeOutcomePayload",
+      "type": "object"
+    },
+    "CitationRef": {
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "passage_id": {
+          "title": "Passage Id",
+          "type": "string"
+        },
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "claim_id",
+        "passage_id",
+        "source_id",
+        "url"
+      ],
+      "title": "CitationRef",
+      "type": "object"
     },
     "Claim": {
       "additionalProperties": false,
@@ -352,6 +582,143 @@
       "title": "Claim",
       "type": "object"
     },
+    "ClaimCreatedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "claim": {
+          "$ref": "#/$defs/Claim"
+        }
+      },
+      "required": [
+        "claim"
+      ],
+      "title": "ClaimCreatedPayload",
+      "type": "object"
+    },
+    "ClaimEvidence": {
+      "additionalProperties": false,
+      "description": "GET /api/runs/{id}/claims/{cid}: the evidence drawer.",
+      "properties": {
+        "claim": {
+          "$ref": "#/$defs/Claim"
+        },
+        "passage": {
+          "$ref": "#/$defs/Passage"
+        },
+        "quote_start": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quote Start"
+        },
+        "quote_end": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Quote End"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "origin": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Origin"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "verdict": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Verdict"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "verdict_rationale": {
+          "default": "",
+          "title": "Verdict Rationale",
+          "type": "string"
+        },
+        "independence": {
+          "default": "unestablished",
+          "enum": [
+            "established",
+            "unestablished"
+          ],
+          "title": "Independence",
+          "type": "string"
+        }
+      },
+      "required": [
+        "claim",
+        "passage",
+        "source"
+      ],
+      "title": "ClaimEvidence",
+      "type": "object"
+    },
+    "ClaimRejectedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "slot_id": {
+          "title": "Slot Id",
+          "type": "string"
+        },
+        "passage_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Passage Id"
+        },
+        "quote": {
+          "title": "Quote",
+          "type": "string"
+        },
+        "failure": {
+          "const": "CLAIM_REJECTED",
+          "default": "CLAIM_REJECTED",
+          "title": "Failure",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slot_id",
+        "quote",
+        "reason"
+      ],
+      "title": "ClaimRejectedPayload",
+      "type": "object"
+    },
     "ClaimStatus": {
       "enum": [
         "pending",
@@ -362,6 +729,29 @@
       ],
       "title": "ClaimStatus",
       "type": "string"
+    },
+    "ClaimVerifiedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "title": "Claim Id",
+          "type": "string"
+        },
+        "verdict": {
+          "$ref": "#/$defs/Verdict"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "claim_id",
+        "verdict",
+        "rationale"
+      ],
+      "title": "ClaimVerifiedPayload",
+      "type": "object"
     },
     "Conflict": {
       "additionalProperties": false,
@@ -420,6 +810,19 @@
         "delta_pct"
       ],
       "title": "Conflict",
+      "type": "object"
+    },
+    "ConflictDetectedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "conflict": {
+          "$ref": "#/$defs/Conflict"
+        }
+      },
+      "required": [
+        "conflict"
+      ],
+      "title": "ConflictDetectedPayload",
       "type": "object"
     },
     "ConflictKind": {
@@ -504,6 +907,36 @@
       "title": "CoverageState",
       "type": "string"
     },
+    "CoverageUpdatedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "round": {
+          "title": "Round",
+          "type": "integer"
+        },
+        "cells": {
+          "items": {
+            "$ref": "#/$defs/CoverageCell"
+          },
+          "title": "Cells",
+          "type": "array"
+        },
+        "rollups": {
+          "items": {
+            "$ref": "#/$defs/DimensionRollup"
+          },
+          "title": "Rollups",
+          "type": "array"
+        }
+      },
+      "required": [
+        "round",
+        "cells",
+        "rollups"
+      ],
+      "title": "CoverageUpdatedPayload",
+      "type": "object"
+    },
     "CriticalSlotCounts": {
       "additionalProperties": false,
       "properties": {
@@ -558,6 +991,29 @@
         "name"
       ],
       "title": "Dimension",
+      "type": "object"
+    },
+    "DimensionRollup": {
+      "additionalProperties": false,
+      "properties": {
+        "dimension_id": {
+          "title": "Dimension Id",
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/CoverageState"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dimension_id",
+        "state",
+        "reason"
+      ],
+      "title": "DimensionRollup",
       "type": "object"
     },
     "Event": {
@@ -639,6 +1095,7 @@
     "EventType": {
       "enum": [
         "run.started",
+        "phase.entered",
         "plan.created",
         "task.started",
         "source.found",
@@ -754,6 +1211,19 @@
       "title": "EvidenceSlot",
       "type": "object"
     },
+    "FailureType": {
+      "description": "Typed failure states (SSOT section 18). No silent failures (NFR-04).",
+      "enum": [
+        "RATE_LIMITED",
+        "SOURCE_UNAVAILABLE",
+        "SOURCE_EMPTY",
+        "STEP_FAILED",
+        "CLAIM_REJECTED",
+        "BLOCKED"
+      ],
+      "title": "FailureType",
+      "type": "string"
+    },
     "FinalState": {
       "enum": [
         "SUFFICIENT",
@@ -817,6 +1287,19 @@
       "title": "OriginMethod",
       "type": "string"
     },
+    "OriginUpdatedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "origin": {
+          "$ref": "#/$defs/Origin"
+        }
+      },
+      "required": [
+        "origin"
+      ],
+      "title": "OriginUpdatedPayload",
+      "type": "object"
+    },
     "Passage": {
       "additionalProperties": false,
       "description": "Immutable citation target.",
@@ -855,6 +1338,203 @@
         "char_end"
       ],
       "title": "Passage",
+      "type": "object"
+    },
+    "PassagesCreatedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "count": {
+          "title": "Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "source_id",
+        "count"
+      ],
+      "title": "PassagesCreatedPayload",
+      "type": "object"
+    },
+    "Phase": {
+      "description": "Lifecycle phase announced by the phase.entered event (SSOT FR-22, section 7).",
+      "enum": [
+        "PLAN",
+        "DISCOVER",
+        "ACQUIRE",
+        "EXTRACT",
+        "CLAIMS",
+        "VERIFY",
+        "ANALYZE",
+        "CHALLENGE",
+        "STOP_POLICY",
+        "SYNTHESIZE"
+      ],
+      "title": "Phase",
+      "type": "string"
+    },
+    "PhaseEnteredPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "phase": {
+          "$ref": "#/$defs/Phase"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "phase",
+        "reason"
+      ],
+      "title": "PhaseEnteredPayload",
+      "type": "object"
+    },
+    "Plan": {
+      "additionalProperties": false,
+      "description": "Planner output (SSOT Appendix B); also the plan.created payload.",
+      "properties": {
+        "dimensions": {
+          "items": {
+            "$ref": "#/$defs/PlanDimension"
+          },
+          "title": "Dimensions",
+          "type": "array"
+        },
+        "budget": {
+          "$ref": "#/$defs/Budget"
+        }
+      },
+      "required": [
+        "dimensions",
+        "budget"
+      ],
+      "title": "Plan",
+      "type": "object"
+    },
+    "PlanCreatedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "plan": {
+          "$ref": "#/$defs/Plan"
+        }
+      },
+      "required": [
+        "plan"
+      ],
+      "title": "PlanCreatedPayload",
+      "type": "object"
+    },
+    "PlanDimension": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "critical": {
+          "title": "Critical",
+          "type": "boolean"
+        },
+        "slots": {
+          "items": {
+            "$ref": "#/$defs/PlanSlot"
+          },
+          "title": "Slots",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "critical"
+      ],
+      "title": "PlanDimension",
+      "type": "object"
+    },
+    "PlanSlot": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "critical": {
+          "title": "Critical",
+          "type": "boolean"
+        },
+        "attributes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Attributes",
+          "type": "array"
+        },
+        "min_independent": {
+          "default": 2,
+          "title": "Min Independent",
+          "type": "integer"
+        },
+        "primary_ok": {
+          "default": false,
+          "title": "Primary Ok",
+          "type": "boolean"
+        },
+        "tasks": {
+          "items": {
+            "$ref": "#/$defs/PlanTask"
+          },
+          "title": "Tasks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "critical"
+      ],
+      "title": "PlanSlot",
+      "type": "object"
+    },
+    "PlanTask": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "query": {
+          "title": "Query",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "query"
+      ],
+      "title": "PlanTask",
       "type": "object"
     },
     "Report": {
@@ -902,6 +1582,148 @@
         "markdown"
       ],
       "title": "Report",
+      "type": "object"
+    },
+    "ReportDraftPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "version"
+      ],
+      "title": "ReportDraftPayload",
+      "type": "object"
+    },
+    "ReportVerifiedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "title": "Version",
+          "type": "integer"
+        },
+        "dropped_count": {
+          "title": "Dropped Count",
+          "type": "integer"
+        },
+        "certainty_state": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FinalState"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "version",
+        "dropped_count"
+      ],
+      "title": "ReportVerifiedPayload",
+      "type": "object"
+    },
+    "ReportView": {
+      "additionalProperties": false,
+      "description": "GET /api/runs/{id}/report (404 until the first report exists).",
+      "properties": {
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "integer"
+        },
+        "markdown": {
+          "title": "Markdown",
+          "type": "string"
+        },
+        "certainty_state": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FinalState"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "dropped_sentences": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Dropped Sentences",
+          "type": "array"
+        },
+        "citations": {
+          "items": {
+            "$ref": "#/$defs/CitationRef"
+          },
+          "title": "Citations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "run_id",
+        "version",
+        "markdown"
+      ],
+      "title": "ReportView",
+      "type": "object"
+    },
+    "RoundRollups": {
+      "additionalProperties": false,
+      "properties": {
+        "round": {
+          "title": "Round",
+          "type": "integer"
+        },
+        "rollups": {
+          "items": {
+            "$ref": "#/$defs/DimensionRollup"
+          },
+          "title": "Rollups",
+          "type": "array"
+        }
+      },
+      "required": [
+        "round"
+      ],
+      "title": "RoundRollups",
+      "type": "object"
+    },
+    "RoundStartedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "round": {
+          "title": "Round",
+          "type": "integer"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "task_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Task Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "round",
+        "reason",
+        "task_ids"
+      ],
+      "title": "RoundStartedPayload",
       "type": "object"
     },
     "Run": {
@@ -978,6 +1800,241 @@
       "title": "Run",
       "type": "object"
     },
+    "RunCompletedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "stop_state": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FinalState"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "termination_reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TerminationReason"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "RunCompletedPayload",
+      "type": "object"
+    },
+    "RunCreate": {
+      "additionalProperties": false,
+      "description": "POST /api/runs body (SSOT section 11): question, scope, mode, optional budget overrides.",
+      "properties": {
+        "question": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Question",
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope"
+        },
+        "mode": {
+          "$ref": "#/$defs/Mode",
+          "default": "LIVE"
+        },
+        "budget": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Budget"
+        }
+      },
+      "required": [
+        "question"
+      ],
+      "title": "RunCreate",
+      "type": "object"
+    },
+    "RunFailedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "failure": {
+          "$ref": "#/$defs/FailureType"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "failure",
+        "message"
+      ],
+      "title": "RunFailedPayload",
+      "type": "object"
+    },
+    "RunStartedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "question": {
+          "title": "Question",
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/$defs/Mode"
+        },
+        "budget": {
+          "$ref": "#/$defs/Budget"
+        }
+      },
+      "required": [
+        "question",
+        "mode",
+        "budget"
+      ],
+      "title": "RunStartedPayload",
+      "type": "object"
+    },
+    "RunState": {
+      "additionalProperties": false,
+      "description": "GET /api/runs/{id}/state: snapshot that hydrates the UI. Rejected claims are excluded.",
+      "properties": {
+        "run": {
+          "$ref": "#/$defs/Run"
+        },
+        "phase": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Phase"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "plan": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Plan"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "tasks": {
+          "items": {
+            "$ref": "#/$defs/Task"
+          },
+          "title": "Tasks",
+          "type": "array"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/Source"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "origins": {
+          "items": {
+            "$ref": "#/$defs/Origin"
+          },
+          "title": "Origins",
+          "type": "array"
+        },
+        "claims": {
+          "items": {
+            "$ref": "#/$defs/Claim"
+          },
+          "title": "Claims",
+          "type": "array"
+        },
+        "conflicts": {
+          "items": {
+            "$ref": "#/$defs/Conflict"
+          },
+          "title": "Conflicts",
+          "type": "array"
+        },
+        "coverage": {
+          "items": {
+            "$ref": "#/$defs/CoverageCell"
+          },
+          "title": "Coverage",
+          "type": "array"
+        },
+        "rollups": {
+          "items": {
+            "$ref": "#/$defs/RoundRollups"
+          },
+          "title": "Rollups",
+          "type": "array"
+        },
+        "challenges": {
+          "items": {
+            "$ref": "#/$defs/Challenge"
+          },
+          "title": "Challenges",
+          "type": "array"
+        },
+        "stop": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StopDecision"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "report_version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Report Version"
+        },
+        "last_event_id": {
+          "default": 0,
+          "title": "Last Event Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "run"
+      ],
+      "title": "RunState",
+      "type": "object"
+    },
     "RunStatus": {
       "enum": [
         "queued",
@@ -987,6 +2044,45 @@
       ],
       "title": "RunStatus",
       "type": "string"
+    },
+    "RunSummary": {
+      "additionalProperties": false,
+      "description": "GET /api/runs/{id}",
+      "properties": {
+        "run": {
+          "$ref": "#/$defs/Run"
+        },
+        "phase": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Phase"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "usage": {
+          "$ref": "#/$defs/BudgetUsage"
+        },
+        "stop": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StopDecision"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "run"
+      ],
+      "title": "RunSummary",
+      "type": "object"
     },
     "Scope": {
       "additionalProperties": false,
@@ -1167,6 +2263,66 @@
       "title": "Source",
       "type": "object"
     },
+    "SourceFailedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "failure": {
+          "$ref": "#/$defs/FailureType"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "failure",
+        "reason"
+      ],
+      "title": "SourceFailedPayload",
+      "type": "object"
+    },
+    "SourceFetchedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "chars": {
+          "title": "Chars",
+          "type": "integer"
+        },
+        "content_hash": {
+          "title": "Content Hash",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "chars",
+        "content_hash"
+      ],
+      "title": "SourceFetchedPayload",
+      "type": "object"
+    },
+    "SourceFoundPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "$ref": "#/$defs/Source"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "title": "SourceFoundPayload",
+      "type": "object"
+    },
     "SourceStatus": {
       "description": "Source status: found/fetched plus the typed fetch failures from section 18.",
       "enum": [
@@ -1188,6 +2344,19 @@
       ],
       "title": "SourceType",
       "type": "string"
+    },
+    "StopDecidedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "decision": {
+          "$ref": "#/$defs/StopDecision"
+        }
+      },
+      "required": [
+        "decision"
+      ],
+      "title": "StopDecidedPayload",
+      "type": "object"
     },
     "StopDecision": {
       "additionalProperties": false,
@@ -1278,6 +2447,39 @@
       ],
       "title": "TaskKind",
       "type": "string"
+    },
+    "TaskStartedPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {
+          "title": "Task Id",
+          "type": "string"
+        },
+        "slot_id": {
+          "title": "Slot Id",
+          "type": "string"
+        },
+        "query_text": {
+          "title": "Query Text",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/TaskKind"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "task_id",
+        "slot_id",
+        "query_text",
+        "kind",
+        "reason"
+      ],
+      "title": "TaskStartedPayload",
+      "type": "object"
     },
     "TerminationReason": {
       "enum": [

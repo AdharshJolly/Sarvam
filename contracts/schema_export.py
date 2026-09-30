@@ -38,7 +38,17 @@ ROOTS: list[type] = [
     models.StopDecision,
     models.Budget,
     models.Scope,
+    models.RunCreate,
+    models.BudgetUsage,
+    models.Plan,
+    models.DimensionRollup,
+    models.RunSummary,
+    models.RunState,
+    models.ClaimEvidence,
+    models.CitationRef,
+    models.ReportView,
     events.Event,
+    *events.EVENT_PAYLOADS.values(),
 ]
 
 
