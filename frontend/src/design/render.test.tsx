@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CoverageMatrix, MatrixTable } from "../components/CoverageMatrix";
 import { OriginGroupView } from "../components/OriginGroupView";
+import { StopCard } from "../components/StopCard";
 import { ModeBadge } from "../components/ModeBadge";
 import { AppHeader } from "../components/layout/AppHeader";
 import { BottomTabBar } from "../components/layout/BottomTabBar";
@@ -315,5 +316,84 @@ describe("origin groups (the independence collapse)", () => {
     expect(out).toContain("Tier 2");
     expect(out).toContain("Source pages in origin A");
     expect(out).toContain("Source pages in origin B");
+  });
+});
+
+
+describe("stop card (the verdict)", () => {
+  const stop = (over: Record<string, unknown> = {}) => ({
+    state: "SUFFICIENT_WITH_CAVEATS" as const,
+    termination_reason: "criteria_met" as const,
+    critical_slots: { green: 4, amber: 1, red: 0 },
+    open_conflicts: 1,
+    challenge_rounds_completed: 2,
+    caveats: ["Regulation slot rests on a single origin"],
+    ...over,
+  });
+  const render = (decision: ReturnType<typeof stop>, extra: Record<string, unknown> = {}) =>
+    html(
+      <StopCard
+        stop={decision}
+        gaps={[]}
+        challenges={[]}
+        onOpenSlot={noop}
+        onOpenConflicts={noop}
+        onViewReport={noop}
+        {...extra}
+      />,
+    );
+
+  test("the final state is a headline in words, with an icon, announced politely", () => {
+    const heads = {
+      SUFFICIENT: "Sufficient",
+      SUFFICIENT_WITH_CAVEATS: "Sufficient, with caveats",
+      INSUFFICIENT: "Insufficient",
+    } as const;
+    for (const [state, text] of Object.entries(heads)) {
+      const out = render(stop({ state }));
+      expect(out).toContain(`>${text}</h2>`);
+      expect(out).toContain("<svg");
+      expect(out).toContain('aria-live="polite"');
+      expect(out).toContain('aria-label="Stop decision"');
+    }
+  });
+
+  test("a run cut short is labelled stopped, not complete", () => {
+    expect(render(stop())).toContain("Research complete");
+    for (const reason of ["budget", "timeout", "user_stopped", "blocked"] as const) {
+      const out = render(stop({ termination_reason: reason, challenge_rounds_completed: 0 }));
+      expect(out).toContain("Research stopped");
+      expect(out).not.toContain("Research complete");
+      expect(out).toContain("The challenge round was not completed");
+    }
+  });
+
+  test("critical slots show count, icon and word for each colour", () => {
+    const out = render(stop({ critical_slots: { green: 4, amber: 1, red: 2 } }));
+    for (const word of ["green", "amber", "red"]) expect(out).toContain(word);
+    expect(out).toContain(">4<");
+    expect(out).toContain(">2<");
+  });
+
+  test("gaps, caveats and what could change the conclusion are listed and linked", () => {
+    const out = render(stop(), {
+      gaps: [{ slotId: "D2S1", name: "Competitor pricing", reason: "one origin only" }],
+      challenges: [{ id: "H1", would_change_if: "Consumer share is below 10 percent", outcome: "weakened" }],
+    });
+    expect(out).toContain("Competitor pricing");
+    expect(out).toContain("one origin only");
+    expect(out).toContain("Regulation slot rests on a single origin");
+    expect(out).toContain("Consumer share is below 10 percent");
+    expect(out).toContain("1 conclusion weakened");
+  });
+
+  test("says so plainly when nothing is missing", () => {
+    expect(render(stop({ caveats: [], state: "SUFFICIENT" }))).toContain("No critical gaps or caveats.");
+  });
+
+  test("open conflicts are a control that opens the conflicts view", () => {
+    const out = render(stop({ open_conflicts: 3 }));
+    expect(out).toContain("3 open conflicts");
+    expect(render(stop({ open_conflicts: 1 }))).toContain("1 open conflict<");
   });
 });

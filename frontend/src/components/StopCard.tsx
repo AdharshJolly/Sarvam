@@ -1,10 +1,9 @@
 import type { Challenge, FinalState, StopDecision, TerminationReason } from "@contracts/types";
-import { StateChip } from "./ui/StateChip";
-import { finalStateChip } from "./ui/chips";
-import { Icon } from "./ui/Icon";
 import { Banner } from "./ui/Banner";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
+import { Icon } from "./ui/Icon";
+import { finalStateChip } from "./ui/chips";
 
 export const terminationText: Record<TerminationReason, string> = {
   criteria_met: "All critical slots are green and a challenge round completed.",
@@ -16,6 +15,12 @@ export const terminationText: Record<TerminationReason, string> = {
   blocked: "The run was blocked by a failure and wrapped up with the evidence in hand.",
 };
 
+const HEADLINE: Record<FinalState, string> = {
+  SUFFICIENT: "Sufficient",
+  SUFFICIENT_WITH_CAVEATS: "Sufficient, with caveats",
+  INSUFFICIENT: "Insufficient",
+};
+
 const meaning: Record<FinalState, string> = {
   SUFFICIENT: "The evidence gathered is enough to answer the question.",
   SUFFICIENT_WITH_CAVEATS: "The evidence is enough to answer, with the caveats listed below.",
@@ -24,10 +29,10 @@ const meaning: Record<FinalState, string> = {
 
 const stateTone = { SUFFICIENT: "ok", SUFFICIENT_WITH_CAVEATS: "warn", INSUFFICIENT: "bad" } as const;
 
-const BAND_BG = {
-  ok: "bg-ok-bg",
-  warn: "bg-warn-bg",
-  bad: "bg-bad-bg",
+const BAND = {
+  ok: { band: "bg-ok-bg", text: "text-ok-fg" },
+  warn: { band: "bg-warn-bg", text: "text-warn-fg" },
+  bad: { band: "bg-bad-bg", text: "text-bad-fg" },
 };
 
 export interface StopGap {
@@ -36,8 +41,27 @@ export interface StopGap {
   reason: string;
 }
 
-const NO_CHALLENGE: TerminationReason[] = ["budget", "timeout", "user_stopped", "blocked"];
+/** Reasons where the run was cut short, so "complete" would overstate it. */
+const CUT_SHORT: TerminationReason[] = ["budget", "timeout", "user_stopped", "blocked"];
+const NO_CHALLENGE = CUT_SHORT;
 
+/** A count with its icon and word, so state is never colour alone. */
+function Tile({ count, word, icon, tone }: { count: number; word: string; icon: "Check" | "AlertTriangle" | "XOctagon"; tone: string }) {
+  return (
+    <div className={`flex flex-1 flex-col items-center rounded-md border px-2 py-2 ${tone}`}>
+      <span className="mono text-2xl font-bold leading-none">{count}</span>
+      <span className="mt-1 flex items-center gap-1 text-sm font-semibold">
+        <Icon name={icon} size={14} aria-hidden /> {word}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * The verdict (SSOT sections 9.10 and 12): the final state as a headline, why the run stopped, where
+ * the critical slots stand, and what is still missing. The same card sits above the tabs and at the top
+ * of the report. Announced once when it appears (aria-live).
+ */
 export function StopCard({
   stop,
   gaps,
@@ -59,93 +83,98 @@ export function StopCard({
   const challengeSkipped = NO_CHALLENGE.includes(stop.termination_reason) && rounds === 0;
   const wouldChange = challenges.filter((c) => c.would_change_if);
   const weakened = challenges.filter((c) => c.outcome === "weakened").length;
-  const tone = stateTone[stop.state] || "ok";
-  const bgColor = BAND_BG[tone] ?? BAND_BG.ok;
+  const caveats = stop.caveats ?? [];
+  const tone = stateTone[stop.state] ?? "ok";
+  const { band, text } = BAND[tone];
+  const heading = CUT_SHORT.includes(stop.termination_reason) ? "Research stopped" : "Research complete";
+  const missing = gaps.length > 0 || caveats.length > 0;
 
   return (
-    <Card
-      as="section"
-      aria-live="polite"
-      aria-label="Stop decision"
-      frame={tone}
-      className="anim-in overflow-hidden"
-    >
-      <div className={`flex flex-wrap items-center gap-3 px-4 py-3 ${bgColor}`}>
-        <div>
-          <p className="label">Research complete</p>
-          <div className="mt-1 flex flex-wrap items-center gap-3">
-            <StateChip spec={finalStateChip(stop.state)} large />
-          </div>
+    <Card as="section" aria-live="polite" aria-label="Stop decision" frame={tone} className="anim-in overflow-hidden">
+      <div className={`flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4 ${band}`}>
+        <Icon name={finalStateChip(stop.state).icon} size={40} className={`shrink-0 ${text}`} aria-hidden />
+        <div className="min-w-[14rem] flex-1">
+          <p className="label">{heading}</p>
+          <h2 className={`font-display text-3xl font-bold leading-tight ${text}`}>{HEADLINE[stop.state]}</h2>
+          <p className="mt-1 text-base">{meaning[stop.state]}</p>
         </div>
-        <p className="min-w-[14rem] flex-1 text-base">{meaning[stop.state]}</p>
         {onViewReport ? (
-          <Button variant="primary" onClick={onViewReport}>
-            View report <Icon name="ArrowRight" size={16} aria-hidden />
+          <Button variant="primary" size="lg" icon={<Icon name="ArrowRight" size={18} aria-hidden />} onClick={onViewReport}>
+            View report
           </Button>
         ) : null}
       </div>
 
-      <div className="grid gap-4 p-4 md:grid-cols-2">
-        <div>
-          <h4 className="label mb-1">Why we stopped</h4>
+      <div className="grid gap-x-6 gap-y-5 p-4 md:grid-cols-2 xl:grid-cols-3">
+        <section aria-labelledby="stop-why">
+          <h3 id="stop-why" className="label mb-1">
+            Why we stopped
+          </h3>
           <p>{terminationText[stop.termination_reason]}</p>
-
           {challengeSkipped ? (
             <div className="mt-3">
               <Banner tone="warn">The challenge round was not completed</Banner>
             </div>
           ) : (
-            <>
-              <h4 className="label mb-1 mt-3">Challenge</h4>
-              <p>
-                {rounds} round{rounds === 1 ? "" : "s"} completed.{" "}
-                {weakened === 0 ? "No weakened conclusions." : `${weakened} conclusion${weakened === 1 ? "" : "s"} weakened.`}
-              </p>
-            </>
+            <p className="mt-2 text-text-muted">
+              Challenge: {rounds} round{rounds === 1 ? "" : "s"} completed.{" "}
+              {weakened === 0 ? "No weakened conclusions." : `${weakened} conclusion${weakened === 1 ? "" : "s"} weakened.`}
+            </p>
           )}
+        </section>
 
-          <h4 className="label mb-1 mt-3">Critical slots</h4>
-          <div className="mono flex items-center gap-4">
-            <span className="text-ok-fg flex items-center gap-1"><Icon name="Check" size={14} aria-hidden /> {crit.green ?? 0} green</span>
-            <span className="text-warn-fg flex items-center gap-1"><Icon name="AlertTriangle" size={14} aria-hidden /> {crit.amber ?? 0} amber</span>
-            <span className="text-bad-fg flex items-center gap-1"><Icon name="XOctagon" size={14} aria-hidden /> {crit.red ?? 0} red</span>
+        <section aria-labelledby="stop-slots">
+          <h3 id="stop-slots" className="label mb-2">
+            Critical slots
+          </h3>
+          <div className="flex gap-2">
+            <Tile count={crit.green ?? 0} word="green" icon="Check" tone="border-ok-border bg-ok-bg text-ok-fg" />
+            <Tile count={crit.amber ?? 0} word="amber" icon="AlertTriangle" tone="border-warn-border bg-warn-bg text-warn-fg" />
+            <Tile count={crit.red ?? 0} word="red" icon="XOctagon" tone="border-bad-border bg-bad-bg text-bad-fg" />
           </div>
-          <p className="mt-2">
-            <button type="button" className="underline hover:text-brand-secondary transition-colors" onClick={onOpenConflicts}>
+          <p className="mt-3">
+            <button type="button" className="underline transition-colors hover:text-brand-secondary" onClick={onOpenConflicts}>
               {openConflicts} open {openConflicts === 1 ? "conflict" : "conflicts"}
             </button>
           </p>
-        </div>
+        </section>
 
-        <div>
-          {gaps.length > 0 ? (
+        <section aria-labelledby="stop-missing" className="md:col-span-2 xl:col-span-1">
+          <h3 id="stop-missing" className="label mb-1">
+            What is missing
+          </h3>
+          {missing ? (
             <>
-              <h4 className="label mb-1">Remaining gaps</h4>
-              <ul className="mb-3 text-base">
-                {gaps.map((g) => (
-                  <li key={g.slotId} className="mb-1">
-                    <button type="button" className="font-semibold underline hover:text-brand-secondary transition-colors" onClick={() => onOpenSlot(g.slotId)}>
-                      {g.name}
-                    </button>
-                    : {g.reason}
-                  </li>
-                ))}
-              </ul>
+              {gaps.length > 0 ? (
+                <ul className="mb-3 text-base">
+                  {gaps.map((g) => (
+                    <li key={g.slotId} className="mb-1">
+                      <button
+                        type="button"
+                        className="font-semibold underline transition-colors hover:text-brand-secondary"
+                        onClick={() => onOpenSlot(g.slotId)}
+                      >
+                        {g.name}
+                      </button>
+                      : {g.reason}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              {caveats.length > 0 ? (
+                <ul className="mb-3 list-disc pl-5 text-base text-text-muted">
+                  {caveats.map((c) => (
+                    <li key={c}>{c}</li>
+                  ))}
+                </ul>
+              ) : null}
             </>
-          ) : null}
-          {(stop.caveats ?? []).length > 0 ? (
-            <>
-              <h4 className="label mb-1">Caveats</h4>
-              <ul className="mb-3 list-disc pl-5 text-base text-text-muted">
-                {(stop.caveats ?? []).map((c) => (
-                  <li key={c}>{c}</li>
-                ))}
-              </ul>
-            </>
-          ) : null}
+          ) : (
+            <p className="text-text-muted">No critical gaps or caveats.</p>
+          )}
           {wouldChange.length > 0 ? (
             <>
-              <h4 className="label mb-1">What could change this conclusion</h4>
+              <h3 className="label mb-1 mt-3">What could change this conclusion</h3>
               <ul className="list-disc pl-5 text-base text-text-muted">
                 {wouldChange.map((c) => (
                   <li key={c.id}>{c.would_change_if}</li>
@@ -153,7 +182,7 @@ export function StopCard({
               </ul>
             </>
           ) : null}
-        </div>
+        </section>
       </div>
     </Card>
   );
