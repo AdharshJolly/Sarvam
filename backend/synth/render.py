@@ -10,7 +10,6 @@ from __future__ import annotations
 import re
 import sqlite3
 
-from backend.intel.stop import HARD_LIMITS
 from backend.pipeline.claims import quote_in_passage
 from backend.store import repo
 from backend.synth.report_verify import VerifiedReport
@@ -69,11 +68,6 @@ def render_markdown(
     ]
     if verdict.next_step:
         lines += [verdict.next_step, ""]
-    # Technical state line: kept verbatim for tooling and the gates (B-38).
-    lines += [
-        f"**Assurance state: {decision.state.value}** ({decision.termination_reason.value})",
-        "",
-    ]
     lines += [f"- {_sentence(c)}" for c in decision.caveats]
     if decision.caveats:
         lines.append("")
@@ -216,32 +210,9 @@ def render_markdown(
         lines.append("No sources are cited because no findings survived verification.")
     lines.append("")
 
-    b = run.budget
-    cost = f"${usage.cost_usd:.4f}" if usage.cost_usd > 0 else "not reported by provider"
-    rounds = max((c.round for c in repo.list_coverage(conn, run.id)), default=0)
-    lines += [
-        "## Method and run metadata",
-        "",
-        f"- Mode: {run.mode.value}",
-        f"- Rounds: initial pass plus {rounds} follow-up round(s); challenge rounds completed: "
-        f"{decision.challenge_rounds_completed}",
-        f"- Stop: {decision.state.value}, reason {decision.termination_reason.value}",
-        f"- Searches: {usage.searches}/{b.max_searches}; fetches: {usage.fetches}/{b.max_fetches}; "
-        f"LLM calls: {usage.llm_calls}/{b.max_llm_calls}",
-        f"- Cost: {cost} (limit ${b.max_cost_usd:.2f}); elapsed: {usage.elapsed_seconds:.0f} s",
-        f"- Models: fast {settings.llm_model_fast or 'n/a'}, "
-        f"strong {settings.llm_model_strong or 'n/a'}",
-    ]
-    if decision.termination_reason in HARD_LIMITS:
-        lines.append(
-            f"- Run ended early: {decision.termination_reason.value} "
-            "(wrap-up with the evidence in hand)"
-        )
+    # A writer failure stays visible in the report; run metadata is not part of it.
     if degraded_reason:
-        lines.append(f"- Narrative writer unavailable: {_sentence(degraded_reason)}")
-    if report.dropped:
-        lines.append(f"- Sentences removed by the report verifier: {len(report.dropped)}")
-    lines.append("")
+        lines += [f"Narrative writer unavailable: {_sentence(degraded_reason)}", ""]
     return "\n".join(lines)
 
 

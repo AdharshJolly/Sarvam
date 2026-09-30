@@ -159,10 +159,9 @@ def test_g3_the_report_carries_the_state_labels_conflicts_and_what_could_change(
         "## Conflicts and unresolved items",
         "## What could change the conclusion",
         "## Sources index",
-        "## Method and run metadata",
     ):
         assert heading in md
-    assert f"**Assurance state: {state.stop.state.value}**" in md
+    assert "Assurance state" not in md and state.stop.state.value not in md
     assert "{{certainty:supported}}" in md and "{{certainty:contested}}" in md
     assert (
         "(not yet explained," in md

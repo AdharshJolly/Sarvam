@@ -96,7 +96,7 @@ def test_g1_end_to_end_pipeline_with_resolving_citations(tmp_path):
         assert sorted(report.dropped_sentences) == ["An invented citation.", "An uncited sentence."]
         assert "C9999" not in report.markdown and "uncited sentence" not in report.markdown
         assert "## Sources index" in report.markdown and "| S" in report.markdown
-        assert "**Assurance state: " in report.markdown  # from the stop decision (T14)
+        assert "**Assurance state" not in report.markdown  # plain headline only; no raw state enum
 
         # 6. run summary
         assert summary["run"]["status"] == "completed"
@@ -120,6 +120,6 @@ def test_g1_low_budget_run_wraps_up_with_a_report_and_never_exceeds_a_limit(tmp_
         synth = [e for e in events if e["type"] == "phase.entered"][-1]
         assert "Wrap-up (budget)" in synth["payload"]["reason"]
         report = client.get(f"/api/runs/{rid}/report").json()
-        assert "Run ended early: budget" in report["markdown"]
+        assert "Why the research stopped:" in report["markdown"]
         assert events[-1]["type"] == "run.completed"
         assert events[-1]["payload"]["termination_reason"] == "budget"

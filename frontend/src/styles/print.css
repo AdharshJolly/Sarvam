@@ -1,11 +1,25 @@
-/* Print: the report only. */
+/* Print: only the report and its cited sources, nothing else on the page. */
 @media print {
-  .left-rail,
-  .tab-bar,
-  .evidence-drawer,
-  .activity-dock,
-  .app-header,
-  .mock-controls,
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  .print-area .card,
+  .print-area article,
+  .print-area section {
+    border: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+  }
   .no-print {
     display: none !important;
   }

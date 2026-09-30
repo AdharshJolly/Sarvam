@@ -174,24 +174,26 @@ export function LeftRail({
   onOpenMeter: (k: MeterKind) => void;
 }) {
   return (
-    <aside
-      aria-label="Research status"
-      className={`left-rail hidden border-r border-border-hairline bg-surface lg:sticky lg:top-14 lg:z-10 lg:block lg:max-h-[calc(100dvh-3.5rem)] lg:self-start ${
-        // The collapsed strip must not clip its tooltips, so only the expanded rail scrolls.
-        collapsed ? "" : "lg:overflow-y-auto"
-      }`}
-    >
-      <div className={`flex p-2 ${collapsed ? "justify-center" : "justify-end"}`}>
-        <Button
-          size="icon"
-          variant="ghost"
-          aria-label={collapsed ? "Expand research status" : "Collapse research status"}
-          aria-expanded={!collapsed}
-          icon={<Icon name={collapsed ? "PanelLeftOpen" : "PanelLeftClose"} size={18} aria-hidden />}
-          onClick={onToggle}
-        />
+    <aside aria-label="Research status" className="left-rail hidden border-r border-border-hairline bg-surface lg:block">
+      {/* The aside fills the row so the collapsed rail is a full-height strip; the content sticks under the header. */}
+      <div
+        className={`lg:sticky lg:top-14 lg:max-h-[calc(100dvh-3.5rem)] ${
+          // The collapsed strip must not clip its tooltips, so only the expanded rail scrolls.
+          collapsed ? "" : "lg:overflow-y-auto"
+        }`}
+      >
+        <div className={`flex p-2 ${collapsed ? "justify-center" : "justify-end"}`}>
+          <Button
+            size="icon"
+            variant="ghost"
+            aria-label={collapsed ? "Expand research status" : "Collapse research status"}
+            aria-expanded={!collapsed}
+            icon={<Icon name={collapsed ? "PanelLeftOpen" : "PanelLeftClose"} size={18} aria-hidden />}
+            onClick={onToggle}
+          />
+        </div>
+        {collapsed ? <CollapsedRail /> : <RailContent onOpenMeter={onOpenMeter} showMode />}
       </div>
-      {collapsed ? <CollapsedRail /> : <RailContent onOpenMeter={onOpenMeter} showMode />}
     </aside>
   );
 }

@@ -11,6 +11,7 @@ import {
   ChevronUp,
   Circle,
   Clock,
+  Download,
   FileText,
   Grid,
   HelpCircle,
@@ -55,6 +56,7 @@ import {
   Coins,
   HeartPulse,
   Menu,
+  MousePointerClick,
   X,
 } from "lucide-react";
 
@@ -77,6 +79,7 @@ const ICONS = {
   ChevronUp,
   Circle,
   Clock,
+  Download,
   FileText,
   Grid,
   HelpCircle,
@@ -121,6 +124,7 @@ const ICONS = {
   Coins,
   HeartPulse,
   Menu,
+  MousePointerClick,
   X,
 } satisfies Record<string, LucideIcon>;
 

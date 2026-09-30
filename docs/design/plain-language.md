@@ -34,8 +34,9 @@ Each entry has `label`, `meaning` and `next_step`. Tables: `coverage_state`, `fi
 | `CoverageMatrix` | Cell badge and aria-label use plain labels; Detailed mode appends the colour term. |
 | `backend/synth/render.py` | Headline and meaning, "Why the research stopped", a "How to read this report" section, plain labels in the coverage table, conflicts, critical gaps and challenges. |
 
-The line `**Assurance state: <STATE>** (<reason>)` stays in the report, after the plain headline, because
-gates and tools match it. It is the technical reference line, not the first thing a reader sees.
+The raw `**Assurance state: <STATE>** (<reason>)` line was removed from the report: the plain headline and
+"Why the research stopped" already say it, and readers should not see enum names. The stored stop decision
+still carries the technical values. The report tab also hides that line in reports stored before the change.
 
 ## Reading modes
 

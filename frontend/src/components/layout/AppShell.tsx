@@ -273,7 +273,7 @@ function Shell() {
                     case "challenge":
                       return <ChallengePanel />;
                     case "report":
-                      return <ReportPanel onOpenSlot={goEvidenceForSlot} onOpenConflicts={goConflicts} />;
+                      return <ReportPanel />;
                   }
                 }}
               />

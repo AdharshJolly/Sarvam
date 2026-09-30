@@ -204,27 +204,14 @@ def test_render_strips_typed_markers_escapes_tables_and_reports_unreported_cost(
     assert "- Plans cost Rs. 1,299 per month . [C1]" in md or "Plans cost Rs. 1,299" in md
     assert "https://a.example/x\\|y" in md  # pipe escaped inside the sources table
     assert "| S1 | a.example | news | 2 | 2026-02-03 |" in md
-    assert "Cost: not reported by provider" in md
-    assert (
-        "- Geography: Bengaluru" in md
-        and "**Assurance state: SUFFICIENT_WITH_CAVEATS** (max_rounds)" in md
-    )
-    assert "Searches: 3/24" in md and "Mode: LIVE" in md
+    assert "- Geography: Bengaluru" in md
+    assert "Assurance state" not in md and "SUFFICIENT_WITH_CAVEATS" not in md
+    assert "Method and run metadata" not in md and "Searches: 3/24" not in md
     # Plain-language layer (B-38): headline, stop reason and reading guide, before the jargon line.
     assert "**Answer is solid, with caveats.**" in md
     assert "Why the research stopped: Follow-up limit reached." in md
     assert "## How to read this report" in md
-    assert md.index("**Answer is solid, with caveats.**") < md.index("**Assurance state:")
     assert "### Demand" in md and "No verified claims were found for this dimension." in md
-    costed = env.render(draft, usage=BudgetUsage(cost_usd=0.1234))
-    assert "Cost: $0.1234" in costed
-    early = env.render(
-        draft,
-        decision=StopDecision(
-            state=FinalState.INSUFFICIENT, termination_reason=TerminationReason.BUDGET
-        ),
-    )
-    assert "Run ended early: budget" in early
 
 
 def test_verify_citations_rejects_every_unresolvable_citation(tmp_path):

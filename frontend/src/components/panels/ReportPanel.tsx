@@ -8,10 +8,8 @@ import { buildHash } from "../../lib/route";
 import { collectCitationIds, parseReport, unresolvedCitations } from "../../lib/reportMarkdown";
 import type { ReportNode } from "../../lib/reportMarkdown";
 import { useEvidence } from "../../state/EvidenceContext";
-import { openConflictCount, worstCriticalSlots } from "../../state/selectors";
-import { useDigDeeper } from "../../state/useDigDeeper";
+import { openConflictCount } from "../../state/selectors";
 import { errorText, useSession } from "../../state/useRunSession";
-import { StopCard } from "../StopCard";
 import { ReportBody } from "../report/ReportBody";
 import { type ContentsEntry, ReportContents } from "../report/ReportContents";
 import { RunMetadata, SourcesCited } from "../report/ReportMeta";
@@ -21,8 +19,6 @@ import { Card } from "../ui/Card";
 import { EmptyState } from "../ui/EmptyState";
 import { Icon } from "../ui/Icon";
 import { Skeleton } from "../ui/Skeleton";
-import { StateChip } from "../ui/StateChip";
-import { finalStateChip } from "../ui/chips";
 
 /** The h2 and h3 headings of the report, with their position so each can be jumped to. */
 export function contentsEntries(nodes: ReportNode[]): ContentsEntry[] {
@@ -34,9 +30,8 @@ export function contentsEntries(nodes: ReportNode[]): ContentsEntry[] {
 }
 
 /** The report tab: loads the stored report, then reads as a document with contents, sources and method. */
-export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slotId: string) => void; onOpenConflicts: () => void }) {
+export function ReportPanel() {
   const { view, runId } = useSession();
-  const digDeeper = useDigDeeper();
   const ev = useEvidence();
   const [report, setReport] = useState<ReportView | null>(null);
   const [state, setState] = useState<"idle" | "loading" | "missing" | "error">("idle");
@@ -72,7 +67,7 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
     };
   }, [runId, version]);
 
-  const nodes = useMemo(() => (report ? parseReport(report.markdown) : []), [report]);
+  const nodes = useMemo(() => (report ? parseReport(report.markdown.replace(/^\*\*Assurance state:.*$/m, "").replace(/^## Method and run metadata[\s\S]*$/m, "")) : []), [report]);
   const resolvable = useMemo(() => new Set((report?.citations ?? []).map((c) => c.claim_id)), [report]);
   const unresolved = report ? unresolvedCitations(collectCitationIds(nodes), resolvable) : [];
   const headings = useMemo(() => contentsEntries(nodes), [nodes]);
@@ -107,17 +102,6 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
 
   return (
     <div className="flex flex-col gap-4">
-      {view.stop && runId ? (
-        <StopCard
-          runId={runId}
-          stop={view.stop}
-          gaps={worstCriticalSlots(view)}
-          challenges={Object.values(view.challenges)}
-          onOpenSlot={onOpenSlot}
-          onOpenConflicts={onOpenConflicts}
-          onDigDeeper={digDeeper}
-        />
-      ) : null}
       {state === "loading" ? (
         <Card pad="lg" role="status" aria-live="polite" className="flex flex-col gap-3">
           <span className="sr-only">Loading report...</span>
@@ -140,13 +124,15 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
       {report ? (
         <div className="grid gap-6 xl:grid-cols-[13rem_1fr]">
           <ReportContents headings={headings} />
-          <div className="flex min-w-0 flex-col gap-4">
+          <div className="print-area flex min-w-0 flex-col gap-4">
             <Card as="article" pad="lg" className="report">
-              <div className="mb-4 flex flex-wrap items-center gap-3">
-                <p className="label">Report</p>
-                {report.certainty_state ? <StateChip spec={finalStateChip(report.certainty_state)} large /> : null}
-                <Button className="no-print ml-auto" icon={<Icon name="FileText" size={16} aria-hidden />} onClick={download}>
+              <div className="no-print mb-5 flex flex-wrap items-center gap-2 border-b border-border-hairline pb-4">
+                <p className="label mr-auto">Report v{report.version}</p>
+                <Button icon={<Icon name="FileText" size={16} aria-hidden />} onClick={download}>
                   Download Markdown
+                </Button>
+                <Button variant="ghost" icon={<Icon name="Download" size={16} aria-hidden />} onClick={() => window.print()}>
+                  Save as PDF
                 </Button>
               </div>
               {unresolved.length > 0 ? (
@@ -158,7 +144,7 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
               ) : null}
               <ReportBody nodes={nodes} resolvable={resolvable} onCite={(id) => ev.open([id])} />
               {dropped.length > 0 ? (
-                <details className="mt-6 rounded-md bg-surface-2 p-3">
+                <details className="no-print mt-6 rounded-md bg-surface-2 p-3">
                   <summary className="cursor-pointer font-semibold">Removed by the report verifier ({dropped.length})</summary>
                   <p className="mt-1 text-sm text-text-muted">These sentences had no stored statement behind them, so they were left out of the report.</p>
                   <ul className="mt-2 list-disc pl-6 text-base">
@@ -170,7 +156,9 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
               ) : null}
             </Card>
             <SourcesCited cited={report.citations ?? []} onOpenClaim={(id) => ev.open([id])} />
-            <RunMetadata rows={metaRows} />
+            <div className="no-print">
+              <RunMetadata rows={metaRows} />
+            </div>
           </div>
         </div>
       ) : null}
