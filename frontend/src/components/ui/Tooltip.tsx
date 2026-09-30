@@ -9,6 +9,10 @@ interface TooltipProps {
    * abbreviation); leave it off for buttons and links, which are already focusable.
    */
   focusable?: boolean;
+  /** Where the bubble appears. Use "right" for triggers near the left edge, such as the collapsed rail. */
+  side?: "top" | "right";
+  /** Extra classes for the wrapper, for example `min-w-0` when the child is truncated text. */
+  className?: string;
 }
 
 /**
@@ -18,13 +22,13 @@ interface TooltipProps {
  *
  * Positioned above the trigger with no collision handling, so keep the text short.
  */
-export function Tooltip({ text, children, focusable = false }: TooltipProps) {
+export function Tooltip({ text, children, focusable = false, side = "top", className = "" }: TooltipProps) {
   const id = useId();
   const [open, setOpen] = useState(false);
 
   return (
     <span
-      className="relative inline-flex"
+      className={`relative inline-flex ${className}`.trim()}
       tabIndex={focusable ? 0 : undefined}
       aria-describedby={id}
       onMouseEnter={() => setOpen(true)}
@@ -39,12 +43,14 @@ export function Tooltip({ text, children, focusable = false }: TooltipProps) {
       }}
     >
       {children}
-      {/* The wrapper's bottom padding bridges the gap so the pointer can travel onto the bubble. */}
+      {/* The wrapper's padding bridges the gap so the pointer can travel onto the bubble. */}
       <span
         role="tooltip"
         id={id}
         hidden={!open}
-        className="absolute bottom-full left-1/2 z-40 -translate-x-1/2 pb-1"
+        className={`absolute z-40 ${
+          side === "right" ? "left-full top-1/2 -translate-y-1/2 pl-1" : "bottom-full left-1/2 -translate-x-1/2 pb-1"
+        }`}
       >
         <span className="block w-max max-w-64 rounded-md bg-text px-2 py-1 text-sm font-normal text-bg shadow-elevation">
           {text}

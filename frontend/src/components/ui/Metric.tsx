@@ -16,7 +16,7 @@ export function Metric({ label, value, icon, onClick, title, trend }: MetricProp
     <div className={`flex flex-col gap-0.5 ${onClick ? "group cursor-pointer hover:opacity-80 transition-opacity" : ""}`} title={title}>
       <div className="flex items-center gap-1.5 text-text-muted">
         {icon && <Icon name={icon} size={14} />}
-        <span className="label text-xs tracking-wider">{label}</span>
+        <span className="label">{label}</span>
       </div>
       <div className="flex items-baseline gap-1.5">
         <span className="mono text-base font-semibold">{value}</span>

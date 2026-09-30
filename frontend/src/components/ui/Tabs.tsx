@@ -16,13 +16,15 @@ interface TabsProps<T extends string> {
   onChange: (id: T) => void;
   /** Panels are rendered lazily: only the active tab's content is mounted. */
   renderPanel: (id: T) => ReactNode;
+  /** Extra classes for the tab list, for example to hide it where another control replaces it. */
+  listClassName?: string;
 }
 
 /**
  * Accessible tabs (WAI-ARIA pattern): roving tabindex, Left/Right/Home/End, each tab controls its
  * panel. On narrow screens the tab list scrolls sideways instead of wrapping onto several rows.
  */
-export function Tabs<T extends string>({ label, items, active, onChange, renderPanel }: TabsProps<T>) {
+export function Tabs<T extends string>({ label, items, active, onChange, renderPanel, listClassName = "" }: TabsProps<T>) {
   const refs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const onKeyDown = (e: KeyboardEvent, index: number) => {
@@ -41,7 +43,7 @@ export function Tabs<T extends string>({ label, items, active, onChange, renderP
       <div
         role="tablist"
         aria-label={label}
-        className="tab-bar flex gap-1 overflow-x-auto border-b border-border-hairline"
+        className={`tab-bar flex gap-1 overflow-x-auto border-b border-border-hairline ${listClassName}`.trim()}
       >
         {items.map((item, index) => {
           const selected = active === item.id;

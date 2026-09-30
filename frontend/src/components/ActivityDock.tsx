@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { formatSeconds } from "../lib/format";
 import type { TimelineItem } from "../state/runStore";
 import type { MeterKind } from "./BudgetMeters";
@@ -91,81 +91,53 @@ const TEXT_COLOR: Record<TimelineItem["kind"], string> = {
   other: "text-text-muted",
 };
 
-export function ActivityDock({
+/** Filter chips plus the filtered event list. Shared by the desktop dock and the small-screen sheet. */
+export function ActivityTimeline({
   timeline,
   startedAt,
-  running,
   filter,
   onFilter,
   onOpenClaim,
   onOpenSource,
+  listClassName = "max-h-[24vh]",
 }: {
   timeline: TimelineItem[];
   startedAt: string | undefined;
-  running: boolean;
   filter: DockFilter;
   onFilter: (f: DockFilter) => void;
   onOpenClaim: (id: string) => void;
   onOpenSource: (id: string) => void;
+  listClassName?: string;
 }) {
-  const [open, setOpen] = useState(false);
   const listRef = useRef<HTMLOListElement | null>(null);
   const stick = useRef(true);
   const items = timeline.filter((t) => matchesFilter(t, filter));
   const t0 = startedAt ? Date.parse(startedAt) : Number.NaN;
-  const last = timeline.at(-1);
-
-  useEffect(() => {
-    if (window.innerWidth >= 1024) setOpen(true);
-  }, []);
 
   useEffect(() => {
     const el = listRef.current;
     if (el && stick.current) el.scrollTop = el.scrollHeight;
-  }, [items.length, open]);
+  }, [items.length]);
 
   return (
-    <section
-      aria-label="Activity timeline"
-      className="activity-dock fixed inset-x-0 bottom-0 z-50 border-t border-border-strong bg-surface shadow-[0_-4px_12px_rgba(0,0,0,0.1)] lg:sticky lg:shadow-elevation"
-    >
+    <div>
       <div className="flex flex-wrap items-center gap-2 px-3 py-2">
-        <Button
-          size="sm"
-          aria-expanded={open}
-          icon={<Icon name={open ? "ChevronDown" : "ChevronUp"} size={16} aria-hidden />}
-          onClick={() => setOpen((v) => !v)}
-        >
-          Activity ({timeline.length})
-        </Button>
-        {running ? (
-          <span className="inline-flex items-center gap-2 text-sm text-ok-fg font-medium">
-            <span className="pulse-dot" aria-hidden="true" /> Live
-          </span>
-        ) : null}
-        {!open && last ? (
-          <span className="truncate text-sm text-text-muted font-medium">
-            {LABEL[last.type]}: {last.text}
-          </span>
-        ) : null}
-        {open
-          ? CHIPS.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                aria-pressed={filter === c.id}
-                className={`rounded-full border px-3 py-0.5 text-sm transition-colors ${
-                  filter === c.id 
-                    ? "border-brand-secondary bg-brand-secondary text-surface font-semibold" 
-                    : "border-border-strong bg-transparent font-medium hover:bg-surface-2"
-                }`}
-                onClick={() => onFilter(c.id)}
-              >
-                {c.label}
-              </button>
-            ))
-          : null}
-        {open && !CHIPS.some((c) => c.id === filter) ? (
+        {CHIPS.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            aria-pressed={filter === c.id}
+            className={`rounded-full border px-3 py-0.5 text-sm transition-colors pointer-coarse:min-h-11 ${
+              filter === c.id
+                ? "border-brand-secondary bg-brand-secondary font-semibold text-surface"
+                : "border-border-strong bg-transparent font-medium hover:bg-surface-2"
+            }`}
+            onClick={() => onFilter(c.id)}
+          >
+            {c.label}
+          </button>
+        ))}
+        {!CHIPS.some((c) => c.id === filter) ? (
           <span className="text-sm font-medium">
             Filtered by tool: {filter}{" "}
             <button type="button" className="underline hover:text-brand-secondary" onClick={() => onFilter("all")}>
@@ -174,62 +146,123 @@ export function ActivityDock({
           </span>
         ) : null}
       </div>
-      {open ? (
-        <ol
-          ref={listRef}
-          className="max-h-[60vh] lg:max-h-[24vh] min-h-24 overflow-y-auto border-t border-border-hairline px-3 py-2"
-          onScroll={(e) => {
-            const el = e.currentTarget;
-            stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 24;
-          }}
-        >
-          {items.length === 0 ? <li className="text-text-muted">No events match this filter yet.</li> : null}
-          {items.map((it) => {
-            const ref = it.claimId ?? it.sourceId;
-            const offset = Number.isNaN(t0) ? "" : formatSeconds((Date.parse(it.ts) - t0) / 1000);
-            const c = TEXT_COLOR[it.kind];
-            return (
-              <li key={it.id} className="anim-in grid grid-cols-[3.5rem_1.5rem_9.5rem_1fr] items-baseline gap-x-2 py-0.5">
-                <span className="mono text-text-muted text-xs">
-                  {offset}
-                </span>
-                <span aria-hidden="true" className={c}>
-                  <Icon name={ICON[it.kind]} size={14} className="inline-block -mt-0.5" />
-                </span>
-                <span className={`mono font-semibold text-[0.7rem] ${c}`}>
-                  {LABEL[it.type]}
-                </span>
-                <span className="text-sm">
-                  {it.failure ? (
-                    <span className="mr-2">
-                      <StateChip spec={failureChip(it.failure)} />
-                    </span>
-                  ) : null}
-                  {ref ? (
-                    <button
-                      type="button"
-                      className="text-left underline hover:text-brand-secondary"
-                      onClick={() => (it.claimId ? onOpenClaim(it.claimId) : it.sourceId ? onOpenSource(it.sourceId) : undefined)}
-                    >
-                      {it.text}
-                    </button>
-                  ) : (
-                    it.text
-                  )}
-                  <span className="mono ml-2 text-xs text-text-muted">
-                    {[
-                      it.stepMs !== null ? `${(it.stepMs / 1000).toFixed(1)}s` : null,
-                      it.tokens !== null ? `${it.tokens} tok` : null,
-                      it.costUsd !== null ? `$${it.costUsd.toFixed(3)}` : null,
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
+      <ol
+        ref={listRef}
+        aria-label="Events"
+        className={`min-h-24 overflow-y-auto border-t border-border-hairline px-3 py-2 ${listClassName}`}
+        onScroll={(e) => {
+          const el = e.currentTarget;
+          stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 24;
+        }}
+      >
+        {items.length === 0 ? <li className="text-text-muted">No events match this filter yet.</li> : null}
+        {items.map((it) => {
+          const ref = it.claimId ?? it.sourceId;
+          const offset = Number.isNaN(t0) ? "" : formatSeconds((Date.parse(it.ts) - t0) / 1000);
+          const c = TEXT_COLOR[it.kind];
+          return (
+            <li key={it.id} className="grid grid-cols-[3.5rem_1.5rem_10rem_1fr] items-baseline gap-x-2 py-0.5 max-sm:grid-cols-[3.5rem_1.5rem_1fr]">
+              <span className="mono text-sm text-text-muted">{offset}</span>
+              <span aria-hidden="true" className={c}>
+                <Icon name={ICON[it.kind]} size={14} className="inline-block -mt-0.5" />
+              </span>
+              <span className={`mono text-sm font-semibold max-sm:col-span-1 ${c}`}>{LABEL[it.type]}</span>
+              <span className="text-sm max-sm:col-start-3">
+                {it.failure ? (
+                  <span className="mr-2">
+                    <StateChip spec={failureChip(it.failure)} />
                   </span>
+                ) : null}
+                {ref ? (
+                  <button
+                    type="button"
+                    className="text-left underline hover:text-brand-secondary"
+                    onClick={() => (it.claimId ? onOpenClaim(it.claimId) : it.sourceId ? onOpenSource(it.sourceId) : undefined)}
+                  >
+                    {it.text}
+                  </button>
+                ) : (
+                  it.text
+                )}
+                <span className="mono ml-2 text-sm text-text-muted">
+                  {[
+                    it.stepMs !== null ? `${(it.stepMs / 1000).toFixed(1)}s` : null,
+                    it.tokens !== null ? `${it.tokens} tok` : null,
+                    it.costUsd !== null ? `$${it.costUsd.toFixed(3)}` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </span>
-              </li>
-            );
-          })}
-        </ol>
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
+/**
+ * Desktop timeline dock (lg and up): a collapsible bar at the bottom of the page. Its open state is
+ * owned by the shell so a click on a header metric or budget meter can open it. Below lg the same
+ * timeline appears in a bottom sheet instead.
+ */
+export function ActivityDock({
+  timeline,
+  startedAt,
+  running,
+  open,
+  onOpenChange,
+  filter,
+  onFilter,
+  onOpenClaim,
+  onOpenSource,
+}: {
+  timeline: TimelineItem[];
+  startedAt: string | undefined;
+  running: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  filter: DockFilter;
+  onFilter: (f: DockFilter) => void;
+  onOpenClaim: (id: string) => void;
+  onOpenSource: (id: string) => void;
+}) {
+  const last = timeline.at(-1);
+  return (
+    <section
+      aria-label="Activity timeline"
+      className="activity-dock sticky bottom-0 z-20 hidden border-t border-border-strong bg-surface shadow-elevation lg:block"
+    >
+      <div className="flex flex-wrap items-center gap-2 px-3 py-2">
+        <Button
+          size="sm"
+          aria-expanded={open}
+          icon={<Icon name={open ? "ChevronDown" : "ChevronUp"} size={16} aria-hidden />}
+          onClick={() => onOpenChange(!open)}
+        >
+          Activity ({timeline.length})
+        </Button>
+        {running ? (
+          <span className="inline-flex items-center gap-2 text-sm font-medium text-ok-fg">
+            <span className="pulse-dot" aria-hidden="true" /> Live
+          </span>
+        ) : null}
+        {!open && last ? (
+          <span className="truncate text-sm font-medium text-text-muted">
+            {LABEL[last.type]}: {last.text}
+          </span>
+        ) : null}
+      </div>
+      {open ? (
+        <ActivityTimeline
+          timeline={timeline}
+          startedAt={startedAt}
+          filter={filter}
+          onFilter={onFilter}
+          onOpenClaim={onOpenClaim}
+          onOpenSource={onOpenSource}
+        />
       ) : null}
     </section>
   );
