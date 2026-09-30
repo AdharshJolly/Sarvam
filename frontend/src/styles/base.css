@@ -1,12 +1,20 @@
+/* Every weight the UI uses is loaded, so nothing is synthesised: Tailwind's font-normal (400),
+   font-medium (500), font-semibold (600) and font-bold (700). Browsers fetch a face only when a
+   page needs it, so unused subsets cost nothing. */
 @import "@fontsource/newsreader/400.css";
+@import "@fontsource/newsreader/600.css";
 @import "@fontsource/newsreader/700.css";
 @import "@fontsource/fira-sans/400.css";
+@import "@fontsource/fira-sans/500.css";
 @import "@fontsource/fira-sans/600.css";
+@import "@fontsource/fira-sans/700.css";
 @import "@fontsource/fira-code/400.css";
+@import "@fontsource/fira-code/500.css";
+@import "@fontsource/fira-code/600.css";
 
 html {
   font-size: 16px; /* projector-readable body text (SSOT NFR-10) */
-  font-family: var(--font-fira-sans);
+  font-family: var(--font-sans);
 }
 
 body {

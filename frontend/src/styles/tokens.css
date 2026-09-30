@@ -106,9 +106,11 @@
 
   --shadow-elevation: var(--shadow-elevation);
 
-  --font-newsreader: "Newsreader", serif;
-  --font-fira-sans: "Fira Sans", sans-serif;
-  --font-fira-code: "Fira Code", monospace;
+  /* Font roles (Tailwind: font-sans, font-mono, font-display).
+     sans: UI text. mono: ids, numbers, quotes, timestamps. display: headline moments and the report. */
+  --font-sans: "Fira Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Fira Code", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
 
   /* Shape scale */
   --radius-4: 4px;

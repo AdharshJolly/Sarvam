@@ -45,7 +45,7 @@ export function Landing() {
       <div className="flex flex-col">
         <div>
           <p className="label mb-2">Sarvam</p>
-          <h2 className="text-4xl font-bold leading-tight tracking-tight">Research that knows when it isn&apos;t done.</h2>
+          <h2 className="font-display text-4xl font-bold leading-tight tracking-tight">Research that knows when it isn&apos;t done.</h2>
           <p className="mt-3 max-w-xl text-lg text-text-muted">
             Ask a question. Watch the plan, the evidence, the contradictions and the challenges unfold, then read a report where
             every sentence traces back to a stored passage.
