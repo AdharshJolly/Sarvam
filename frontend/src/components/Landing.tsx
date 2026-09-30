@@ -5,6 +5,7 @@ import type { IconName } from "./ui/Icon";
 
 import { api, type Health } from "../api/client";
 import { Badge } from "./ui/Badge";
+import { Card } from "./ui/Card";
 
 const MOMENTS: Array<{ icon: IconName; title: string; text: string }> = [
   { icon: "Grid", title: "Coverage matrix", text: "See exactly where Sarvam is confident and where it is not, cell by cell." },
@@ -52,7 +53,7 @@ export function Landing() {
           </p>
           <ul className="mt-6 grid gap-3 sm:grid-cols-2">
             {MOMENTS.map((m) => (
-              <li key={m.title} className="card p-3">
+              <Card as="li" pad="sm" key={m.title}>
                 <p className="flex items-center gap-2 font-semibold">
                   <span aria-hidden="true" className="mono flex h-7 w-7 items-center justify-center rounded bg-brand/10 text-brand">
                     <Icon name={m.icon} size={16} aria-hidden />
@@ -62,7 +63,7 @@ export function Landing() {
                 <p className="mt-1 text-base text-text-muted">
                   {m.text}
                 </p>
-              </li>
+              </Card>
             ))}
           </ul>
         </div>
@@ -79,12 +80,12 @@ export function Landing() {
         </div>
       </div>
       <div className="flex flex-col gap-6 ">
-        <div className="card p-5 shadow-sm">
+        <Card pad="md" className="shadow-sm">
           <RunForm />
-        </div>
+        </Card>
         
         {history.length > 0 ? (
-          <div className="card p-4">
+          <Card pad="md">
             <h3 className="label mb-3">Recent runs (local)</h3>
             <ul className="flex flex-col gap-3">
               {history.map((h) => (
@@ -99,7 +100,7 @@ export function Landing() {
                 </li>
               ))}
             </ul>
-          </div>
+          </Card>
         ) : null}
       </div>
     </div>

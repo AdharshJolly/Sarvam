@@ -21,6 +21,7 @@ import { certaintyChip, finalStateChip } from "../ui/chips";
 import { Icon } from "../ui/Icon";
 import { Banner } from "../ui/Banner";
 import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
 
 const warned = new Set<string>();
 
@@ -213,7 +214,7 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
         />
       ) : null}
       {state === "loading" ? (
-        <div role="status" aria-live="polite" className="card flex flex-col gap-3 p-6">
+        <Card pad="lg" role="status" aria-live="polite" className="flex flex-col gap-3">
           <span className="sr-only">Loading report...</span>
           <Skeleton className="h-7 w-2/3" />
           <Skeleton className="h-4 w-full" />
@@ -221,7 +222,7 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
           <Skeleton className="mt-3 h-5 w-1/4" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-4/5" />
-        </div>
+        </Card>
       ) : null}
       {state === "missing" ? (
         <EmptyState
@@ -258,7 +259,7 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
             </div>
           </nav>
           <div className="flex min-w-0 flex-col gap-4">
-            <article className="report card p-6">
+            <Card as="article" pad="lg" className="report">
               <div className="mb-2 flex flex-wrap items-center gap-3">
                 <p className="label">Report</p>
                 {report.certainty_state ? <StateChip spec={finalStateChip(report.certainty_state)} large /> : null}
@@ -289,9 +290,9 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
                   </ul>
                 </details>
               ) : null}
-            </article>
+            </Card>
 
-            <section id="sources-cited" className="card p-4 scroll-mt-20" aria-label="Sources cited">
+            <Card as="section" pad="md" id="sources-cited" className="scroll-mt-20" aria-label="Sources cited">
               <h3 className="label mb-2">Sources cited ({cited.length})</h3>
               <ul className="flex flex-col gap-1 text-base">
                 {cited.map((c) => {
@@ -315,9 +316,9 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
                   );
                 })}
               </ul>
-            </section>
+            </Card>
 
-            <section id="method-metadata" className="card p-4 scroll-mt-20" aria-label="Method and run metadata">
+            <Card as="section" pad="md" id="method-metadata" className="scroll-mt-20" aria-label="Method and run metadata">
               <h3 className="label mb-2">Method and run metadata</h3>
               <dl className="grid gap-x-6 gap-y-1 sm:grid-cols-2">
                 {metaRows.map(([k, v]) => (
@@ -327,7 +328,7 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
                   </div>
                 ))}
               </dl>
-            </section>
+            </Card>
           </div>
         </div>
       ) : null}

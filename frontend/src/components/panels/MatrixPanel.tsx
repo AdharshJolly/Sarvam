@@ -19,6 +19,7 @@ import { StateChip } from "../ui/StateChip";
 import { coverageChip } from "../ui/chips";
 import { Icon } from "../ui/Icon";
 import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
 
 function MatrixSkeleton({ phase }: { phase: string }) {
   return (
@@ -26,7 +27,7 @@ function MatrixSkeleton({ phase }: { phase: string }) {
       <p className="text-base text-text-muted flex items-center gap-2">
         <Icon name="Activity" size={16} className="blink" aria-hidden /> {phase}
       </p>
-      <div className="card grid gap-3 p-3 sm:grid-cols-2 xl:grid-cols-3">
+      <Card pad="sm" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {Array.from({ length: 6 }, (_, i) => (
           <div key={i} className="rounded-lg border border-border-hairline p-3">
             <Skeleton className="mb-2 h-4 w-1/3" />
@@ -34,7 +35,7 @@ function MatrixSkeleton({ phase }: { phase: string }) {
             <Skeleton className="h-3 w-3/5" />
           </div>
         ))}
-      </div>
+      </Card>
     </div>
   );
 }
@@ -142,7 +143,7 @@ export function MatrixPanel({
       />
 
       {sel ? (
-        <section aria-label="Slot detail" className="card anim-in p-4">
+        <Card as="section" pad="md" aria-label="Slot detail" className="anim-in">
           <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
             <div>
               <p className="label">
@@ -176,7 +177,7 @@ export function MatrixPanel({
             <Button onClick={() => setSelected(null)}>Close</Button>
           </div>
           <OriginGroupView slotName={sel.name} groups={originsForSlot(view, sel.id)} onOpenSource={onOpenSource} />
-        </section>
+        </Card>
       ) : (
         <p className="text-base text-text-muted">
           Select a cell to see why it has that state, and how its sources collapse into independent origins.

@@ -12,6 +12,7 @@ import { StateChip } from "../ui/StateChip";
 import { sourceStatusChip, verdictChip } from "../ui/chips";
 import { Dialog } from "../ui/Dialog";
 import { Icon } from "../ui/Icon";
+import { Card } from "../ui/Card";
 
 function ClaimEvidenceView({ runId, claimId }: { runId: string; claimId: string }) {
   const { load, retry } = useClaimEvidence(runId, claimId);
@@ -19,13 +20,13 @@ function ClaimEvidenceView({ runId, claimId }: { runId: string; claimId: string 
 
   if (load.status === "loading")
     return (
-      <div role="status" aria-live="polite" className="card flex flex-col gap-3 p-3">
+      <Card pad="sm" role="status" aria-live="polite" className="flex flex-col gap-3">
         <span className="sr-only">Loading evidence for {claimId}...</span>
         <Skeleton className="h-5 w-4/5" />
         <Skeleton className="h-20 w-full" />
         <Skeleton className="h-4 w-1/3" />
         <Skeleton className="h-4 w-2/3" />
-      </div>
+      </Card>
     );
   if (load.status === "error")
     return (
@@ -44,7 +45,7 @@ function ClaimEvidenceView({ runId, claimId }: { runId: string; claimId: string 
   const unestablished = load.data.independence === "unestablished";
   const href = safeHref(source.url);
   return (
-    <article className="card anim-in flex flex-col gap-4 p-4">
+    <Card as="article" pad="md" className="anim-in flex flex-col gap-4">
       <header>
         <p className="label mb-1">Claim {claim.id}</p>
         <h3 className="text-lg font-semibold leading-snug">{claim.text}</h3>
@@ -130,7 +131,7 @@ function ClaimEvidenceView({ runId, claimId }: { runId: string; claimId: string 
           </li>
         </ul>
       </section>
-    </article>
+    </Card>
   );
 }
 

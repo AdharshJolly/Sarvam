@@ -4,6 +4,7 @@ import { Badge } from "./ui/Badge";
 import { StateChip } from "./ui/StateChip";
 import { coverageChip } from "./ui/chips";
 import { Icon } from "./ui/Icon";
+import { Card } from "./ui/Card";
 
 export interface SlotStats {
   sources: number;
@@ -57,7 +58,7 @@ export function CoverageMatrix(p: CoverageMatrixProps) {
   const rollupByDim = new Map(p.rollups.map((r) => [r.dimension_id, r]));
   const flashing = useFlashing(p.cells);
   return (
-    <div aria-label="Coverage matrix" className="card overflow-hidden">
+    <Card aria-label="Coverage matrix" className="overflow-hidden">
       {p.dimensions.map((d, di) => {
         const roll = rollupByDim.get(d.id);
         const dimSlots = p.slots.filter((s) => s.dimension_id === d.id);
@@ -137,6 +138,6 @@ export function CoverageMatrix(p: CoverageMatrixProps) {
           </div>
         );
       })}
-    </div>
+    </Card>
   );
 }

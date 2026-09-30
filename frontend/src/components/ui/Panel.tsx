@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
+import { Card } from "./Card";
 
 export function Panel({ title, children, id, aside }: { title?: ReactNode; children: ReactNode; id?: string; aside?: ReactNode }) {
   return (
-    <section id={id} className="card p-4">
+    <Card as="section" pad="md" id={id}>
       {title ? (
         <div className="mb-3 flex items-center justify-between gap-2">
           <h3 className="label">{title}</h3>
@@ -10,6 +11,6 @@ export function Panel({ title, children, id, aside }: { title?: ReactNode; child
         </div>
       ) : null}
       {children}
-    </section>
+    </Card>
   );
 }
