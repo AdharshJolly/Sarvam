@@ -42,8 +42,7 @@ export function CenterTabs({
       <div
         role="tablist"
         aria-label="Research views"
-        className="tab-bar flex flex-wrap gap-1 border-b"
-        style={{ borderColor: "var(--border)" }}
+        className="tab-bar flex flex-wrap gap-1 border-b border-border-strong"
       >
         {TABS.map((t, i) => (
           <button
@@ -59,19 +58,19 @@ export function CenterTabs({
             tabIndex={active === t.id ? 0 : -1}
             onClick={() => onChange(t.id)}
             onKeyDown={(e) => onKey(e, i)}
-            className="px-4 py-2 text-base"
-            style={{
-              borderBottom: active === t.id ? "2px solid var(--accent)" : "2px solid transparent",
-              fontWeight: active === t.id ? 600 : 400,
-            }}
+            className={`px-4 py-2 text-base border-b-2 transition-colors focus-visible:outline-brand-secondary focus-visible:-outline-offset-2 ${
+              active === t.id 
+                ? "border-brand-secondary font-semibold text-text" 
+                : "border-transparent font-normal text-text-muted hover:text-text hover:border-border-strong"
+            }`}
           >
             {t.label}
-            {counts[t.id] ? <span className="ml-1 text-sm" style={{ color: "var(--text-muted)" }}>({counts[t.id]})</span> : null}
+            {counts[t.id] ? <span className="ml-1 text-sm text-text-muted">({counts[t.id]})</span> : null}
           </button>
         ))}
       </div>
       {TABS.map((t) => (
-        <div key={t.id} role="tabpanel" id={`panel-${t.id}`} aria-labelledby={`tab-${t.id}`} hidden={active !== t.id} className="pt-4">
+        <div key={t.id} role="tabpanel" id={`panel-${t.id}`} aria-labelledby={`tab-${t.id}`} hidden={active !== t.id} className="pt-4 focus-visible:outline-brand-secondary">
           {active === t.id ? renderPanel(t.id) : null}
         </div>
       ))}

@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { useEffect, useState } from "react";
 import { env } from "../../config/env";
 import { formatSeconds, formatUsd } from "../../lib/format";
 import { EvidenceProvider, useEvidence } from "../../state/EvidenceContext";
@@ -8,7 +8,7 @@ import { ActivityDock, type DockFilter } from "../ActivityDock";
 import type { MeterKind } from "../BudgetMeters";
 import { Landing } from "../Landing";
 import { MockControls } from "../MockControls";
-import { ModeBadge } from "../ModeBadge";
+
 import { StopCard } from "../StopCard";
 import { ChallengePanel } from "../panels/ChallengePanel";
 import { ConflictsPanel } from "../panels/ConflictsPanel";
@@ -23,39 +23,36 @@ import { EvidenceDrawer } from "./EvidenceDrawer";
 import { LeftRail } from "./LeftRail";
 import { ThemeToggle } from "./ThemeToggle";
 
-function Banner({ tone, children }: { tone: "bad" | "warn"; children: ReactNode }) {
-  const c = tone === "bad" ? "var(--bad)" : "var(--warn)";
-  return (
-    <div
-      role="alert"
-      className="anim-in border-b px-4 py-2 font-semibold"
-      style={{ borderColor: c, color: c, background: tone === "bad" ? "var(--bad-bg)" : "var(--warn-bg)" }}
-    >
-      {children}
-    </div>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <span className="flex flex-col leading-tight">
-      <span className="label" style={{ fontSize: "0.7rem" }}>
-        {label}
-      </span>
-      <span className="mono font-semibold">{value}</span>
-    </span>
-  );
-}
+import { Banner } from "../ui/Banner";
+import { Metric } from "../ui/Metric";
+import { Icon } from "../ui/Icon";
 
 function Shell() {
   const { view, runId, error, newRun, reattach, hydrating } = useSession();
   const ev = useEvidence();
-  const [tab, setTab] = useState<TabId>("matrix");
+  const [tab, setTabState] = useState<TabId>("matrix");
   const [slotFilter, setSlotFilter] = useState<string | null>(null);
   const [dockFilter, setDockFilter] = useState<DockFilter>("all");
   const run = view.run;
   const running = run?.status === "running" || run?.status === "queued";
   const tokens = view.timeline.reduce((n, t) => n + (t.tokens ?? 0), 0);
+
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.slice(1);
+      if (["matrix", "evidence", "conflicts", "challenge", "report"].includes(hash)) {
+        setTabState(hash as TabId);
+      }
+    };
+    handleHash();
+    window.addEventListener("hashchange", handleHash);
+    return () => window.removeEventListener("hashchange", handleHash);
+  }, []);
+
+  const setTab = (t: TabId) => {
+    setTabState(t);
+    window.history.replaceState(null, "", `#${t}`);
+  };
 
   const goEvidenceForSlot = (slotId: string) => {
     setSlotFilter(slotId);
@@ -77,22 +74,24 @@ function Shell() {
 
   return (
     <div className={`flex min-h-screen flex-col ${ev.isOpen ? "xl:pr-[30rem]" : ""}`}>
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-4 focus:bg-surface focus:text-brand">
+        Skip to content
+      </a>
       {env.useMock ? (
-        <div className="mock-controls border-b px-4 py-2" style={{ borderColor: "var(--warn)", background: "var(--warn-bg)" }}>
-          <p className="font-bold" style={{ color: "var(--warn)" }} role="status">
-            {"⚠"} MOCK DATA: scripted fictional events in your browser, not a real research run.
+        <div className="mock-controls border-b border-warn-border bg-warn-bg px-4 py-2">
+          <p className="font-bold text-warn-fg flex items-center gap-2" role="status">
+            <Icon name="AlertTriangle" size={16} aria-hidden /> MOCK DATA: scripted fictional events in your browser, not a real research run.
           </p>
           <MockControls runId={runId} />
         </div>
       ) : null}
 
       <header
-        className="app-header sticky top-0 z-20 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b px-4 py-2"
-        style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+        className="app-header sticky top-0 z-20 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-b border-border bg-surface px-4 py-2"
       >
         <div className="flex items-baseline gap-3">
-          <h1 className="text-xl font-bold tracking-tight">SARVAM</h1>
-          <p className="hidden text-sm sm:block" style={{ color: "var(--text-muted)" }}>
+          <h1 className="text-xl font-bold tracking-tight text-brand">SARVAM</h1>
+          <p className="hidden text-sm sm:block text-text-muted">
             Research that knows when it isn&apos;t done.
           </p>
         </div>
@@ -104,8 +103,7 @@ function Shell() {
               <Metric label="Tokens" value={tokens.toLocaleString()} />
             </div>
           ) : null}
-          <ModeBadge mode={run?.mode ?? null} pulsing={running} />
-          <button type="button" className="btn" onClick={newRun}>
+          <button type="button" className="btn btn-secondary" onClick={newRun}>
             New run
           </button>
           <ThemeToggle />
@@ -126,26 +124,26 @@ function Shell() {
       ) : null}
       {error ? (
         <Banner tone="bad">
-          {"✕"} {error}
+          {error}
         </Banner>
       ) : null}
       {runId && running && view.connection === "closed" && !error && !hydrating ? (
         <Banner tone="warn">
-          {"▲"} The event stream is closed while the run is still running.{" "}
-          <button type="button" className="underline" onClick={reattach}>
+          The event stream is closed while the run is still running.{" "}
+          <button type="button" className="underline font-semibold" onClick={reattach}>
             Reattach
           </button>
         </Banner>
       ) : null}
       {runId && view.connection === "connecting" && running ? (
-        <Banner tone="warn">
-          <span className="blink">{"⟳"}</span> Reconnecting...
+        <Banner tone="warn" icon="RefreshCw">
+          Reconnecting...
         </Banner>
       ) : null}
 
       <div className={`grid flex-1 grid-cols-1 ${runId ? "lg:grid-cols-[19rem_1fr]" : ""}`}>
         {runId ? <LeftRail onOpenMeter={goMeter} /> : null}
-        <main className="min-w-0 p-4 lg:p-6">
+        <main id="main-content" className="min-w-0 p-4 lg:p-6" tabIndex={-1}>
           {!runId ? (
             <Landing />
           ) : (
