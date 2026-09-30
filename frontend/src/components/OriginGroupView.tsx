@@ -1,6 +1,7 @@
 import type { Origin, OriginMethod, Source } from "@contracts/types";
 import { domainOf, safeHref } from "../lib/format";
 import { Badge } from "./ui/Badge";
+import { Icon } from "./ui/Icon";
 
 export const methodText: Record<OriginMethod, string> = {
   domain: "same publisher",
@@ -35,11 +36,11 @@ export function OriginGroupView({
           <p className="text-3xl font-bold leading-none">{total}</p>
           <p className="label">{total === 1 ? "source" : "sources"}</p>
         </div>
-        <span aria-hidden="true" className="text-2xl" style={{ color: "var(--text-muted)" }}>
-          {"→"}
+        <span aria-hidden="true" className="text-2xl text-text-muted">
+          <Icon name="ArrowRight" size={24} aria-hidden />
         </span>
         <div>
-          <p className="text-3xl font-bold leading-none" style={{ color: "var(--accent)" }}>
+          <p className="text-3xl font-bold leading-none text-brand-secondary">
             {groups.length}
           </p>
           <p className="label">independent {groups.length === 1 ? "origin" : "origins"}</p>
@@ -48,7 +49,7 @@ export function OriginGroupView({
           {total} sources, {groups.length} independent origins
         </p>
         {collapsedAway > 0 ? (
-          <p className="text-base" style={{ color: "var(--text-muted)" }}>
+          <p className="text-base text-text-muted">
             {collapsedAway} {collapsedAway === 1 ? "page adds" : "pages add"} no independent confirmation: copies count once.
           </p>
         ) : null}
@@ -57,14 +58,13 @@ export function OriginGroupView({
         {groups.map((g, gi) => {
           const unestablished = !g.origin || g.origin.method === "none";
           const collapsed = g.sources.length > 1;
+          const borderClass = collapsed ? "border-l-brand-secondary" : unestablished ? "border-l-warn-border" : "border-l-border-strong";
+          
           return (
             <div
               key={g.key}
-              className="card anim-in p-3"
-              style={{
-                animationDelay: `${gi * 60}ms`,
-                borderLeft: `4px solid ${collapsed ? "var(--accent)" : unestablished ? "var(--warn)" : "var(--border-strong)"}`,
-              }}
+              className={`card anim-in p-3 border-l-[4px] ${borderClass}`}
+              style={{ animationDelay: `${gi * 60}ms` }}
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="label">Origin {String.fromCharCode(65 + (gi % 26))}</span>
@@ -83,14 +83,14 @@ export function OriginGroupView({
                   const last = si === g.sources.length - 1;
                   return (
                     <li key={s.id} className="flex flex-wrap items-center gap-2 py-0.5">
-                      <span aria-hidden="true" className="mono" style={{ color: "var(--text-muted)" }}>
+                      <span aria-hidden="true" className="mono text-text-muted">
                         {last ? "└─" : "├─"}
                       </span>
-                      <button type="button" className="mono underline" onClick={() => onOpenSource?.(s.id)}>
+                      <button type="button" className="mono underline text-brand-secondary hover:text-brand transition-colors" onClick={() => onOpenSource?.(s.id)}>
                         {s.id}
                       </button>
                       {href ? (
-                        <a href={href} target="_blank" rel="noopener noreferrer" className="underline">
+                        <a href={href} target="_blank" rel="noopener noreferrer" className="underline hover:text-brand transition-colors">
                           {s.domain || domainOf(s.url)}
                         </a>
                       ) : (

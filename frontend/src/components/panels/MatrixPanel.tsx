@@ -17,16 +17,17 @@ import { EmptyState } from "../ui/EmptyState";
 import { Skeleton } from "../ui/Skeleton";
 import { StateChip } from "../ui/StateChip";
 import { coverageChip } from "../ui/chips";
+import { Icon } from "../ui/Icon";
 
 function MatrixSkeleton({ phase }: { phase: string }) {
   return (
     <div role="status" aria-live="polite" className="flex flex-col gap-3">
-      <p className="text-base" style={{ color: "var(--text-muted)" }}>
-        <span className="blink">{"●"}</span> {phase}
+      <p className="text-base text-text-muted flex items-center gap-2">
+        <Icon name="Activity" size={16} className="blink" aria-hidden /> {phase}
       </p>
       <div className="card grid gap-3 p-3 sm:grid-cols-2 xl:grid-cols-3">
         {Array.from({ length: 6 }, (_, i) => (
-          <div key={i} className="rounded-lg border p-3" style={{ borderColor: "var(--border)" }}>
+          <div key={i} className="rounded-lg border border-border p-3">
             <Skeleton className="mb-2 h-4 w-1/3" />
             <Skeleton className="mb-2 h-5 w-4/5" />
             <Skeleton className="h-3 w-3/5" />
@@ -73,7 +74,7 @@ export function MatrixPanel({
     return running ? (
       <div className="flex flex-col gap-3">
         <EmptyState
-          icon={"◴"}
+          icon="Clock"
           title="Coverage is computed after the first analysis pass"
           why={`Current phase: ${phaseText}`}
         />
@@ -98,18 +99,15 @@ export function MatrixPanel({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <div role="group" aria-label="Coverage round" className="inline-flex overflow-hidden rounded-md border" style={{ borderColor: "var(--border-strong)" }}>
+        <div role="group" aria-label="Coverage round" className="inline-flex overflow-hidden rounded-md border border-border-strong">
           {rounds.map((r) => (
             <button
               key={r}
               type="button"
               aria-pressed={round === r}
-              className="px-3 py-1 text-base"
-              style={{
-                background: round === r ? "var(--accent)" : "var(--surface)",
-                color: round === r ? "var(--bg)" : "var(--text)",
-                fontWeight: round === r ? 700 : 400,
-              }}
+              className={`px-3 py-1 text-base transition-colors ${
+                round === r ? "bg-accent text-bg font-bold" : "bg-surface text-text hover:bg-surface-2"
+              }`}
               onClick={() => setPicked(r)}
             >
               Round {r}
@@ -117,9 +115,8 @@ export function MatrixPanel({
           ))}
         </div>
         {prevRound !== undefined ? (
-          <label className="text-base">
-            <input type="checkbox" checked={compare} onChange={(e) => setCompare(e.target.checked)} /> Compare with previous
-            round
+          <label className="text-base flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={compare} onChange={(e) => setCompare(e.target.checked)} /> Compare with previous round
           </label>
         ) : null}
         <div className="ml-auto flex flex-wrap items-center gap-2" aria-label="Legend and totals">
@@ -150,14 +147,14 @@ export function MatrixPanel({
               <p className="label">
                 {selDim?.name ?? "Dimension"} / {sel.name}
               </p>
-              <p className="text-base" style={{ color: "var(--text-muted)" }}>
+              <p className="text-base text-text-muted">
                 {sel.description}
               </p>
             </div>
             {selCell ? <StateChip spec={coverageChip(selCell.state)} large /> : null}
           </div>
           {selCell ? (
-            <div className="mb-3 rounded-md p-3" style={{ background: "var(--surface-2)" }}>
+            <div className="mb-3 rounded-md p-3 bg-surface-2">
               <p className="label mb-1">Reason</p>
               <p>{selCell.reason}</p>
             </div>
@@ -167,8 +164,8 @@ export function MatrixPanel({
               View evidence ({selCell?.supporting_claims ?? 0} claims)
             </button>
             {(selCell?.open_conflicts ?? 0) > 0 ? (
-              <button type="button" className="btn" onClick={onOpenConflicts}>
-                {"⚡"} {selCell?.open_conflicts} open conflict{selCell?.open_conflicts === 1 ? "" : "s"}
+              <button type="button" className="btn text-warn-fg border-warn-border hover:bg-warn-bg flex items-center gap-2" onClick={onOpenConflicts}>
+                <Icon name="Zap" size={16} aria-hidden /> {selCell?.open_conflicts} open conflict{selCell?.open_conflicts === 1 ? "" : "s"}
               </button>
             ) : null}
             <button type="button" className="btn" onClick={() => setSelected(null)}>
@@ -178,7 +175,7 @@ export function MatrixPanel({
           <OriginGroupView slotName={sel.name} groups={originsForSlot(view, sel.id)} onOpenSource={onOpenSource} />
         </section>
       ) : (
-        <p className="text-base" style={{ color: "var(--text-muted)" }}>
+        <p className="text-base text-text-muted">
           Select a cell to see why it has that state, and how its sources collapse into independent origins.
         </p>
       )}
