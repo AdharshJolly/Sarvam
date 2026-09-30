@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CoverageMatrix, MatrixTable } from "../components/CoverageMatrix";
+import { OriginGroupView } from "../components/OriginGroupView";
 import { ModeBadge } from "../components/ModeBadge";
 import { AppHeader } from "../components/layout/AppHeader";
 import { BottomTabBar } from "../components/layout/BottomTabBar";
@@ -261,5 +262,58 @@ describe("coverage matrix", () => {
     expect(out.match(/<th scope="col"/g)?.length).toBe(7);
     expect(out.match(/<tr/g)?.length).toBe(1 + 3); // header row plus a row per slot
     expect(out).toContain("reason for D2S1");
+  });
+});
+
+
+describe("origin groups (the independence collapse)", () => {
+  const source = (id: string, domain: string) => ({
+    id,
+    run_id: "R1",
+    url: `https://${domain}/page`,
+    canonical_url: `${domain}/page`,
+    domain,
+    publisher: domain,
+    source_type: "news" as const,
+    authority_tier: 2,
+    status: "fetched" as const,
+  });
+  const origin = (id: string, method: "domain" | "near_duplicate" | "none") => ({
+    id,
+    run_id: "R1",
+    label: `Origin ${id}`,
+    method,
+    member_source_ids: [],
+  });
+  const groups = [
+    { key: "o1", origin: origin("O1", "near_duplicate"), sources: [source("S1", "a.example"), source("S2", "b.example"), source("S3", "c.example")] },
+    { key: "src:S4", origin: null, sources: [source("S4", "d.example")] },
+  ];
+
+  test("states the collapse in numbers and in words for assistive tech", () => {
+    const out = html(<OriginGroupView slotName="Pricing" groups={groups} />);
+    expect(out).toContain("4 sources, 2 independent origins");
+    expect(out).toContain("2 pages add no independent confirmation: copies count once.");
+  });
+
+  test("a multi-page origin shows its brace and page count; the others do not", () => {
+    const out = html(<OriginGroupView slotName="Pricing" groups={groups} />);
+    expect(out.match(/border-r-4/g)?.length).toBe(1);
+    expect(out).toContain("3 pages, 1 origin");
+    expect(out).toContain("near-identical text");
+  });
+
+  test("an origin whose independence is unknown carries the question-mark badge and a reason", () => {
+    const out = html(<OriginGroupView slotName="Pricing" groups={groups} />);
+    expect(out).toContain("? independence not established");
+    expect(out).toContain("its independence could not be established");
+  });
+
+  test("each source is listed with its id, domain and tier, in a labelled list per origin", () => {
+    const out = html(<OriginGroupView slotName="Pricing" groups={groups} />);
+    for (const id of ["S1", "S2", "S3", "S4"]) expect(out).toContain(`>${id}<`);
+    expect(out).toContain("Tier 2");
+    expect(out).toContain("Source pages in origin A");
+    expect(out).toContain("Source pages in origin B");
   });
 });
