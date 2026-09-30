@@ -164,6 +164,27 @@ Breakpoints: phone below 768 px (`md`), tablet 768 to 1023 px, desktop from 1024
 - To add a token: define it in `:root` **and** `:root[data-theme="dark"]`, then expose it in
   `@theme`. Check its contrast against every surface it can sit on.
 
+## 10a. Screens (phase P3)
+
+- **Landing:** hero (`font-display` h1), the four demo moments as an ordered list, the intake form, a
+  backend status line (mock / checking / available / not reachable, with "Check again"), and recent runs
+  from `lib/history.ts` (validated on read, capped at 20, best-effort writes).
+- **Intake form:** visible labels, inline validation next to the field (`aria-invalid`, focus moves to
+  the field), example chips, and LIVE/REPLAY text that says what each costs and what REPLAY can replay.
+- **Live run view (`RunProgress`):** while a run is going, a card leads with "Now" (what the run is
+  doing), a horizontal ten-phase stepper (done/current/not started in words for screen readers) and
+  the five budget meters. Meter warnings carry an icon and the word 80%+ or LIMIT. Hidden below md,
+  where the Now strip covers it.
+- **Coverage, origins, stop card:** see the component notes in section 8. The stop card is the verdict.
+- **Evidence drawer reading order:** claim, verdict, stored passage with the quote highlighted, origin, source.
+- **Conflicts:** two labelled sides (A and B) with value, unit and period, and the difference between them.
+- **Challenge:** follow-up queries show their status as icon and word (`taskStatusView`).
+- **Report:** Newsreader reading column of about 70 characters (`report/ReportBody`), contents
+  (`report/ReportContents`), sources cited and run metadata (`report/ReportMeta`); `ReportPanel` only loads.
+- **Sources table:** sortable columns (`aria-sort`, natural ordering of ids, stable), sticky header.
+- **In-page links never touch the URL hash.** The hash is the router's (`#/run/<id>/<tab>`); a plain
+  `#section` href replaced it and dropped the run. Use `onAnchorClick(id)` / `jumpTo(id)` from `lib/anchor.ts`.
+
 ## 11. Responsive targets
 
 Design and test at 375, 768, 1024 and 1440 px, both themes, with no horizontal page scroll. Behaviour
@@ -192,3 +213,4 @@ per screen is defined in phase P6 of the redesign plan.
 | Dark background is navy ink, not pure black | Keeps parity with the light theme and avoids harsh contrast |
 | Fonts are not preloaded | Vite hashes asset names, so a static `<link rel="preload">` cannot name them; `font-display: swap` avoids invisible text |
 | `border-strong` darkened (light) and lightened (dark) | The first palette had control edges at 1.4:1 to 2.5:1 against a 3:1 minimum |
+| In-page anchors scroll and focus without changing the hash | The router owns the hash; a `#heading-3` link used to navigate away from the run |

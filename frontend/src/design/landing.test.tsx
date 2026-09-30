@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { Landing } from "../components/Landing";
 import { taskStatusView } from "../components/ChallengeList";
 import { RunForm } from "../components/RunForm";
+import { SourcesTable, sortSources } from "../components/SourcesTable";
 import { contentsEntries } from "../components/panels/ReportPanel";
 import { ReportBody } from "../components/report/ReportBody";
 import { ReportContents } from "../components/report/ReportContents";
@@ -129,5 +130,35 @@ describe("report", () => {
     const nav = renderToStaticMarkup(<ReportContents headings={entries} />);
     for (const e of entries) expect(nav).toContain(`href="#heading-${e.index}"`);
     expect(nav).toContain('href="#sources-cited"');
+  });
+});
+
+describe("sources table", () => {
+  const src = (id: string, domain: string, tier: number, published_at?: string) =>
+    ({ id, url: `https://${domain}/`, domain, authority_tier: tier, published_at, status: "fetched" }) as never;
+  const list = [src("S2", "b.com", 2, "2025-01-01"), src("S10", "a.com", 1, "2026-01-01"), src("S1", "c.com", 2)];
+  const counts = { S1: 5, S2: 1, S10: 3 };
+  const ids = (k: Parameters<typeof sortSources>[1], d: "asc" | "desc") =>
+    sortSources(list, k, d, counts).map((s) => (s as { id: string }).id);
+
+  test("ids sort naturally, not as text", () => {
+    expect(ids("id", "asc")).toEqual(["S1", "S2", "S10"]);
+    expect(ids("id", "desc")).toEqual(["S10", "S2", "S1"]);
+  });
+
+  test("numbers sort as numbers and equal rows keep their order", () => {
+    expect(ids("passages", "desc")).toEqual(["S1", "S10", "S2"]);
+    expect(ids("tier", "asc")).toEqual(["S10", "S2", "S1"]);
+  });
+
+  test("freshness puts the newest first and undated sources last", () => {
+    expect(ids("freshness", "asc")).toEqual(["S10", "S2", "S1"]);
+  });
+
+  test("the table has a sticky header, labelled sortable columns and unsorted state", () => {
+    const html = renderToStaticMarkup(<SourcesTable sources={list as never} passageCounts={counts} now={new Date("2026-06-01")} />);
+    expect(html).toContain("sticky");
+    expect(html).toContain('aria-sort="none"');
+    expect(html).toContain("Column headings sort the table");
   });
 });

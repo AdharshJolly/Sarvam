@@ -48,7 +48,7 @@ function ClaimEvidenceView({ runId, claimId }: { runId: string; claimId: string 
     <Card as="article" pad="md" className="anim-in flex flex-col gap-4">
       <header>
         <p className="label mb-1">Claim {claim.id}</p>
-        <h3 className="text-lg font-semibold leading-snug">{claim.text}</h3>
+        <h3 className="font-display text-xl font-semibold leading-snug">{claim.text}</h3>
         {claim.value_num != null ? (
           <p className="text-base text-text-muted">
             {claim.entity ?? "?"} / {claim.attribute ?? "?"} = {claim.value_num} {claim.unit ?? ""}
@@ -56,6 +56,16 @@ function ClaimEvidenceView({ runId, claimId }: { runId: string; claimId: string 
           </p>
         ) : null}
       </header>
+      <section aria-label="Verdict">
+        {verdict ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <StateChip spec={verdictChip(verdict)} />
+            <span>{load.data.verdict_rationale}</span>
+          </div>
+        ) : (
+          <Badge>Not yet verified</Badge>
+        )}
+      </section>
       <section aria-label="Stored passage">
         <h4 className="label mb-1">
           Passage <span className="mono">{passage.id}</span>{" "}
@@ -80,16 +90,6 @@ function ClaimEvidenceView({ runId, claimId }: { runId: string; claimId: string 
             <Icon name="XOctagon" size={16} aria-hidden /> Quote could not be located in the stored passage.
           </p>
         ) : null}
-      </section>
-      <section aria-label="Verdict">
-        {verdict ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <StateChip spec={verdictChip(verdict)} />
-            <span>{load.data.verdict_rationale}</span>
-          </div>
-        ) : (
-          <Badge>Not yet verified</Badge>
-        )}
       </section>
       <section aria-label="Origin">
         <h4 className="label mb-1">Origin</h4>

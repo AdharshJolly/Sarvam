@@ -40,7 +40,7 @@ export function ClaimList({
                     className="flex w-full flex-wrap items-center gap-2 text-left text-base"
                     onClick={() => onOpenClaim(c.id)}
                   >
-                    <strong>{c.id}</strong>
+                    <strong className="mono">{c.id}</strong>
                     <span>{c.text}</span>
                     {numeric ? (
                       <span className="text-text-muted">
