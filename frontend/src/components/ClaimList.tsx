@@ -1,15 +1,8 @@
-import type { Claim, Verdict } from "@contracts/types";
+import type { Claim, ClaimRejectedPayload, Verdict } from "@contracts/types";
 import { Card } from "./ui/Card";
 import { EmptyState } from "./ui/EmptyState";
 import { StateChip } from "./ui/StateChip";
 import { verdictChip } from "./ui/chips";
-
-/** Structural stand-in until the addendum ships the claim.rejected payload type. */
-export interface RejectedClaimView {
-  slot_id: string;
-  quote: string;
-  reason: string;
-}
 
 export function ClaimList({
   claims,
@@ -21,7 +14,7 @@ export function ClaimList({
   claims: Claim[];
   verdicts: Record<string, Verdict>;
   slotNames: Map<string, string>;
-  rejected: RejectedClaimView[];
+  rejected: ClaimRejectedPayload[];
   onOpenClaim: (claimId: string) => void;
 }) {
   const bySlot = new Map<string, Claim[]>();
