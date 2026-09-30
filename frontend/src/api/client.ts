@@ -1,10 +1,14 @@
 import type {
+  AuthResponse,
   ClaimEvidence,
   ReportView,
   Run,
   RunCreate,
   RunState,
   RunSummary,
+  UserCreate,
+  UserLogin,
+  UserPublic,
 } from "@contracts/types";
 import { env } from "../config/env";
 import { apiUrl, routes } from "./url";
@@ -30,12 +34,37 @@ function detailOf(body: unknown): string | null {
   return null;
 }
 
+export function getStoredToken(): string | null {
+  try {
+    return localStorage.getItem("sarvam_token");
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredToken(token: string | null): void {
+  try {
+    if (token) {
+      localStorage.setItem("sarvam_token", token);
+    } else {
+      localStorage.removeItem("sarvam_token");
+    }
+  } catch {
+    // localStorage not accessible
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = getStoredToken();
+  const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
   const res = await fetch(apiUrl(env.apiBaseUrl, path), {
     ...init,
-    headers: { "Content-Type": "application/json", ...init?.headers },
+    headers: { "Content-Type": "application/json", ...authHeaders, ...init?.headers },
   });
   if (!res.ok) {
+    if (res.status === 401 && path !== routes.authLogin()) {
+      setStoredToken(null);
+    }
     let detail: string | null = null;
     try {
       detail = detailOf(await res.json());
@@ -63,6 +92,7 @@ export interface RunApi {
   getClaim: (id: string, claimId: string) => Promise<ClaimEvidence>;
   getReport: (id: string) => Promise<ReportView>;
   stopRun: (id: string) => Promise<RunSummary>;
+  listRuns: () => Promise<Run[]>;
 }
 
 export const realApi: RunApi = {
@@ -72,9 +102,28 @@ export const realApi: RunApi = {
   getClaim: (id, cid) => request<ClaimEvidence>(routes.claim(id, cid)),
   getReport: (id) => request<ReportView>(routes.report(id)),
   stopRun: (id) => request<RunSummary>(routes.stop(id), { method: "POST" }),
+  listRuns: () => request<Run[]>(routes.runs()),
 };
+
+export interface UserUpdateData {
+  display_name?: string;
+  password?: string;
+}
 
 /** Domain shapes come from generated contracts (@contracts/types), never hand-written here. */
 export const api = {
   health: () => request<Health>(routes.health()),
+  register: (body: UserCreate) =>
+    request<AuthResponse>(routes.authRegister(), { method: "POST", body: JSON.stringify(body) }),
+  login: (body: UserLogin) =>
+    request<AuthResponse>(routes.authLogin(), { method: "POST", body: JSON.stringify(body) }),
+  logout: () => request<{ ok: boolean }>(routes.authLogout(), { method: "POST" }),
+  me: () => request<UserPublic>(routes.authMe()),
+  updateProfile: (body: UserUpdateData) =>
+    request<UserPublic>(routes.authMe(), { method: "PATCH", body: JSON.stringify(body) }),
+  deleteAccount: () =>
+    request<{ ok: boolean }>(routes.authMe(), { method: "DELETE" }),
+  listRuns: () => request<Run[]>(routes.runs()),
+  stopRun: (id: string) => request<RunSummary>(routes.stop(id), { method: "POST" }),
 };
+

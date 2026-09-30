@@ -11,7 +11,7 @@ import {
   writeRailPref,
 } from "../../lib/layout";
 import { onAnchorClick } from "../../lib/anchor";
-import { buildHash, parseRoute } from "../../lib/route";
+import { buildHash, getRoutePage, parseRoute, type PageId } from "../../lib/route";
 import { useMediaQuery } from "../../lib/useMediaQuery";
 import { EvidenceProvider, useEvidence } from "../../state/EvidenceContext";
 import { openConflictCount, worstCriticalSlots } from "../../state/selectors";
@@ -38,18 +38,30 @@ import { BottomTabBar } from "./BottomTabBar";
 import { CenterTabs, type TabId } from "./CenterTabs";
 import { EvidenceDrawer } from "./EvidenceDrawer";
 import { LeftRail, RailContent } from "./LeftRail";
+import { SignInPage } from "../auth/SignInPage";
+import { RegisterPage } from "../auth/RegisterPage";
+import { WorkspacePage } from "../workspace/WorkspacePage";
+import { AdminPage } from "../admin/AdminPage";
+import { AccountPage } from "../account/AccountPage";
+import { PrivacyPolicyPage } from "../legal/PrivacyPolicyPage";
+import { TermsPage } from "../legal/TermsPage";
+import { CookiePolicyPage } from "../legal/CookiePolicyPage";
+import { CookieBanner } from "../ui/CookieBanner";
+import { useAuth } from "../../state/useAuth";
 
 function Shell() {
+  const { user, loading: authLoading } = useAuth();
   const { view, runId, error, newRun, reattach, hydrating } = useSession();
   const ev = useEvidence();
   const isLg = useMediaQuery(`(min-width: ${LG_MIN}px)`);
   const isXl = useMediaQuery(`(min-width: ${XL_MIN}px)`);
   const isXxl = useMediaQuery(`(min-width: ${XXL_MIN}px)`);
 
+  const [page, setPage] = useState<PageId>(() => getRoutePage(window.location.hash));
   const [tab, setTabState] = useState<TabId>(() => parseRoute(window.location.hash).tab);
   const [slotFilter, setSlotFilter] = useState<string | null>(null);
   const [dockFilter, setDockFilter] = useState<DockFilter>("all");
-  const [dockOpen, setDockOpen] = useState(() => window.innerWidth >= LG_MIN);
+  const [dockOpen, setDockOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false); // status sheet (below lg)
   const [activityOpen, setActivityOpen] = useState(false); // timeline sheet (below lg)
   const [railPref, setRailPref] = useState<RailPref>(readRailPref);
@@ -66,6 +78,13 @@ function Shell() {
     writeRailPref(next);
   };
 
+  // Redirect logged-in users away from the landing page
+  useEffect(() => {
+    if (!authLoading && user && !runId && page === "landing") {
+      window.location.hash = "#/workspace";
+    }
+  }, [user, authLoading, runId, page]);
+
   // The sheets only exist below lg; close them if the window grows past it.
   useEffect(() => {
     if (isLg) {
@@ -74,12 +93,25 @@ function Shell() {
     }
   }, [isLg]);
 
-  // The tab lives in the URL (#/run/<id>/<tab>) so reloads, shared links and Back restore it.
+  // The route & tab lives in the URL (#/run/<id>/<tab>, #/signin, #/register, #/admin, #/account, #/cookies)
   useEffect(() => {
-    const onHash = () => setTabState(parseRoute(window.location.hash).tab);
+    const onHash = () => {
+      setPage(getRoutePage(window.location.hash));
+      setTabState(parseRoute(window.location.hash).tab);
+    };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
+
+  if (page === "signin") return <SignInPage />;
+  if (page === "register") return <RegisterPage />;
+  if (page === "workspace") return <WorkspacePage />;
+  if (page === "admin") return <AdminPage />;
+  if (page === "account") return <AccountPage />;
+  if (page === "privacy") return <PrivacyPolicyPage />;
+  if (page === "terms") return <TermsPage />;
+  if (page === "cookies") return <CookiePolicyPage />;
+
 
   const setTab = (t: TabId) => {
     if (runId) window.location.hash = buildHash(runId, t);
@@ -190,7 +222,7 @@ function Shell() {
 
       <div
         className={`grid flex-1 grid-cols-1 ${
-          runId ? (collapsed ? "lg:grid-cols-[3.5rem_1fr]" : "lg:grid-cols-[19rem_1fr]") : ""
+          runId ? (collapsed ? "lg:grid-cols-[3.5rem_1fr]" : "lg:grid-cols-[17rem_1fr]") : ""
         }`}
       >
         {runId ? <LeftRail collapsed={collapsed} onToggle={toggleRail} onOpenMeter={goMeter} /> : null}
@@ -288,6 +320,7 @@ function Shell() {
         </>
       ) : null}
       <EvidenceDrawer />
+      <CookieBanner />
     </div>
   );
 }

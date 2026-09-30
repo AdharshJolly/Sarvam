@@ -38,7 +38,19 @@ import {
   TrendingUp,
   XOctagon,
   Zap,
+  Sparkles,
+  Globe,
+  Calendar,
+  SlidersHorizontal,
+  CornerDownLeft,
+  LoaderCircle,
+  LogOut,
+  Trash2,
+  User,
+  ArrowLeft,
+  Shield,
 } from "lucide-react";
+
 import type { LucideIcon, LucideProps } from "lucide-react";
 
 /**
@@ -85,7 +97,19 @@ const ICONS = {
   TrendingUp,
   XOctagon,
   Zap,
+  Sparkles,
+  Globe,
+  Calendar,
+  SlidersHorizontal,
+  CornerDownLeft,
+  LoaderCircle,
+  LogOut,
+  Trash2,
+  User,
+  ArrowLeft,
+  Shield,
 } satisfies Record<string, LucideIcon>;
+
 
 export type IconName = keyof typeof ICONS;
 

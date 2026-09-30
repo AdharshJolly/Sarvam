@@ -9,6 +9,10 @@ export function apiUrl(base: string, path: string): string {
 
 export const routes = {
   health: () => "/health",
+  authRegister: () => "/auth/register",
+  authLogin: () => "/auth/login",
+  authLogout: () => "/auth/logout",
+  authMe: () => "/auth/me",
   runs: () => "/runs",
   run: (id: string) => `/runs/${encodeURIComponent(id)}`,
   events: (id: string) => `/runs/${encodeURIComponent(id)}/events`,
