@@ -51,63 +51,40 @@ export function CookieBanner() {
       <div
         role="region"
         aria-label="Cookie and data storage preferences"
-        className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50 max-w-md w-[calc(100vw-2rem)] sm:w-auto animate-enter"
+        className="fixed bottom-0 inset-x-0 z-50 bg-surface/95 backdrop-blur-md border-t border-border-hairline py-3 px-4 sm:px-6 shadow-lg animate-enter"
       >
-        <div className="bg-surface/95 backdrop-blur-xl border border-border-hairline rounded-2xl shadow-2xl p-5 sm:p-6 flex flex-col gap-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-brand/10 text-brand flex items-center justify-center shrink-0">
-                <Icon name="Shield" size={18} aria-hidden />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-text tracking-tight">
-                  Cookie &amp; Storage Transparency
-                </h3>
-                <span className="text-sm text-ok-fg font-medium flex items-center gap-1 mt-0.5">
-                  <Icon name="CheckCircle" size={13} aria-hidden />
-                  Zero Third-Party Tracking
-                </span>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => saveConsent(false)}
-              className="text-text-muted hover:text-text p-1 rounded-md transition-colors"
-              aria-label="Dismiss and accept essential only"
-              title="Accept essential storage"
-            >
-              <Icon name="Minus" size={16} />
-            </button>
+        <div className="max-w-[1240px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
+          <div className="flex items-center gap-3">
+            <span className="text-brand flex-shrink-0" aria-hidden>
+              <Icon name="Shield" size={18} />
+            </span>
+            <p className="text-text-muted">
+              Sarvam uses strictly essential local storage for authentication and research sessions. Zero third-party trackers, zero marketing cookies.
+              <a
+                href="#/cookies"
+                className="ml-2 text-brand hover:underline underline-offset-4 font-medium"
+              >
+                Cookie Policy
+              </a>
+            </p>
           </div>
 
-          <p className="text-sm text-text-muted leading-relaxed">
-            Sarvam uses strictly essential local storage for authentication sessions and layout preferences. We do not use advertising, marketing trackers, or sell data.
-          </p>
-
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-border-hairline">
-            <a
-              href="#/cookies"
-              className="text-sm text-brand hover:underline underline-offset-4"
+          <div className="flex items-center gap-2.5 self-end sm:self-auto flex-shrink-0">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setModalOpen(true)}
+              className="text-text hover:bg-surface-2"
             >
-              View Cookie Policy
-            </a>
-            <div className="flex items-center gap-2 self-end sm:self-auto">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setModalOpen(true)}
-                className="text-text hover:bg-surface-2"
-              >
-                Customize
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => saveConsent(false)}
-                className="bg-brand text-white font-medium hover:opacity-95 px-4"
-              >
-                Accept Essential
-              </Button>
-            </div>
+              Customize
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => saveConsent(false)}
+              className="bg-brand text-white font-medium hover:opacity-95 px-4"
+            >
+              Accept Essential
+            </Button>
           </div>
         </div>
       </div>
