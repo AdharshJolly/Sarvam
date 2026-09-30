@@ -816,6 +816,47 @@ def _challenges(conn: sqlite3.Connection, run_id: str) -> list[Challenge]:
     ]
 
 
+def list_challenges(conn: sqlite3.Connection, run_id: str) -> list[Challenge]:
+    return _challenges(conn, run_id)
+
+
+def insert_challenge(
+    conn: sqlite3.Connection,
+    run_id: str,
+    *,
+    round: int,
+    attack: str,
+    target_slot: str | None,
+    target_claim: str | None,
+    required_evidence: str,
+    would_change_if: str,
+    followup_task_ids: list[str],
+) -> Challenge:
+    cid = next_id(conn, "H")
+    conn.execute(
+        "INSERT INTO challenges (id, run_id, round, attack, target_slot, target_claim,"
+        " required_evidence, would_change_if, followup_task_ids) VALUES (?,?,?,?,?,?,?,?,?)",
+        (
+            cid,
+            run_id,
+            round,
+            attack,
+            target_slot,
+            target_claim,
+            required_evidence,
+            would_change_if,
+            json.dumps(followup_task_ids),
+        ),
+    )
+    conn.commit()
+    return next(c for c in _challenges(conn, run_id) if c.id == cid)
+
+
+def set_challenge_outcome(conn: sqlite3.Connection, challenge_id: str, outcome: str) -> None:
+    conn.execute("UPDATE challenges SET outcome=? WHERE id=?", (outcome, challenge_id))
+    conn.commit()
+
+
 def _stop(conn: sqlite3.Connection, run_id: str) -> StopDecision | None:
     row = conn.execute(
         "SELECT payload_json FROM events WHERE run_id=? AND type=? ORDER BY id DESC LIMIT 1",
