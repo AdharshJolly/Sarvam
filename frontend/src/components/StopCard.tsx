@@ -1,6 +1,8 @@
 import type { Challenge, FinalState, StopDecision, TerminationReason } from "@contracts/types";
 import { StateChip } from "./ui/StateChip";
-import { finalStateChip, toneBg, toneVar } from "./ui/chips";
+import { finalStateChip } from "./ui/chips";
+import { Icon } from "./ui/Icon";
+import { Banner } from "./ui/Banner";
 
 export const terminationText: Record<TerminationReason, string> = {
   criteria_met: "All critical slots are green and a challenge round completed.",
@@ -19,6 +21,12 @@ const meaning: Record<FinalState, string> = {
 };
 
 const stateTone = { SUFFICIENT: "ok", SUFFICIENT_WITH_CAVEATS: "warn", INSUFFICIENT: "bad" } as const;
+
+const TONE_COLORS = {
+  ok: "border-ok-border bg-ok-bg",
+  warn: "border-warn-border bg-warn-bg",
+  bad: "border-bad-border bg-bad-bg",
+};
 
 export interface StopGap {
   slotId: string;
@@ -49,15 +57,17 @@ export function StopCard({
   const challengeSkipped = NO_CHALLENGE.includes(stop.termination_reason) && rounds === 0;
   const wouldChange = challenges.filter((c) => c.would_change_if);
   const weakened = challenges.filter((c) => c.outcome === "weakened").length;
-  const tone = stateTone[stop.state];
+  const tone = stateTone[stop.state] || "ok";
+  const toneClass = TONE_COLORS[tone] ?? TONE_COLORS.ok;
+  const [borderColor, bgColor] = toneClass.split(" ");
+
   return (
     <section
       aria-live="polite"
       aria-label="Stop decision"
-      className="card anim-in overflow-hidden"
-      style={{ borderColor: toneVar[tone], borderWidth: 2 }}
+      className={`card anim-in overflow-hidden border-2 ${borderColor}`}
     >
-      <div className="flex flex-wrap items-center gap-3 px-4 py-3" style={{ background: toneBg[tone] }}>
+      <div className={`flex flex-wrap items-center gap-3 px-4 py-3 ${bgColor}`}>
         <div>
           <p className="label">Research complete</p>
           <div className="mt-1 flex flex-wrap items-center gap-3">
@@ -67,7 +77,7 @@ export function StopCard({
         <p className="min-w-[14rem] flex-1 text-base">{meaning[stop.state]}</p>
         {onViewReport ? (
           <button type="button" className="btn btn-primary" onClick={onViewReport}>
-            View report {"→"}
+            View report <Icon name="ArrowRight" size={16} className="inline-block ml-1" aria-hidden />
           </button>
         ) : null}
       </div>
@@ -78,9 +88,9 @@ export function StopCard({
           <p>{terminationText[stop.termination_reason]}</p>
 
           {challengeSkipped ? (
-            <p role="alert" className="mt-3 rounded-md border p-2 font-semibold" style={{ borderColor: "var(--warn)", color: "var(--warn)", background: "var(--warn-bg)" }}>
-              {"▲"} The challenge round was not completed
-            </p>
+            <div className="mt-3">
+              <Banner tone="warn">The challenge round was not completed</Banner>
+            </div>
           ) : (
             <>
               <h4 className="label mb-1 mt-3">Challenge</h4>
@@ -92,15 +102,13 @@ export function StopCard({
           )}
 
           <h4 className="label mb-1 mt-3">Critical slots</h4>
-          <p className="mono">
-            <span style={{ color: "var(--ok)" }}>{"✓"} {crit.green ?? 0} green</span>
-            {"  "}
-            <span style={{ color: "var(--warn)" }}>{"▲"} {crit.amber ?? 0} amber</span>
-            {"  "}
-            <span style={{ color: "var(--bad)" }}>{"✕"} {crit.red ?? 0} red</span>
-          </p>
-          <p className="mt-1">
-            <button type="button" className="underline" onClick={onOpenConflicts}>
+          <div className="mono flex items-center gap-4">
+            <span className="text-ok-fg flex items-center gap-1"><Icon name="Check" size={14} aria-hidden /> {crit.green ?? 0} green</span>
+            <span className="text-warn-fg flex items-center gap-1"><Icon name="AlertTriangle" size={14} aria-hidden /> {crit.amber ?? 0} amber</span>
+            <span className="text-bad-fg flex items-center gap-1"><Icon name="XOctagon" size={14} aria-hidden /> {crit.red ?? 0} red</span>
+          </div>
+          <p className="mt-2">
+            <button type="button" className="underline hover:text-brand-secondary transition-colors" onClick={onOpenConflicts}>
               {openConflicts} open {openConflicts === 1 ? "conflict" : "conflicts"}
             </button>
           </p>
@@ -113,7 +121,7 @@ export function StopCard({
               <ul className="mb-3 text-base">
                 {gaps.map((g) => (
                   <li key={g.slotId} className="mb-1">
-                    <button type="button" className="font-semibold underline" onClick={() => onOpenSlot(g.slotId)}>
+                    <button type="button" className="font-semibold underline hover:text-brand-secondary transition-colors" onClick={() => onOpenSlot(g.slotId)}>
                       {g.name}
                     </button>
                     : {g.reason}
@@ -125,7 +133,7 @@ export function StopCard({
           {(stop.caveats ?? []).length > 0 ? (
             <>
               <h4 className="label mb-1">Caveats</h4>
-              <ul className="mb-3 list-disc pl-5 text-base">
+              <ul className="mb-3 list-disc pl-5 text-base text-text-muted">
                 {(stop.caveats ?? []).map((c) => (
                   <li key={c}>{c}</li>
                 ))}
@@ -135,7 +143,7 @@ export function StopCard({
           {wouldChange.length > 0 ? (
             <>
               <h4 className="label mb-1">What could change this conclusion</h4>
-              <ul className="list-disc pl-5 text-base">
+              <ul className="list-disc pl-5 text-base text-text-muted">
                 {wouldChange.map((c) => (
                   <li key={c.id}>{c.would_change_if}</li>
                 ))}

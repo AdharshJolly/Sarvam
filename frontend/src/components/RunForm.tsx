@@ -2,6 +2,8 @@ import type { Mode } from "@contracts/types";
 import { type FormEvent, useState } from "react";
 import { CANONICAL_QUESTION } from "../mocks/scenarios";
 import { errorText, useSession } from "../state/useRunSession";
+import { Icon } from "./ui/Icon";
+import { Banner } from "./ui/Banner";
 
 const EXAMPLES = [
   { label: "Canonical (Bengaluru scooters)", q: CANONICAL_QUESTION },
@@ -44,16 +46,15 @@ export function RunForm() {
     }
   };
 
-  const field = "w-full rounded-md border p-2 text-base";
-  const fs = { borderColor: "var(--border-strong)", background: "var(--bg)", color: "var(--text)" };
+  const fieldClasses = "w-full rounded-md border border-border-strong bg-surface p-2 text-base text-text focus-visible:outline-brand-secondary focus-visible:outline-2";
+  
   return (
     <form onSubmit={submit} className="flex flex-col gap-4" aria-label="Start a research run">
       <h2 className="text-xl font-semibold">Start a research run</h2>
       <label className="flex flex-col gap-1">
         <span className="label">Research question</span>
         <textarea
-          className={field}
-          style={fs}
+          className={fieldClasses}
           rows={4}
           maxLength={2000}
           value={question}
@@ -61,16 +62,16 @@ export function RunForm() {
           onChange={(e) => setQuestion(e.target.value)}
           aria-required="true"
         />
-        <span className="mono self-end" style={{ color: "var(--text-muted)" }}>
+        <span className="mono self-end text-text-muted text-sm">
           {question.length}/2000
         </span>
       </label>
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm" style={{ color: "var(--text-muted)" }}>
+        <span className="text-sm text-text-muted">
           Try:
         </span>
         {EXAMPLES.map((x) => (
-          <button key={x.label} type="button" className="rounded-full border px-3 py-0.5 text-sm" style={{ borderColor: "var(--border-strong)" }} onClick={() => setQuestion(x.q)}>
+          <button key={x.label} type="button" className="rounded-full border border-border-strong px-3 py-0.5 text-sm hover:border-brand-secondary transition-colors" onClick={() => setQuestion(x.q)}>
             {x.label}
           </button>
         ))}
@@ -78,50 +79,52 @@ export function RunForm() {
       <div className="grid gap-3 sm:grid-cols-3">
         <label className="flex flex-col gap-1">
           <span className="label">Geography</span>
-          <input className={field} style={fs} value={geography} placeholder="optional" onChange={(e) => setGeography(e.target.value)} />
+          <input className={fieldClasses} value={geography} placeholder="optional" onChange={(e) => setGeography(e.target.value)} />
         </label>
         <label className="flex flex-col gap-1">
           <span className="label">Time horizon</span>
-          <input className={field} style={fs} value={horizon} placeholder="optional" onChange={(e) => setHorizon(e.target.value)} />
+          <input className={fieldClasses} value={horizon} placeholder="optional" onChange={(e) => setHorizon(e.target.value)} />
         </label>
         <label className="flex flex-col gap-1">
           <span className="label">Constraints</span>
-          <input className={field} style={fs} value={constraints} placeholder="optional" onChange={(e) => setConstraints(e.target.value)} />
+          <input className={fieldClasses} value={constraints} placeholder="optional" onChange={(e) => setConstraints(e.target.value)} />
         </label>
       </div>
       <fieldset className="grid gap-2 sm:grid-cols-2">
         <legend className="label mb-1">Mode</legend>
-        {(
-          [
-            ["LIVE", "● LIVE", "Searches and reads the web now."],
-            ["REPLAY", "↻ REPLAY", "Uses recorded results, works offline."],
-          ] as const
-        ).map(([m, title, text]) => (
-          <label
-            key={m}
-            className="cursor-pointer rounded-md border p-3"
-            style={{ borderColor: mode === m ? "var(--accent)" : "var(--border)", background: mode === m ? "var(--accent-bg)" : "transparent", borderWidth: mode === m ? 2 : 1 }}
-          >
-            <input type="radio" name="mode" className="sr-only" checked={mode === m} onChange={() => setMode(m)} />
-            <span className="block font-semibold">{title}</span>
-            <span className="block text-sm" style={{ color: "var(--text-muted)" }}>
-              {text}
-            </span>
-          </label>
-        ))}
+        <label
+          className={`cursor-pointer rounded-md border p-3 transition-colors ${mode === "LIVE" ? "border-brand-secondary border-2 bg-brand-secondary/10" : "border-border border"}`}
+        >
+          <input type="radio" name="mode" className="sr-only" checked={mode === "LIVE"} onChange={() => setMode("LIVE")} />
+          <span className="block font-semibold flex items-center gap-1.5"><Icon name="Activity" size={16} aria-hidden /> LIVE</span>
+          <span className="block text-sm text-text-muted mt-1">
+            Searches and reads the web now.
+          </span>
+        </label>
+        <label
+          className={`cursor-pointer rounded-md border p-3 transition-colors ${mode === "REPLAY" ? "border-brand-secondary border-2 bg-brand-secondary/10" : "border-border border"}`}
+        >
+          <input type="radio" name="mode" className="sr-only" checked={mode === "REPLAY"} onChange={() => setMode("REPLAY")} />
+          <span className="block font-semibold flex items-center gap-1.5"><Icon name="RotateCcw" size={16} aria-hidden /> REPLAY</span>
+          <span className="block text-sm text-text-muted mt-1">
+            Uses recorded results, works offline.
+          </span>
+        </label>
       </fieldset>
       {error ? (
-        <p role="alert" style={{ color: "var(--bad)" }}>
-          {"✕"} {error}
-        </p>
+        <Banner tone="bad">
+          {error}
+        </Banner>
       ) : null}
-      <button type="submit" disabled={busy} className="btn btn-primary w-fit px-5 py-2 text-base" style={{ opacity: busy ? 0.7 : 1 }}>
+      <button type="submit" disabled={busy} className="btn btn-primary w-fit px-5 py-2 text-base transition-opacity disabled:opacity-70">
         {busy ? (
-          <>
-            <span className="blink">{"●"}</span> Starting run...
-          </>
+          <span className="flex items-center gap-2">
+            <Icon name="Activity" size={16} className="blink" aria-hidden /> Starting run...
+          </span>
         ) : (
-          "Start run →"
+          <span className="flex items-center gap-1">
+            Start run <Icon name="ArrowRight" size={16} aria-hidden />
+          </span>
         )}
       </button>
     </form>

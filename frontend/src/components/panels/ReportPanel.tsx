@@ -18,6 +18,8 @@ import { EmptyState } from "../ui/EmptyState";
 import { Skeleton } from "../ui/Skeleton";
 import { StateChip } from "../ui/StateChip";
 import { certaintyChip, finalStateChip } from "../ui/chips";
+import { Icon } from "../ui/Icon";
+import { Banner } from "../ui/Banner";
 
 const warned = new Set<string>();
 
@@ -45,8 +47,8 @@ function Inlines({ nodes, resolvable, onCite }: { nodes: Inline[]; resolvable: S
             console.error(`Sarvam: report cites ${n.id} which is missing from citations (contract violation)`);
           }
           return (
-            <span key={i} title="This citation id is not in the report's citation list">
-              [{n.id}] {"⚠"} unresolved citation
+            <span key={i} title="This citation id is not in the report's citation list" className="text-warn-fg">
+              [{n.id}] <Icon name="AlertTriangle" size={14} className="inline" aria-hidden /> unresolved citation
             </span>
           );
         }
@@ -54,8 +56,7 @@ function Inlines({ nodes, resolvable, onCite }: { nodes: Inline[]; resolvable: S
           <button
             key={i}
             type="button"
-            className="mx-0.5 rounded border px-1 text-sm font-semibold"
-            style={{ borderColor: "var(--accent)", color: "var(--accent)" }}
+            className="mx-0.5 rounded border px-1 text-sm font-semibold border-brand-secondary text-brand-secondary hover:bg-brand-secondary/10 transition-colors"
             aria-label={`Open evidence for claim ${n.id}`}
             onClick={() => onCite(n.id)}
           >
@@ -75,7 +76,7 @@ function Nodes({ nodes, resolvable, onCite }: { nodes: ReportNode[]; resolvable:
           case "heading": {
             const cls = n.level === 1 ? "text-2xl" : n.level === 2 ? "text-xl" : "text-lg";
             return (
-              <h3 key={i} className={`${cls} mt-4 font-semibold`}>
+              <h3 key={i} id={`heading-${i}`} className={`${cls} mt-4 font-semibold scroll-mt-20`}>
                 {inl(n.inline)}
               </h3>
             );
@@ -101,7 +102,7 @@ function Nodes({ nodes, resolvable, onCite }: { nodes: ReportNode[]; resolvable:
                   <thead>
                     <tr>
                       {n.header.map((h, j) => (
-                        <th key={j} className="border-b p-1" style={{ borderColor: "var(--border)" }}>
+                        <th key={j} className="border-b border-border p-1">
                           {inl(h)}
                         </th>
                       ))}
@@ -111,7 +112,7 @@ function Nodes({ nodes, resolvable, onCite }: { nodes: ReportNode[]; resolvable:
                     {n.rows.map((r, j) => (
                       <tr key={j}>
                         {r.map((c, k) => (
-                          <td key={k} className="border-b p-1" style={{ borderColor: "var(--border)" }}>
+                          <td key={k} className="border-b border-border p-1">
                             {inl(c)}
                           </td>
                         ))}
@@ -178,7 +179,10 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
     URL.revokeObjectURL(url);
   };
 
-  const headings = nodes.flatMap((n) => (n.type === "heading" && n.level > 1 ? [n] : []));
+  const headings = nodes
+    .map((n, i) => ({ n, i }))
+    .filter((x) => x.n.type === "heading" && x.n.level > 1) as { n: Extract<ReportNode, { type: "heading" }>; i: number }[];
+    
   const cited = report?.citations ?? [];
   const metaRows: [string, string][] = report
     ? [
@@ -220,31 +224,35 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
       ) : null}
       {state === "missing" ? (
         <EmptyState
-          icon={"☰"}
+          icon="AlignLeft"
           title="The report is written after the stop decision"
           why={`Current phase: ${view.phase ? view.phase.replace("_", " ") : "not started"}.`}
         />
       ) : null}
       {state === "error" ? (
-        <p role="alert" style={{ color: "var(--bad)" }}>
-          {"✕"} Could not load the report: {err}
-        </p>
+        <Banner tone="bad">
+          Could not load the report: {err}
+        </Banner>
       ) : null}
       {report ? (
         <div className="grid gap-4 xl:grid-cols-[13rem_1fr]">
           <nav aria-label="Report contents" className="no-print hidden xl:block">
             <div className="sticky top-20">
               <p className="label mb-2">Contents</p>
-              <ul className="flex flex-col gap-1 text-base">
+              <ul className="flex flex-col gap-1.5 text-base">
                 {headings.map((h, i) => (
-                  <li key={i} style={{ paddingLeft: h.level === 3 ? "0.75rem" : 0 }}>
-                    <span style={{ color: h.level === 3 ? "var(--text-muted)" : "var(--text)" }}>
-                      <Inlines nodes={h.inline} resolvable={resolvable} onCite={() => undefined} />
-                    </span>
+                  <li key={i} className={h.n.level === 3 ? "pl-3" : ""}>
+                    <a href={`#heading-${h.i}`} className={`block hover:text-brand transition-colors ${h.n.level === 3 ? "text-text-muted" : "text-text"}`}>
+                      <Inlines nodes={h.n.inline} resolvable={resolvable} onCite={() => undefined} />
+                    </a>
                   </li>
                 ))}
-                <li>Sources cited</li>
-                <li>Method and run metadata</li>
+                <li className="pt-2 mt-2 border-t border-border">
+                  <a href="#sources-cited" className="block text-text-muted hover:text-brand transition-colors">Sources cited</a>
+                </li>
+                <li>
+                  <a href="#method-metadata" className="block text-text-muted hover:text-brand transition-colors">Method and run metadata</a>
+                </li>
               </ul>
             </div>
           </nav>
@@ -260,20 +268,22 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
                 </button>
               </div>
               {unresolved.length > 0 ? (
-                <p role="alert" style={{ color: "var(--bad)" }}>
-                  {"⚠"} {unresolved.length} unresolved citation(s): {unresolved.join(", ")}
-                </p>
+                <div className="mb-4">
+                  <Banner tone="warn">
+                    {unresolved.length} unresolved citation(s): {unresolved.join(", ")}
+                  </Banner>
+                </div>
               ) : null}
               <Nodes nodes={nodes} resolvable={resolvable} onCite={(id) => ev.open([id])} />
               {(report.dropped_sentences ?? []).length > 0 ? (
-                <details className="mt-4 rounded-md p-3" style={{ background: "var(--surface-2)" }}>
+                <details className="mt-4 rounded-md p-3 bg-surface-2">
                   <summary className="cursor-pointer font-semibold">
                     Removed by the report verifier ({(report.dropped_sentences ?? []).length})
                   </summary>
-                  <p className="mt-1 text-sm" style={{ color: "var(--text-muted)" }}>
+                  <p className="mt-1 text-sm text-text-muted">
                     These sentences had no stored claim behind them, so they were left out of the report.
                   </p>
-                  <ul className="list-disc pl-6 text-base">
+                  <ul className="list-disc pl-6 text-base mt-2">
                     {(report.dropped_sentences ?? []).map((s, i) => (
                       <li key={i}>{s}</li>
                     ))}
@@ -282,21 +292,21 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
               ) : null}
             </article>
 
-            <section className="card p-4" aria-label="Sources cited">
+            <section id="sources-cited" className="card p-4 scroll-mt-20" aria-label="Sources cited">
               <h3 className="label mb-2">Sources cited ({cited.length})</h3>
               <ul className="flex flex-col gap-1 text-base">
                 {cited.map((c) => {
                   const href = safeHref(c.url);
                   return (
                     <li key={c.claim_id} className="flex flex-wrap items-baseline gap-2">
-                      <button type="button" className="mono underline" aria-label={`Open evidence for claim ${c.claim_id}`} onClick={() => ev.open([c.claim_id])}>
+                      <button type="button" className="mono underline text-brand-secondary hover:text-brand transition-colors" aria-label={`Open evidence for claim ${c.claim_id}`} onClick={() => ev.open([c.claim_id])}>
                         {c.claim_id}
                       </button>
-                      <span className="mono" style={{ color: "var(--text-muted)" }}>
+                      <span className="mono text-text-muted">
                         {c.passage_id} · {c.source_id}
                       </span>
                       {href ? (
-                        <a href={href} target="_blank" rel="noopener noreferrer" className="underline">
+                        <a href={href} target="_blank" rel="noopener noreferrer" className="underline hover:text-brand transition-colors">
                           {c.url}
                         </a>
                       ) : (
@@ -308,12 +318,12 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
               </ul>
             </section>
 
-            <section className="card p-4" aria-label="Method and run metadata">
+            <section id="method-metadata" className="card p-4 scroll-mt-20" aria-label="Method and run metadata">
               <h3 className="label mb-2">Method and run metadata</h3>
               <dl className="grid gap-x-6 gap-y-1 sm:grid-cols-2">
                 {metaRows.map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-3 border-b py-1" style={{ borderColor: "var(--border)" }}>
-                    <dt style={{ color: "var(--text-muted)" }}>{k}</dt>
+                  <div key={k} className="flex justify-between gap-3 border-b border-border py-1">
+                    <dt className="text-text-muted">{k}</dt>
                     <dd className="mono text-right">{v}</dd>
                   </div>
                 ))}
