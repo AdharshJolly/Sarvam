@@ -10,5 +10,6 @@
 | [`decisions/`](decisions/README.md) | ADRs and the change log (SSOT sections 20-21). | Log every contract/schema/threshold change. |
 | [`audit/`](audit/README.md) | Manual audit sheet and evaluation results (SSOT 16.3). | Filled during evaluation. |
 | [`research/`](research/README.md) | External evidence base and market notes (SSOT 2.4, 23). | Reference only. |
+| [`design/MASTER.md`](design/MASTER.md) | Design system source of truth (Tokens, typography, UI rules). | Must match the UI redesign. |
 
 "ResearchOps" refers to the GATEWAYS 2026 challenge domain and the SSOT title. The product is **Sarvam**.

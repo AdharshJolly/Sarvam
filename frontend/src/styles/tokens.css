@@ -1,0 +1,119 @@
+@import "tailwindcss";
+@import "./base.css";
+@import "./components.css";
+@import "./motion.css";
+@import "./print.css";
+
+/* Semantic tokens only. Raw hex goes here. */
+:root {
+  /* Brand */
+  --color-brand: #1E3A5F;
+  --color-brand-secondary: #2563EB;
+
+  /* Neutrals (Light) */
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F1F5F9;
+  --color-text: #0F172A;
+  --color-text-muted: #475569;
+  --color-border-hairline: #E2E8F0;
+  --color-border-strong: #CBD5E1;
+
+  /* Status */
+  /* Green */
+  --color-ok-fg: #15803d;
+  --color-ok-bg: #f0fdf4;
+  --color-ok-border: #bbf7d0;
+  /* Amber (Ochre) */
+  --color-warn-fg: #b45309;
+  --color-warn-bg: #fffbeb;
+  --color-warn-border: #fde68a;
+  /* Red */
+  --color-bad-fg: #b91c1c;
+  --color-bad-bg: #fef2f2;
+  --color-bad-border: #fecaca;
+  /* Info */
+  --color-info-fg: #0369a1;
+  --color-info-bg: #f0f9ff;
+  --color-info-border: #bae6fd;
+
+  --shadow-elevation: 0 1px 2px rgb(0 0 0 / 0.05), 0 4px 6px rgb(0 0 0 / 0.05);
+}
+
+:root[data-theme="dark"] {
+  /* Neutrals (Dark - navy-ink background) */
+  --color-bg: #0B1120;
+  --color-surface: #1E293B;
+  --color-surface-2: #334155;
+  --color-text: #F8FAFC;
+  --color-text-muted: #94A3B8;
+  --color-border-hairline: #334155;
+  --color-border-strong: #475569;
+
+  /* Status (Dark) */
+  /* Green */
+  --color-ok-fg: #4ade80;
+  --color-ok-bg: #14532d;
+  --color-ok-border: #166534;
+  /* Amber */
+  --color-warn-fg: #fbbf24;
+  --color-warn-bg: #78350f;
+  --color-warn-border: #92400e;
+  /* Red */
+  --color-bad-fg: #f87171;
+  --color-bad-bg: #7f1d1d;
+  --color-bad-border: #991b1b;
+  /* Info */
+  --color-info-fg: #38bdf8;
+  --color-info-bg: #0c4a6e;
+  --color-info-border: #075985;
+
+  --shadow-elevation: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.35);
+}
+
+@theme {
+  --color-brand: var(--color-brand);
+  --color-brand-secondary: var(--color-brand-secondary);
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-2: var(--color-surface-2);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-border-hairline: var(--color-border-hairline);
+  --color-border-strong: var(--color-border-strong);
+  
+  --color-ok-fg: var(--color-ok-fg);
+  --color-ok-bg: var(--color-ok-bg);
+  --color-ok-border: var(--color-ok-border);
+  
+  --color-warn-fg: var(--color-warn-fg);
+  --color-warn-bg: var(--color-warn-bg);
+  --color-warn-border: var(--color-warn-border);
+  
+  --color-bad-fg: var(--color-bad-fg);
+  --color-bad-bg: var(--color-bad-bg);
+  --color-bad-border: var(--color-bad-border);
+  
+  --color-info-fg: var(--color-info-fg);
+  --color-info-bg: var(--color-info-bg);
+  --color-info-border: var(--color-info-border);
+
+  --shadow-elevation: var(--shadow-elevation);
+
+  --font-newsreader: "Newsreader", serif;
+  --font-fira-sans: "Fira Sans", sans-serif;
+  --font-fira-code: "Fira Code", monospace;
+
+  /* Shape scale */
+  --radius-4: 4px;
+  --radius-8: 8px;
+  --radius-12: 12px;
+
+  /* Motion tokens: 120 / 200 / 320 ms */
+  --animate-enter-fast: 120ms ease-out;
+  --animate-enter: 200ms ease-out;
+  --animate-enter-slow: 320ms ease-out;
+  --animate-exit-fast: 120ms ease-in;
+  --animate-exit: 200ms ease-in;
+  --animate-exit-slow: 320ms ease-in;
+}

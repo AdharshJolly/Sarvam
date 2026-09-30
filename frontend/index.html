@@ -8,6 +8,21 @@
       content="Sarvam: Evidence-First Autonomous Research Agent. Research that knows when it isn't done."
     />
     <title>Sarvam | Evidence-First Research Agent</title>
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem('theme') || 'system';
+          var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          var root = document.documentElement;
+          root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+          root.style.colorScheme = isDark ? 'dark' : 'light';
+          var meta = document.createElement('meta');
+          meta.name = 'theme-color';
+          meta.content = isDark ? '#0B1120' : '#F8FAFC';
+          document.head.appendChild(meta);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

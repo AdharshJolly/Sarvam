@@ -1,0 +1,103 @@
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.skeleton {
+  border-radius: var(--radius-4);
+  background: linear-gradient(90deg, var(--color-surface-2) 25%, var(--color-border-hairline) 37%, var(--color-surface-2) 63%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.anim-in {
+  animation: fade-up var(--animate-enter) both;
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.anim-drawer {
+  animation: slide-in-right var(--animate-enter) both;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 currentColor;
+    opacity: 1;
+  }
+  70% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background-color: currentColor;
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+
+/* A cell whose state just changed flashes once. */
+@keyframes flash {
+  0% {
+    box-shadow: 0 0 0 3px var(--color-brand-secondary);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+.anim-flash {
+  animation: flash 1.2s ease-out both;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+.blink {
+  animation: blink 1.4s ease-in-out infinite;
+}
+
+.matrix-cell {
+  transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.15s ease;
+}
+
+.progress-fill {
+  transition: width 0.5s ease, background-color 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

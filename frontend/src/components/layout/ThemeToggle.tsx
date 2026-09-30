@@ -1,28 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Theme, getTheme, setTheme } from "../../lib/theme";
+import { Icon } from "../ui/Icon";
 
-type Theme = "system" | "light" | "dark";
 const ORDER: Theme[] = ["system", "light", "dark"];
 
-function apply(theme: Theme) {
-  if (theme === "system") document.documentElement.removeAttribute("data-theme");
-  else document.documentElement.setAttribute("data-theme", theme);
-}
-
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("system");
+  const [themeState, setThemeState] = useState<Theme>("system");
+
+  useEffect(() => {
+    setThemeState(getTheme());
+  }, []);
+
   const next = () => {
-    const n = ORDER[(ORDER.indexOf(theme) + 1) % ORDER.length] ?? "system";
-    apply(n);
+    const n = ORDER[(ORDER.indexOf(themeState) + 1) % ORDER.length] ?? "system";
     setTheme(n);
+    setThemeState(n);
   };
+
+  const getIcon = () => {
+    if (themeState === 'light') return 'Sun';
+    if (themeState === 'dark') return 'Moon';
+    return 'Monitor';
+  };
+
   return (
     <button
       type="button"
       onClick={next}
-      className="btn text-sm"
-      aria-label={`Theme: ${theme}. Activate to change.`}
+      className="btn flex items-center gap-1.5"
+      aria-label={`Theme: ${themeState}. Activate to change.`}
+      title={`Theme: ${themeState}`}
     >
-      Theme: {theme}
+      <Icon name={getIcon()} size={16} aria-hidden />
+      <span className="label text-xs uppercase tracking-widest">{themeState}</span>
     </button>
   );
 }

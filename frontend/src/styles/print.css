@@ -1,0 +1,16 @@
+/* Print: the report only. */
+@media print {
+  .left-rail,
+  .tab-bar,
+  .evidence-drawer,
+  .activity-dock,
+  .app-header,
+  .mock-controls,
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+}

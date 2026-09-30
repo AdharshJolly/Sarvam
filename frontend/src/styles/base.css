@@ -1,0 +1,36 @@
+@import "@fontsource/newsreader/400.css";
+@import "@fontsource/newsreader/700.css";
+@import "@fontsource/fira-sans/400.css";
+@import "@fontsource/fira-sans/600.css";
+@import "@fontsource/fira-code/400.css";
+
+html {
+  font-size: 16px; /* projector-readable body text (SSOT NFR-10) */
+  font-family: var(--font-fira-sans);
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+
+label:has(input:focus-visible) {
+  outline: 2px solid var(--color-brand-secondary);
+  outline-offset: 2px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-secondary);
+  outline-offset: 2px;
+}
