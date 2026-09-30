@@ -170,6 +170,7 @@ class Budget(Contract):
 
 class Run(Contract):
     id: str
+    user_id: str | None = None
     question: str
     scope: Scope = Field(default_factory=Scope)
     mode: Mode
@@ -475,3 +476,37 @@ class ReportView(Contract):
     certainty_state: FinalState | None = None
     dropped_sentences: list[str] = Field(default_factory=list)
     citations: list[CitationRef] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------- auth contracts
+
+
+class UserCreate(Contract):
+    email: str = Field(min_length=3, max_length=255)
+    password: str = Field(min_length=6, max_length=128)
+    display_name: str = Field(min_length=1, max_length=100)
+
+
+class UserLogin(Contract):
+    email: str
+    password: str
+
+
+class UserUpdate(Contract):
+    display_name: str | None = None
+    password: str | None = None
+
+
+
+class UserPublic(Contract):
+    id: str
+    email: str
+    display_name: str
+    created_at: datetime
+    last_login_at: datetime | None = None
+
+
+class AuthResponse(Contract):
+    token: str
+    user: UserPublic
+

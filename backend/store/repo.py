@@ -63,8 +63,10 @@ def now_iso() -> str:
 
 
 def row_to_run(row: sqlite3.Row) -> Run:
+    user_id = row["user_id"] if "user_id" in row.keys() else None
     return Run(
         id=row["id"],
+        user_id=user_id,
         question=row["question"],
         scope=Scope.model_validate_json(row["scope_json"]),
         mode=Mode(row["mode"]),

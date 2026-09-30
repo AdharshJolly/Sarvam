@@ -21,7 +21,7 @@ from fastapi import APIRouter, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 
-from backend import __version__
+from backend import __version__, auth
 from backend.controller import RunHandle, run_research
 from backend.pipeline.claims import locate_quote
 from backend.store import repo
@@ -31,6 +31,7 @@ from backend.store.events import append_event, read_events
 from contracts.config import Settings
 from contracts.events import EventType, RunFailedPayload
 from contracts.models import (
+    AuthResponse,
     Budget,
     ClaimEvidence,
     FailureType,
@@ -39,6 +40,11 @@ from contracts.models import (
     RunCreate,
     RunState,
     RunSummary,
+    UserCreate,
+    UserLogin,
+    UserPublic,
+    UserUpdate,
+
 )
 
 Runner = Callable[[str, Settings, RunHandle], Awaitable[None]]
@@ -100,6 +106,24 @@ def create_app(settings: Settings | None = None, *, runner: Runner | None = None
 
     api = APIRouter(prefix=settings.api_prefix)
 
+    def get_auth_token(request: Request) -> str | None:
+        header = request.headers.get("Authorization")
+        if header and header.startswith("Bearer "):
+            return header[7:].strip()
+        return None
+
+    def get_current_user(request: Request) -> UserPublic | None:
+        token = get_auth_token(request)
+        if not token:
+            return None
+        return auth.get_user_by_token(request.app.state.db, token)
+
+    def require_auth(request: Request) -> UserPublic:
+        user = get_current_user(request)
+        if not user:
+            raise HTTPException(status_code=401, detail="Authentication required")
+        return user
+
     def require_run(conn: sqlite3.Connection, run_id: str) -> Run:
         run = repo.get_run(conn, run_id)
         if run is None:
@@ -126,6 +150,81 @@ def create_app(settings: Settings | None = None, *, runner: Runner | None = None
             "db_journal_mode": journal,
         }
 
+    # ------------------------------------------------------------ auth routes
+
+    @api.post("/auth/register", status_code=201)
+    def register(body: UserCreate, request: Request) -> AuthResponse:
+        conn = request.app.state.db
+        try:
+            user, token = auth.register_user(
+                conn,
+                email=body.email,
+                password=body.password,
+                display_name=body.display_name,
+            )
+            return AuthResponse(token=token, user=user)
+        except auth.AuthError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @api.post("/auth/login")
+    def login(body: UserLogin, request: Request) -> AuthResponse:
+        conn = request.app.state.db
+        try:
+            user, token = auth.login_user(
+                conn,
+                email=body.email,
+                password=body.password,
+            )
+            return AuthResponse(token=token, user=user)
+        except auth.AuthError as exc:
+            raise HTTPException(status_code=401, detail=str(exc)) from exc
+
+    @api.post("/auth/logout")
+    def logout(request: Request) -> dict[str, bool]:
+        token = get_auth_token(request)
+        if token:
+            auth.logout_user(request.app.state.db, token)
+        return {"ok": True}
+
+    @api.get("/auth/me")
+    def me(request: Request) -> UserPublic:
+        return require_auth(request)
+
+    @api.patch("/auth/me")
+    def update_profile(body: UserUpdate, request: Request) -> UserPublic:
+        user = require_auth(request)
+        try:
+            return auth.update_user(
+                request.app.state.db,
+                user_id=user.id,
+                display_name=body.display_name,
+                password=body.password,
+            )
+        except auth.AuthError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @api.delete("/auth/me")
+    def delete_account(request: Request) -> dict[str, bool]:
+        user = require_auth(request)
+        auth.delete_user_account(request.app.state.db, user.id)
+        return {"ok": True}
+
+
+    # ------------------------------------------------------------ run routes
+
+    @api.get("/runs")
+    def list_runs(request: Request) -> list[Run]:
+        conn = request.app.state.db
+        user = get_current_user(request)
+        if user:
+            rows = conn.execute(
+                "SELECT * FROM runs WHERE user_id = ? OR user_id IS NULL ORDER BY started_at DESC LIMIT 50",
+                (user.id,),
+            ).fetchall()
+        else:
+            rows = conn.execute("SELECT * FROM runs ORDER BY started_at DESC LIMIT 50").fetchall()
+        return [repo.row_to_run(r) for r in rows]
+
     @api.post("/runs", status_code=201)
     async def create_run(body: RunCreate, request: Request) -> Run:
         question = body.question.strip()
@@ -135,8 +234,11 @@ def create_app(settings: Settings | None = None, *, runner: Runner | None = None
             budget = Budget(**{**settings.budget.model_dump(), **(body.budget or {})})
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=f"invalid budget override: {exc}") from exc
+        
+        current_user = get_current_user(request)
         run = Run(
             id=f"R{secrets.token_hex(4)}",
+            user_id=current_user.id if current_user else None,
             question=question,
             scope=body.scope,
             mode=body.mode,
@@ -146,10 +248,11 @@ def create_app(settings: Settings | None = None, *, runner: Runner | None = None
         conn = request.app.state.db
         try:
             conn.execute(
-                "INSERT INTO runs (id, question, scope_json, mode, budget_json, status, started_at)"
-                " VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO runs (id, user_id, question, scope_json, mode, budget_json, status, started_at)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     run.id,
+                    run.user_id,
                     run.question,
                     run.scope.model_dump_json(),
                     run.mode.value,

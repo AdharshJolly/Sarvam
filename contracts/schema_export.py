@@ -47,6 +47,10 @@ ROOTS: list[type] = [
     models.ClaimEvidence,
     models.CitationRef,
     models.ReportView,
+    models.UserCreate,
+    models.UserLogin,
+    models.UserPublic,
+    models.AuthResponse,
     events.Event,
     *events.EVENT_PAYLOADS.values(),
 ]

@@ -1,10 +1,28 @@
--- Sarvam SQLite schema, version 1 (SSOT v2.0 section 8).
+-- Sarvam SQLite schema, version 2 (SSOT v2.0 section 8 + Auth).
 -- Changing this file requires a change-log row (SSOT section 21) and a SCHEMA_VERSION bump in db.py.
 -- Sources, passages and events are immutable once written. Claims, coverage and reports are
 -- versioned by round. IDs are short readable strings (S3, P12, C41) except events.id (integer).
 
+CREATE TABLE IF NOT EXISTS users (
+    id            TEXT PRIMARY KEY,
+    email         TEXT NOT NULL UNIQUE,
+    display_name  TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
+    salt          TEXT NOT NULL,
+    created_at    TEXT NOT NULL,
+    last_login_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+    token_hash TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS runs (
     id                 TEXT PRIMARY KEY,
+    user_id            TEXT REFERENCES users(id),
     question           TEXT NOT NULL,
     scope_json         TEXT NOT NULL DEFAULT '{}',
     mode               TEXT NOT NULL CHECK (mode IN ('LIVE', 'REPLAY')),
@@ -180,3 +198,6 @@ CREATE INDEX IF NOT EXISTS idx_sources_run ON sources (run_id);
 CREATE INDEX IF NOT EXISTS idx_passages_source ON passages (source_id);
 CREATE INDEX IF NOT EXISTS idx_claims_slot ON claims (run_id, slot_id);
 CREATE INDEX IF NOT EXISTS idx_coverage_round ON coverage (run_id, round);
+CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions (user_id);
+CREATE INDEX IF NOT EXISTS idx_runs_user ON runs (user_id);
+

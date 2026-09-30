@@ -10,7 +10,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
 
 
@@ -35,12 +35,17 @@ def init_db(db_path: str | Path) -> sqlite3.Connection:
     """Open the database, apply the schema if new, and verify the schema version."""
     conn = connect(db_path)
     version = conn.execute("PRAGMA user_version").fetchone()[0]
-    if version not in (0, SCHEMA_VERSION):
+    if version not in (0, 1, SCHEMA_VERSION):
         conn.close()
         raise SchemaVersionError(
             f"database schema version {version} != expected {SCHEMA_VERSION}; "
             "see SSOT section 21 (change control)"
         )
+    if version == 1:
+        # Migrate runs table to include user_id if needed
+        cols = [c[1] for c in conn.execute("PRAGMA table_info(runs)").fetchall()]
+        if "user_id" not in cols:
+            conn.execute("ALTER TABLE runs ADD COLUMN user_id TEXT REFERENCES users(id)")
     conn.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
     conn.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
     conn.commit()
