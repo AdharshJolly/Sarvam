@@ -189,7 +189,7 @@ export function MatrixPanel({
       })()}
 
       {sel ? (
-        <Card as="section" pad="md" aria-label="Slot detail" className="anim-in">
+        <Card as="section" pad="md" aria-label="Slot detail">
           <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
             <div>
               <p className="label">

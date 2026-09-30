@@ -66,3 +66,19 @@ describe("colour utilities reference real tokens", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe("floor violations", () => {
+  test("text-xs is banned in favour of 14px floor sizes (text-sm)", () => {
+    const offenders: string[] = [];
+    for (const file of sourceFiles(SRC)) {
+      const content = readFileSync(file, "utf-8");
+      const lines = content.split("\n");
+      lines.forEach((line, i) => {
+        if (line.includes("text-xs")) {
+          offenders.push(`${file.slice(SRC.length)}:${i + 1}`);
+        }
+      });
+    }
+    expect(offenders).toEqual([]);
+  });
+});

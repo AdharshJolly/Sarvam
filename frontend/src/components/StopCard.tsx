@@ -105,7 +105,7 @@ export function StopCard({
   const missing = gaps.length > 0 || caveats.length > 0;
 
   return (
-    <Card as="section" aria-live="polite" aria-label="Stop decision" frame={tone} className="anim-in overflow-hidden">
+    <Card as="section" aria-live="polite" aria-label="Stop decision" frame={tone} className="overflow-hidden">
       <div className={`flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4 ${band}`}>
         <Icon name={finalStateChip(stop.state).icon} size={40} className={`shrink-0 ${text}`} aria-hidden />
         <div className="min-w-[14rem] flex-1">

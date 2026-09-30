@@ -81,7 +81,7 @@ export function ConflictList({
         const status = c.status ?? "open";
         const kind = c.kind ?? "genuine";
         return (
-          <Card as="li" key={c.id} pad="md" accent={status === "open" ? "bad" : "ok"} className="anim-in">
+          <Card as="li" key={c.id} pad="md" accent={status === "open" ? "bad" : "ok"}>
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <StateChip spec={conflictStatusChip(status)} />
               <strong>{slotNames.get(c.slot_id) ?? c.slot_id}</strong>

@@ -45,7 +45,7 @@ function ClaimEvidenceView({ runId, claimId }: { runId: string; claimId: string 
   const unestablished = load.data.independence === "unestablished";
   const href = safeHref(source.url);
   return (
-    <Card as="article" pad="md" className="anim-in flex flex-col gap-4">
+    <Card as="article" pad="md" className="flex flex-col gap-4">
       <header>
         <p className="label mb-1">Claim {claim.id}</p>
         <h3 className="font-display text-xl font-semibold leading-snug">{claim.text}</h3>

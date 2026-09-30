@@ -74,7 +74,7 @@ export function ChallengeList({
                 const oc = outcomeChip(c.outcome);
                 const textColor = TEXT_TONE[oc.tone];
                 return (
-                  <Card as="li" key={c.id} pad="md" accent={oc.tone} className="anim-in">
+                  <Card as="li" key={c.id} pad="md" accent={oc.tone}>
                     <div className="mb-2 flex flex-wrap items-center gap-2">
                       <StateChip spec={oc} />
                       <Badge mono>{c.id}</Badge>
