@@ -103,7 +103,7 @@ def test_llm_rate_limit_waits_for_retry_after_then_succeeds():
     async def sleep(seconds):
         sleeps.append(seconds)
 
-    limited = GatewayError(FailureType.RATE_LIMITED, "429", retry_after=12.0)
+    limited = GatewayError(FailureType.RATE_LIMITED, "429", retry_after=40.0)
     llm = FakeLLM({"planner.v1": [limited, limited, '{"ok": true}']})
     gateway = ToolGateway(
         settings=Settings(env="test", llm_model_fast="f", llm_model_strong="s"),
@@ -113,7 +113,7 @@ def test_llm_rate_limit_waits_for_retry_after_then_succeeds():
         sleep=sleep,
     )
     res = asyncio.run(gateway.llm(LLMRole.PLANNER, "planner.v1", Pong, {}))
-    assert res.value.ok is True and sleeps == [12.0, 12.0]
+    assert res.value.ok is True and sleeps == [40.0, 40.0]
 
 
 def test_llm_rate_limit_gives_up_after_three_retries_with_typed_error():
@@ -131,3 +131,22 @@ def test_llm_rate_limit_gives_up_after_three_retries_with_typed_error():
     with pytest.raises(GatewayError) as ei:
         asyncio.run(gateway.llm(LLMRole.PLANNER, "planner.v1", Pong, {}))
     assert ei.value.failure is FailureType.RATE_LIMITED and len(llm.calls) == 4
+
+
+def test_llm_rate_limit_without_a_hint_uses_the_longer_default_backoff():
+    sleeps: list[float] = []
+
+    async def sleep(seconds):
+        sleeps.append(seconds)
+
+    limited = GatewayError(FailureType.RATE_LIMITED, "429")
+    llm = FakeLLM({"planner.v1": [limited, limited, limited, '{"ok": true}']})
+    gateway = ToolGateway(
+        settings=Settings(env="test", llm_model_fast="f", llm_model_strong="s"),
+        budget=Budget(),
+        mode=Mode.LIVE,
+        llm=llm,
+        sleep=sleep,
+    )
+    assert asyncio.run(gateway.llm(LLMRole.PLANNER, "planner.v1", Pong, {})).value.ok is True
+    assert sleeps == [5.0, 15.0, 30.0]

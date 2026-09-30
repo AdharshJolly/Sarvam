@@ -35,7 +35,10 @@ T = TypeVar("T")
 
 SEARCH_BACKOFF_SECONDS = (0.5, 1.0, 2.0)
 LLM_RATE_LIMIT_RETRIES = 3
-LLM_RATE_LIMIT_MAX_WAIT = 30.0  # seconds; honours the provider Retry-After up to this cap
+# Waits when a 429 carries no Retry-After hint. Per-minute request limits (for example Gemini's free
+# tier) need waits of tens of seconds, so these are longer than the search backoff.
+LLM_RATE_LIMIT_BACKOFF = (5.0, 15.0, 30.0)
+LLM_RATE_LIMIT_MAX_WAIT = 60.0  # seconds; provider hints are honoured up to this cap
 LLM_MAX_ATTEMPTS = 3  # first try plus 2 validation retries (SSOT 10)
 WARN_FRACTION = 0.8
 
@@ -291,7 +294,7 @@ class ToolGateway:
                     ):
                         raise
                     wait = min(
-                        max(exc.retry_after or 0.0, SEARCH_BACKOFF_SECONDS[min(attempt, 2)]),
+                        max(exc.retry_after or 0.0, LLM_RATE_LIMIT_BACKOFF[min(attempt, 2)]),
                         LLM_RATE_LIMIT_MAX_WAIT,
                     )
                     await self._sleep(wait)
