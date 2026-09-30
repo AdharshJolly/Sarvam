@@ -49,6 +49,7 @@ import {
   User,
   ArrowLeft,
   Shield,
+  Cookie,
 } from "lucide-react";
 
 import type { LucideIcon, LucideProps } from "lucide-react";
@@ -108,6 +109,7 @@ const ICONS = {
   User,
   ArrowLeft,
   Shield,
+  Cookie,
 } satisfies Record<string, LucideIcon>;
 
 

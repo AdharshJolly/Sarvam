@@ -50,16 +50,16 @@ export function CookieBanner() {
     <>
       <div
         role="region"
-        aria-label="Cookie and data storage preferences"
-        className="fixed bottom-0 inset-x-0 z-50 bg-surface/95 backdrop-blur-md border-t border-border-hairline py-3 px-4 sm:px-6 shadow-lg animate-enter"
+        aria-label="Cookie and storage preferences"
+        className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] sm:w-max max-w-4xl animate-enter"
       >
-        <div className="max-w-[1240px] mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
-          <div className="flex items-center gap-3">
+        <div className="bg-surface/95 backdrop-blur-xl border border-border-hairline rounded-xl sm:rounded-full px-4 sm:px-6 py-2.5 sm:py-3 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6 text-sm">
+          <div className="flex items-center gap-2.5 min-w-0">
             <span className="text-brand flex-shrink-0" aria-hidden>
-              <Icon name="Shield" size={18} />
+              <Icon name="Cookie" size={17} />
             </span>
-            <p className="text-text-muted">
-              Sarvam uses strictly essential local storage for authentication and research sessions. Zero third-party trackers, zero marketing cookies.
+            <p className="text-text whitespace-normal sm:whitespace-nowrap">
+              We use essential cookies for authentication and platform security. Zero tracking.
               <a
                 href="#/cookies"
                 className="ml-2 text-brand hover:underline underline-offset-4 font-medium"
@@ -69,21 +69,21 @@ export function CookieBanner() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 self-end sm:self-auto flex-shrink-0">
+          <div className="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
             <Button
               variant="secondary"
               size="sm"
               onClick={() => setModalOpen(true)}
-              className="text-text hover:bg-surface-2"
+              className="text-text hover:bg-surface-2 h-8 px-3 rounded-lg sm:rounded-full"
             >
-              Customize
+              Preferences
             </Button>
             <Button
               size="sm"
               onClick={() => saveConsent(false)}
-              className="bg-brand text-white font-medium hover:opacity-95 px-4"
+              className="bg-brand text-white font-medium hover:opacity-95 h-8 px-4 rounded-lg sm:rounded-full"
             >
-              Accept Essential
+              Accept
             </Button>
           </div>
         </div>
