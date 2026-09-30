@@ -1,5 +1,5 @@
 import type { Origin, OriginMethod, Source } from "@contracts/types";
-import { domainOf } from "../lib/format";
+import { domainOf, safeHref } from "../lib/format";
 import { Badge } from "./ui/Badge";
 
 export const methodText: Record<OriginMethod, string> = {
@@ -65,7 +65,7 @@ export function OriginGroupView({
                     <button type="button" className="underline" onClick={() => onOpenSource?.(s.id)}>
                       {s.id}
                     </button>
-                    <a href={s.url} target="_blank" rel="noopener noreferrer" className="underline">
+                    <a href={safeHref(s.url)} target="_blank" rel="noopener noreferrer" className="underline">
                       {s.domain || domainOf(s.url)}
                     </a>
                     <Badge>{s.source_type ?? "unknown"}</Badge>

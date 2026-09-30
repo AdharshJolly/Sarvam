@@ -1,5 +1,5 @@
 import type { Source } from "@contracts/types";
-import { ageBucket, domainOf } from "../lib/format";
+import { ageBucket, domainOf, safeHref } from "../lib/format";
 import { Badge } from "./ui/Badge";
 import { EmptyState } from "./ui/EmptyState";
 import { StateChip } from "./ui/StateChip";
@@ -39,7 +39,7 @@ export function SourcesTable({
             <tr key={s.id} id={`source-${s.id}`} className="border-t" style={{ borderColor: "var(--border)" }}>
               <td className="p-1">{s.id}</td>
               <td className="p-1">
-                <a href={s.url} target="_blank" rel="noopener noreferrer" className="underline">
+                <a href={safeHref(s.url)} target="_blank" rel="noopener noreferrer" className="underline">
                   {s.domain || domainOf(s.url)}
                 </a>
                 {slotBySource?.[s.id] ? <span className="text-sm"> ({slotBySource[s.id]})</span> : null}

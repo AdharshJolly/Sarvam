@@ -19,3 +19,11 @@ test("domainOf, formatters, stateStyle", () => {
   expect(stateStyle("RED").icon).toBe("✕");
   expect(stateStyle("GREEN").label).toBe("GREEN");
 });
+
+test("safeHref allows only http(s)", async () => {
+  const { safeHref } = await import("./format");
+  expect(safeHref("https://a.example.invalid/x")).toBe("https://a.example.invalid/x");
+  expect(safeHref("javascript:alert(1)")).toBeUndefined();
+  expect(safeHref("data:text/html,x")).toBeUndefined();
+  expect(safeHref("nonsense")).toBeUndefined();
+});
