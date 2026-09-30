@@ -26,6 +26,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { Banner } from "../ui/Banner";
 import { Metric } from "../ui/Metric";
 import { Icon } from "../ui/Icon";
+import { Button } from "../ui/Button";
 
 function Shell() {
   const { view, runId, error, newRun, reattach, hydrating } = useSession();
@@ -103,9 +104,9 @@ function Shell() {
               <Metric label="Tokens" value={tokens.toLocaleString()} />
             </div>
           ) : null}
-          <button type="button" className="btn btn-secondary" onClick={newRun}>
+          <Button size="sm" onClick={newRun}>
             New run
-          </button>
+          </Button>
           <ThemeToggle />
         </div>
       </header>

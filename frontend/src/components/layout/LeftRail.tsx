@@ -6,6 +6,7 @@ import { SkeletonLines } from "../ui/Skeleton";
 import { Icon } from "../ui/Icon";
 import { Banner } from "../ui/Banner";
 import { ModeBadge } from "../ModeBadge";
+import { Button } from "../ui/Button";
 
 type Conn = "open" | "connecting" | "closed";
 const connectionIcons: Record<Conn, { icon: string; label: string; className: string }> = {
@@ -102,25 +103,27 @@ export function LeftRail({ onOpenMeter }: { onOpenMeter: (k: MeterKind) => void 
           <div className="flex flex-col gap-2">
             <p>Stop this run and wrap up with the evidence in hand?</p>
             <div className="flex gap-2">
-              <button
-                type="button"
-                className="btn btn-danger font-semibold"
+              <Button
+                variant="danger"
                 onClick={() => {
                   setConfirming(false);
                   void stop();
                 }}
               >
                 Yes, stop
-              </button>
-              <button type="button" className="btn" onClick={() => setConfirming(false)}>
-                Cancel
-              </button>
+              </Button>
+              <Button onClick={() => setConfirming(false)}>Cancel</Button>
             </div>
           </div>
         ) : (
-          <button type="button" className="btn btn-danger w-fit" onClick={() => setConfirming(true)}>
-            <Icon name="Square" size={14} className="inline-block mr-1 -mt-0.5" aria-hidden /> Stop run
-          </button>
+          <Button
+            variant="danger"
+            className="w-fit"
+            icon={<Icon name="Square" size={14} aria-hidden />}
+            onClick={() => setConfirming(true)}
+          >
+            Stop run
+          </Button>
         )
       ) : null}
       </div>

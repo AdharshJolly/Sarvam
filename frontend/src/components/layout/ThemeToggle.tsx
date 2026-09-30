@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Theme, getTheme, setTheme } from "../../lib/theme";
 import { Icon } from "../ui/Icon";
+import { Button } from "../ui/Button";
 
 const ORDER: Theme[] = ["system", "light", "dark"];
 
@@ -24,15 +25,14 @@ export function ThemeToggle() {
   };
 
   return (
-    <button
-      type="button"
+    <Button
+      size="sm"
       onClick={next}
-      className="btn flex items-center gap-1.5"
       aria-label={`Theme: ${themeState}. Activate to change.`}
       title={`Theme: ${themeState}`}
+      icon={<Icon name={getIcon()} size={16} aria-hidden />}
     >
-      <Icon name={getIcon()} size={16} aria-hidden />
-      <span className="label text-xs uppercase tracking-widest">{themeState}</span>
-    </button>
+      <span className="label">{themeState}</span>
+    </Button>
   );
 }

@@ -4,6 +4,7 @@ import { CANONICAL_QUESTION } from "../mocks/scenarios";
 import { errorText, useSession } from "../state/useRunSession";
 import { Icon } from "./ui/Icon";
 import { Banner } from "./ui/Banner";
+import { Button } from "./ui/Button";
 
 const EXAMPLES = [
   { label: "Canonical (Bengaluru scooters)", q: CANONICAL_QUESTION },
@@ -116,17 +117,16 @@ export function RunForm() {
           {error}
         </Banner>
       ) : null}
-      <button type="submit" disabled={busy} className="btn btn-primary w-fit px-5 py-2 text-base transition-opacity disabled:opacity-70">
-        {busy ? (
-          <span className="flex items-center gap-2">
-            <Icon name="Activity" size={16} className="blink" aria-hidden /> Starting run...
-          </span>
-        ) : (
-          <span className="flex items-center gap-1">
-            Start run <Icon name="ArrowRight" size={16} aria-hidden />
-          </span>
-        )}
-      </button>
+      <Button
+        type="submit"
+        variant="primary"
+        size="lg"
+        disabled={busy}
+        className="w-fit"
+        icon={<Icon name={busy ? "Activity" : "ArrowRight"} size={18} className={busy ? "blink" : undefined} aria-hidden />}
+      >
+        {busy ? "Starting run..." : "Start run"}
+      </Button>
     </form>
   );
 }

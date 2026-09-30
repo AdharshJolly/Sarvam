@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
+import { Button } from "./Button";
 
 export interface DialogProps {
   isOpen: boolean;
@@ -63,9 +64,7 @@ export function Dialog({ isOpen, onClose, title, children, isDrawer = false, doc
       <div className={`flex h-full flex-col ${isDrawer ? 'p-4' : ''}`}>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="label">{title}</h2>
-          <button type="button" className="btn" onClick={onClose}>
-            Close
-          </button>
+          <Button onClick={onClose}>Close</Button>
         </div>
         <div className="flex-1 overflow-y-auto">
           {children}

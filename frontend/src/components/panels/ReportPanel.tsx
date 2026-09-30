@@ -20,6 +20,7 @@ import { StateChip } from "../ui/StateChip";
 import { certaintyChip, finalStateChip } from "../ui/chips";
 import { Icon } from "../ui/Icon";
 import { Banner } from "../ui/Banner";
+import { Button } from "../ui/Button";
 
 const warned = new Set<string>();
 
@@ -263,9 +264,7 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
                 {report.certainty_state ? <StateChip spec={finalStateChip(report.certainty_state)} large /> : null}
               </div>
               <div className="no-print mb-2">
-                <button type="button" className="btn" onClick={download}>
-                  Download Markdown
-                </button>
+                <Button onClick={download}>Download Markdown</Button>
               </div>
               {unresolved.length > 0 ? (
                 <div className="mb-4">

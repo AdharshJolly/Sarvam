@@ -6,6 +6,7 @@ import { StateChip } from "./ui/StateChip";
 import { failureChip } from "./ui/chips";
 import { Icon } from "./ui/Icon";
 import type { IconName } from "./ui/Icon";
+import { Button } from "./ui/Button";
 
 export type DockFilter = "all" | "phases" | "sources" | "claims" | "assurance" | "failures" | MeterKind;
 
@@ -129,9 +130,14 @@ export function ActivityDock({
       className="activity-dock fixed inset-x-0 bottom-0 z-50 border-t border-border-strong bg-surface shadow-[0_-4px_12px_rgba(0,0,0,0.1)] lg:sticky lg:shadow-elevation"
     >
       <div className="flex flex-wrap items-center gap-2 px-3 py-2">
-        <button type="button" aria-expanded={open} className="btn font-semibold text-sm h-8" onClick={() => setOpen((v) => !v)}>
-          {open ? "▾" : "▴"} Activity ({timeline.length})
-        </button>
+        <Button
+          size="sm"
+          aria-expanded={open}
+          icon={<Icon name={open ? "ChevronDown" : "ChevronUp"} size={16} aria-hidden />}
+          onClick={() => setOpen((v) => !v)}
+        >
+          Activity ({timeline.length})
+        </Button>
         {running ? (
           <span className="inline-flex items-center gap-2 text-sm text-ok-fg font-medium">
             <span className="pulse-dot" aria-hidden="true" /> Live

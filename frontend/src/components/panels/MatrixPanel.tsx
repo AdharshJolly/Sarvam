@@ -18,6 +18,7 @@ import { Skeleton } from "../ui/Skeleton";
 import { StateChip } from "../ui/StateChip";
 import { coverageChip } from "../ui/chips";
 import { Icon } from "../ui/Icon";
+import { Button } from "../ui/Button";
 
 function MatrixSkeleton({ phase }: { phase: string }) {
   return (
@@ -160,17 +161,19 @@ export function MatrixPanel({
             </div>
           ) : null}
           <div className="mb-4 flex flex-wrap gap-2">
-            <button type="button" className="btn" onClick={() => onOpenClaims(sel.id)}>
+            <Button onClick={() => onOpenClaims(sel.id)}>
               View evidence ({selCell?.supporting_claims ?? 0} claims)
-            </button>
+            </Button>
             {(selCell?.open_conflicts ?? 0) > 0 ? (
-              <button type="button" className="btn text-warn-fg border-warn-border hover:bg-warn-bg flex items-center gap-2" onClick={onOpenConflicts}>
-                <Icon name="Zap" size={16} aria-hidden /> {selCell?.open_conflicts} open conflict{selCell?.open_conflicts === 1 ? "" : "s"}
-              </button>
+              <Button
+                className="text-warn-fg border-warn-border hover:bg-warn-bg"
+                icon={<Icon name="Zap" size={16} aria-hidden />}
+                onClick={onOpenConflicts}
+              >
+                {selCell?.open_conflicts} open conflict{selCell?.open_conflicts === 1 ? "" : "s"}
+              </Button>
             ) : null}
-            <button type="button" className="btn" onClick={() => setSelected(null)}>
-              Close
-            </button>
+            <Button onClick={() => setSelected(null)}>Close</Button>
           </div>
           <OriginGroupView slotName={sel.name} groups={originsForSlot(view, sel.id)} onOpenSource={onOpenSource} />
         </section>

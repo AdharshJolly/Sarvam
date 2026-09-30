@@ -8,6 +8,7 @@
 :root {
   /* Brand */
   --color-brand: #1E3A5F;
+  --color-on-brand: #FFFFFF; /* text and icons on a brand-coloured fill */
   --color-brand-secondary: #2563EB;
 
   /* Neutrals (Light) */
@@ -41,6 +42,10 @@
 }
 
 :root[data-theme="dark"] {
+  /* Brand (Dark): lighter blue so it stands out from the navy-ink surfaces */
+  --color-brand: #60A5FA;
+  --color-on-brand: #0B1120;
+
   /* Neutrals (Dark - navy-ink background) */
   --color-bg: #0B1120;
   --color-surface: #1E293B;
@@ -73,6 +78,7 @@
 
 @theme {
   --color-brand: var(--color-brand);
+  --color-on-brand: var(--color-on-brand);
   --color-brand-secondary: var(--color-brand-secondary);
   --color-bg: var(--color-bg);
   --color-surface: var(--color-surface);

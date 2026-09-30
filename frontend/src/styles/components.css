@@ -24,26 +24,3 @@
   text-transform: uppercase;
   color: var(--color-text-muted);
 }
-
-.btn {
-  border: 1px solid var(--color-border-strong);
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  border-radius: var(--radius-8); /* changed from 6px for consistency */
-  padding: 0.35rem 0.75rem;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-  font-family: var(--font-fira-sans);
-}
-.btn:hover:not(:disabled) {
-  background-color: var(--color-surface-2);
-}
-.btn-primary {
-  background-color: var(--color-brand);
-  border-color: var(--color-brand);
-  color: var(--color-surface);
-  font-weight: 600;
-}
-.btn-primary:hover:not(:disabled) {
-  background-color: var(--color-brand);
-  filter: brightness(1.15); /* lighten a bit on hover */
-}

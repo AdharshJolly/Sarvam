@@ -7,6 +7,7 @@ import { Skeleton } from "./ui/Skeleton";
 import { StateChip } from "./ui/StateChip";
 import { conflictKindText, conflictStatusChip } from "./ui/chips";
 import { Icon } from "./ui/Icon";
+import { Button } from "./ui/Button";
 
 const whyItMatters: Record<ConflictKind, string> = {
   genuine: "Different values are reported for the same thing and period. Sarvam cannot pick a winner from the evidence it has.",
@@ -115,9 +116,13 @@ export function ConflictList({
                 Explained conflicts stay visible. This one does not downgrade the coverage cell.
               </p>
             ) : null}
-            <button type="button" className="btn mt-3" onClick={() => onCompare([c.claim_a, c.claim_b])}>
-              Compare evidence <Icon name="ArrowRight" size={16} aria-hidden />
-            </button>
+            <Button
+              className="mt-3"
+              icon={<Icon name="ArrowRight" size={16} aria-hidden />}
+              onClick={() => onCompare([c.claim_a, c.claim_b])}
+            >
+              Compare evidence
+            </Button>
           </li>
         );
       })}

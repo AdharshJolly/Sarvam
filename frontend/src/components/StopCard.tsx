@@ -3,6 +3,7 @@ import { StateChip } from "./ui/StateChip";
 import { finalStateChip } from "./ui/chips";
 import { Icon } from "./ui/Icon";
 import { Banner } from "./ui/Banner";
+import { Button } from "./ui/Button";
 
 export const terminationText: Record<TerminationReason, string> = {
   criteria_met: "All critical slots are green and a challenge round completed.",
@@ -76,9 +77,9 @@ export function StopCard({
         </div>
         <p className="min-w-[14rem] flex-1 text-base">{meaning[stop.state]}</p>
         {onViewReport ? (
-          <button type="button" className="btn btn-primary" onClick={onViewReport}>
-            View report <Icon name="ArrowRight" size={16} className="inline-block ml-1" aria-hidden />
-          </button>
+          <Button variant="primary" onClick={onViewReport}>
+            View report <Icon name="ArrowRight" size={16} aria-hidden />
+          </Button>
         ) : null}
       </div>
 
