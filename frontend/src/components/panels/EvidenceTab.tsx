@@ -23,12 +23,14 @@ export function EvidenceTab({
   return (
     <div className="flex flex-col gap-4">
       {slotFilter ? (
-        <p className="text-base">
-          Showing claims for <strong>{names.get(slotFilter) ?? slotFilter}</strong>.{" "}
-          <button type="button" className="underline" onClick={() => onSlotFilter(null)}>
-            Show all slots
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-md border border-brand/20 bg-surface-2 p-3 text-base">
+          <p>
+            Showing {claims.length} of {Object.keys(view.claims).length} claims for <strong>{names.get(slotFilter) ?? slotFilter}</strong>.
+          </p>
+          <button type="button" className="font-semibold underline hover:text-brand" onClick={() => onSlotFilter(null)}>
+            Clear filter
           </button>
-        </p>
+        </div>
       ) : null}
       <Panel title="Plan">
         <PlanTree dimensions={dimensionsOf(view)} slots={slotsOf(view)} tasks={Object.values(view.tasks)} />
@@ -40,6 +42,7 @@ export function EvidenceTab({
         <ClaimList 
           claims={claims} 
           verdicts={view.verdicts} 
+          sources={view.sources}
           slotNames={names} 
           rejected={view.rejectedClaims} 
           onOpenClaim={(id: string) => ev.open([id])} 
