@@ -1,5 +1,5 @@
-import type { CoverageCell, Dimension, EvidenceSlot, Origin, Source } from "@contracts/types";
-import type { CellChange, RollupView, SlotStats } from "../components/CoverageMatrix";
+import type { CoverageCell, Dimension, EvidenceSlot, Origin, Source, DimensionRollup } from "@contracts/types";
+import type { CellChange, SlotStats } from "../components/CoverageMatrix";
 import type { OriginGroup } from "../components/OriginGroupView";
 import type { StopGap } from "../components/StopCard";
 import type { RunView } from "./runStore";
@@ -19,7 +19,7 @@ export function cellsForRound(v: RunView, round: number | null): CoverageCell[] 
   return round === null ? [] : (v.coverageByRound[round] ?? []);
 }
 
-export function rollupsForRound(v: RunView, round: number | null): RollupView[] {
+export function rollupsForRound(v: RunView, round: number | null): DimensionRollup[] {
   return round === null ? [] : (v.rollupsByRound[round] ?? []);
 }
 

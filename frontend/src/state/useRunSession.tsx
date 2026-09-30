@@ -81,7 +81,7 @@ function useRunSessionState(): Session {
             onEvent: (event) => dispatch({ type: "event", event }),
             onState: (s) => dispatch({ type: "connection", state: s }),
           },
-          state.last_event_id ?? 0,
+          0,
         );
       })
       .catch((err: unknown) => {
@@ -124,6 +124,13 @@ function useRunSessionState(): Session {
 
   const start = useCallback(async (body: RunCreate) => {
     const run = await runApi.createRun(body); // errors surface in the form
+    try {
+      const history = JSON.parse(localStorage.getItem("sarvam-runs") || "[]");
+      history.unshift({ id: run.id, question: run.question, startedAt: run.started_at, mode: run.mode });
+      localStorage.setItem("sarvam-runs", JSON.stringify(history.slice(0, 20)));
+    } catch {
+      // ignore
+    }
     window.location.hash = `#/run/${encodeURIComponent(run.id)}`;
     setRunId(run.id);
   }, []);

@@ -388,7 +388,6 @@ export function reduce(view: RunView, action: RunAction): RunView {
     }
     case "event": {
       const e = action.event;
-      if (e.id <= view.lastEventId) return view;
       const { view: next, note } = applyEvent(view, e);
       const item: TimelineItem = {
         id: e.id,
@@ -404,6 +403,14 @@ export function reduce(view: RunView, action: RunAction): RunView {
         ...(note.sourceId ? { sourceId: note.sourceId } : {}),
         ...(note.failure ? { failure: note.failure } : {}),
       };
+
+      if (e.id <= view.lastEventId) {
+        if (view.timeline.some((t) => t.id === e.id)) return view;
+        return {
+          ...view,
+          timeline: [...view.timeline, item].sort((a, b) => a.id - b.id),
+        };
+      }
       return { ...next, lastEventId: e.id, timeline: [...next.timeline, item] };
     }
   }
