@@ -34,6 +34,12 @@ class VerdictOut(Contract):
     rationale: str = ""
 
 
+class VerdictBatch(Contract):
+    """Verifier output for a batch of about 5 claim-passage pairs (SSOT 7, state 6; CL-06)."""
+
+    verdicts: list[VerdictOut] = Field(default_factory=list)
+
+
 class AttackTarget(Contract):
     slot_id: str | None = None
     claim_id: str | None = None
