@@ -1,4 +1,5 @@
 import type { Challenge, FinalState, StopDecision, TerminationReason } from "@contracts/types";
+import { buildHash } from "../lib/route";
 import { Banner } from "./ui/Banner";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
@@ -46,13 +47,25 @@ const CUT_SHORT: TerminationReason[] = ["budget", "timeout", "user_stopped", "bl
 const NO_CHALLENGE = CUT_SHORT;
 
 /** A count with its icon and word, so state is never colour alone. */
-function Tile({ count, word, icon, tone }: { count: number; word: string; icon: "Check" | "AlertTriangle" | "XOctagon"; tone: string }) {
-  return (
-    <div className={`flex flex-1 flex-col items-center rounded-md border px-2 py-2 ${tone}`}>
+function Tile({ count, word, icon, tone, href }: { count: number; word: string; icon: "Check" | "AlertTriangle" | "XOctagon"; tone: string; href?: string }) {
+  const content = (
+    <>
       <span className="mono text-2xl font-bold leading-none">{count}</span>
       <span className="mt-1 flex items-center gap-1 text-sm font-semibold">
         <Icon name={icon} size={14} aria-hidden /> {word}
       </span>
+    </>
+  );
+  if (href) {
+    return (
+      <a href={href} className={`flex flex-1 flex-col items-center rounded-md border px-2 py-2 hover:opacity-80 transition-opacity ${tone}`}>
+        {content}
+      </a>
+    );
+  }
+  return (
+    <div className={`flex flex-1 flex-col items-center rounded-md border px-2 py-2 ${tone}`}>
+      {content}
     </div>
   );
 }
@@ -63,6 +76,7 @@ function Tile({ count, word, icon, tone }: { count: number; word: string; icon: 
  * of the report. Announced once when it appears (aria-live).
  */
 export function StopCard({
+  runId,
   stop,
   gaps,
   challenges,
@@ -70,6 +84,7 @@ export function StopCard({
   onOpenConflicts,
   onViewReport,
 }: {
+  runId: string;
   stop: StopDecision;
   gaps: StopGap[];
   challenges: Challenge[];
@@ -128,9 +143,9 @@ export function StopCard({
             Critical slots
           </h3>
           <div className="flex gap-2">
-            <Tile count={crit.green ?? 0} word="green" icon="Check" tone="border-ok-border bg-ok-bg text-ok-fg" />
-            <Tile count={crit.amber ?? 0} word="amber" icon="AlertTriangle" tone="border-warn-border bg-warn-bg text-warn-fg" />
-            <Tile count={crit.red ?? 0} word="red" icon="XOctagon" tone="border-bad-border bg-bad-bg text-bad-fg" />
+            <Tile count={crit.green ?? 0} word="green" icon="Check" tone="border-ok-border bg-ok-bg text-ok-fg" href={buildHash(runId, "matrix")} />
+            <Tile count={crit.amber ?? 0} word="amber" icon="AlertTriangle" tone="border-warn-border bg-warn-bg text-warn-fg" href={buildHash(runId, "matrix")} />
+            <Tile count={crit.red ?? 0} word="red" icon="XOctagon" tone="border-bad-border bg-bad-bg text-bad-fg" href={buildHash(runId, "matrix")} />
           </div>
           <p className="mt-3">
             <button type="button" className="underline transition-colors hover:text-brand-secondary" onClick={onOpenConflicts}>

@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { runApi } from "../../api";
 import { ApiError } from "../../api/client";
 import { formatUsd } from "../../lib/format";
+import { buildHash } from "../../lib/route";
 import { collectCitationIds, parseReport, unresolvedCitations } from "../../lib/reportMarkdown";
 import type { ReportNode } from "../../lib/reportMarkdown";
 import { useEvidence } from "../../state/EvidenceContext";
@@ -84,26 +85,28 @@ export function ReportPanel({ onOpenSlot, onOpenConflicts }: { onOpenSlot: (slot
     URL.revokeObjectURL(url);
   };
 
-  const metaRows: [string, string][] = report
+  const metaRows: [string, React.ReactNode][] = report
     ? [
         ["Mode", view.run?.mode ?? "unknown"],
         ["Run", report.run_id],
         ["Report version", String(report.version)],
         ["Started", view.run?.started_at ?? "unknown"],
-        ["Sources", String(Object.keys(view.sources).length)],
-        ["Independent origins", String(Object.keys(view.origins).length)],
-        ["Verified claims", String(Object.keys(view.claims).length)],
-        ["Rejected by quote guard", String(view.rejectedClaims.length)],
-        ["Conflicts (open / total)", `${openConflictCount(view)} / ${Object.keys(view.conflicts).length}`],
-        ["Challenges", String(Object.keys(view.challenges).length)],
+        ["Sources", <a href={buildHash(report.run_id, "evidence")} className="underline hover:text-brand transition-colors">{Object.keys(view.sources).length}</a>],
+        ["Independent origins", Object.keys(view.origins).length], // no list exists
+        ["Verified claims", <a href={buildHash(report.run_id, "evidence")} className="underline hover:text-brand transition-colors">{Object.keys(view.claims).length}</a>],
+        ["Rejected by quote guard", <a href={buildHash(report.run_id, "evidence")} className="underline hover:text-brand transition-colors">{view.rejectedClaims.length}</a>],
+        ["Conflicts (open / total)", <a href={buildHash(report.run_id, "conflicts")} className="underline hover:text-brand transition-colors">{openConflictCount(view)} / {Object.keys(view.conflicts).length}</a>],
+        ["Challenges", <a href={buildHash(report.run_id, "challenge")} className="underline hover:text-brand transition-colors">{Object.keys(view.challenges).length}</a>],
+        // Cost/LLM timeline requires an AppShell callback which isn't currently passed.
         ["Cost / LLM calls", `${formatUsd(view.usage.cost_usd ?? 0)} / ${view.usage.llm_calls ?? 0}`],
       ]
     : [];
 
   return (
     <div className="flex flex-col gap-4">
-      {view.stop ? (
+      {view.stop && runId ? (
         <StopCard
+          runId={runId}
           stop={view.stop}
           gaps={worstCriticalSlots(view)}
           challenges={Object.values(view.challenges)}

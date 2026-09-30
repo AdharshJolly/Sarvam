@@ -333,6 +333,7 @@ describe("stop card (the verdict)", () => {
   const render = (decision: ReturnType<typeof stop>, extra: Record<string, unknown> = {}) =>
     html(
       <StopCard
+        runId="R1"
         stop={decision}
         gaps={[]}
         challenges={[]}
@@ -395,5 +396,26 @@ describe("stop card (the verdict)", () => {
     const out = render(stop({ open_conflicts: 3 }));
     expect(out).toContain("3 open conflicts");
     expect(render(stop({ open_conflicts: 1 }))).toContain("1 open conflict<");
+  });
+
+  test("critical slots tiles are links to the matrix", () => {
+    const out = render(stop({ critical_slots: { green: 4, amber: 1, red: 2 } }));
+    expect(out.match(/<a[^>]*href="#\/run\/R1"[^>]*>[\s\S]*?>4<\/span>/)).toBeTruthy();
+    expect(out.match(/<a[^>]*href="#\/run\/R1"[^>]*>[\s\S]*?>1<\/span>/)).toBeTruthy();
+    expect(out.match(/<a[^>]*href="#\/run\/R1"[^>]*>[\s\S]*?>2<\/span>/)).toBeTruthy();
+  });
+});
+
+describe("report metadata", () => {
+  const { RunMetadata } = require("../components/report/ReportMeta");
+
+  test("contains links to the respective tabs", () => {
+    const rows: [string, any][] = [
+      ["Sources", <a href="#/run/R1/evidence">10</a>],
+      ["Conflicts (open / total)", <a href="#/run/R1/conflicts">1 / 5</a>],
+    ];
+    const out = html(<RunMetadata rows={rows} />);
+    expect(out).toContain('href="#/run/R1/evidence"');
+    expect(out).toContain('href="#/run/R1/conflicts"');
   });
 });

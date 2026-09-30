@@ -211,6 +211,7 @@ function Shell() {
               ) : null}
               {view.stop ? (
                 <StopCard
+                  runId={runId}
                   stop={view.stop}
                   gaps={worstCriticalSlots(view)}
                   challenges={Object.values(view.challenges)}

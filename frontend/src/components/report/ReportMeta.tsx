@@ -41,7 +41,7 @@ export function SourcesCited({ cited, onOpenClaim }: { cited: Citation[]; onOpen
   );
 }
 
-export function RunMetadata({ rows }: { rows: [string, string][] }) {
+export function RunMetadata({ rows }: { rows: [string, React.ReactNode][] }) {
   return (
     <Card as="section" pad="md" id="method-metadata" className="scroll-mt-20" aria-labelledby="method-metadata-h">
       <h3 id="method-metadata-h" className="label mb-2">
@@ -49,7 +49,7 @@ export function RunMetadata({ rows }: { rows: [string, string][] }) {
       </h3>
       <dl className="grid gap-x-6 sm:grid-cols-2">
         {rows.map(([k, v]) => (
-          <div key={k} className="flex justify-between gap-3 border-b border-border-hairline py-1.5">
+          <div key={k} className="flex justify-between items-center gap-3 border-b border-border-hairline py-1.5">
             <dt className="text-text-muted">{k}</dt>
             <dd className="mono text-right">{v}</dd>
           </div>
