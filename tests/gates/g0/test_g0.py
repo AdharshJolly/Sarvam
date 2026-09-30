@@ -121,7 +121,7 @@ def test_g0_real_llm_provider():
     llm = llm_from_settings(s, on_call=seen.append)
     out = asyncio.run(
         llm.complete(
-            s.llm_model_fast, [{"role": "user", "content": "Reply with: pong"}], max_tokens=16
+            s.llm_model_fast, [{"role": "user", "content": "Reply with: pong"}], max_tokens=256
         )
     )
     assert out.text.strip()
