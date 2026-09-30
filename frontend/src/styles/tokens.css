@@ -18,7 +18,7 @@
   --color-text: #0F172A;
   --color-text-muted: #475569;
   --color-border-hairline: #E2E8F0;
-  --color-border-strong: #CBD5E1;
+  --color-border-strong: #7C8CA3; /* control edges: >= 3:1 (WCAG 1.4.11) */
 
   /* Status */
   /* Green */
@@ -45,15 +45,16 @@
   /* Brand (Dark): lighter blue so it stands out from the navy-ink surfaces */
   --color-brand: #60A5FA;
   --color-on-brand: #0B1120;
+  --color-brand-secondary: #93C5FD; /* links and focus rings on dark surfaces */
 
   /* Neutrals (Dark - navy-ink background) */
   --color-bg: #0B1120;
   --color-surface: #1E293B;
   --color-surface-2: #334155;
   --color-text: #F8FAFC;
-  --color-text-muted: #94A3B8;
+  --color-text-muted: #A7B5C9;
   --color-border-hairline: #334155;
-  --color-border-strong: #475569;
+  --color-border-strong: #7C8DA5; /* control edges: >= 3:1 */
 
   /* Status (Dark) */
   /* Green */
@@ -65,11 +66,11 @@
   --color-warn-bg: #78350f;
   --color-warn-border: #92400e;
   /* Red */
-  --color-bad-fg: #f87171;
+  --color-bad-fg: #fca5a5;
   --color-bad-bg: #7f1d1d;
   --color-bad-border: #991b1b;
   /* Info */
-  --color-info-fg: #38bdf8;
+  --color-info-fg: #7dd3fc;
   --color-info-bg: #0c4a6e;
   --color-info-border: #075985;
 
