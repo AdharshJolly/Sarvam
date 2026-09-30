@@ -8,7 +8,7 @@ describe("MatrixPanel helpers", () => {
     const states = ["GREEN", "AMBER", "RED"] as const;
     const chips = states.map(coverageChip);
     
-    expect(chips.map(c => c.label)).toEqual(["GREEN / supported", "AMBER / partial", "RED / contradicts"]);
+    expect(chips.map(c => c.label)).toEqual(["Well supported", "Partly supported", "Not enough evidence"]);
     expect(chips.map(c => c.icon)).toEqual(["CheckCircle", "AlertTriangle", "XOctagon"]);
     expect(chips.map(c => c.tone)).toEqual(["ok", "warn", "bad"]);
   });

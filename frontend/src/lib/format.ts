@@ -1,3 +1,4 @@
+import { GLOSSARY } from "@contracts/glossary";
 import type { CoverageState } from "@contracts/types";
 import type { IconName } from "../components/ui/Icon";
 
@@ -36,11 +37,11 @@ export function domainOf(url: string): string {
 export function stateStyle(state: CoverageState): { icon: IconName; label: string; colorVar: string } {
   switch (state) {
     case "RED":
-      return { icon: "XOctagon", label: "RED / contradicts", colorVar: "var(--color-bad-fg)" };
+      return { icon: "XOctagon", label: GLOSSARY.coverage_state.RED.label, colorVar: "var(--color-bad-fg)" };
     case "AMBER":
-      return { icon: "AlertTriangle", label: "AMBER / partial", colorVar: "var(--color-warn-fg)" };
+      return { icon: "AlertTriangle", label: GLOSSARY.coverage_state.AMBER.label, colorVar: "var(--color-warn-fg)" };
     case "GREEN":
-      return { icon: "CheckCircle", label: "GREEN / supported", colorVar: "var(--color-ok-fg)" };
+      return { icon: "CheckCircle", label: GLOSSARY.coverage_state.GREEN.label, colorVar: "var(--color-ok-fg)" };
   }
 }
 

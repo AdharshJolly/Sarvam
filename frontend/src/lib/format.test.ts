@@ -17,7 +17,7 @@ test("domainOf, formatters, stateStyle", () => {
   expect(formatSeconds(75)).toBe("1m 15s");
   expect(formatUsd(0.5)).toBe("$0.500");
   expect(stateStyle("RED").icon).toBe("XOctagon");
-  expect(stateStyle("GREEN").label).toBe("GREEN / supported");
+  expect(stateStyle("GREEN").label).toBe("Well supported");
 });
 
 test("safeHref allows only http(s)", async () => {

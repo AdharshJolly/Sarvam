@@ -8,6 +8,7 @@ import type {
   Verdict,
   RunStatus,
 } from "@contracts/types";
+import { GLOSSARY, type GlossaryTable } from "@contracts/glossary";
 import { stateStyle } from "../../lib/format";
 import { StatusIconMap } from "./Icon";
 import type { IconName } from "./Icon";
@@ -16,27 +17,43 @@ export type Tone = "ok" | "warn" | "bad" | "info" | "brand" | "muted";
 
 export interface ChipSpec {
   icon: IconName;
+  /** Plain-language label (contracts/glossary.py), always shown. */
   label: string;
   tone: Tone;
+  /** The technical term, shown beside the label in Detailed reading mode. */
+  raw?: string;
+  /** One-line meaning, exposed as the chip's tooltip. */
+  hint?: string;
+}
+
+/** Plain wording for an enum value; an unknown value falls back to itself rather than hiding it. */
+export function gloss(table: GlossaryTable, key: string): { label: string; meaning: string; next_step: string } {
+  const rows = GLOSSARY[table] as Record<string, { label: string; meaning: string; next_step: string }>;
+  return rows[key] ?? { label: key, meaning: "", next_step: "" };
+}
+
+function chip(table: GlossaryTable, key: string, icon: IconName, tone: Tone, raw?: string): ChipSpec {
+  const g = gloss(table, key);
+  return { icon, label: g.label, tone, raw: raw ?? key, hint: g.meaning };
 }
 
 const coverageTone: Record<CoverageState, Tone> = { RED: "bad", AMBER: "warn", GREEN: "ok" };
 
 export function coverageChip(state: CoverageState): ChipSpec {
   const s = stateStyle(state);
-  return { icon: StatusIconMap[state] || "Info", label: s.label, tone: coverageTone[state] };
+  return { ...chip("coverage_state", state, StatusIconMap[state] || "Info", coverageTone[state]), label: s.label };
 }
 
 export function verdictChip(v: Verdict): ChipSpec {
   switch (v) {
     case "supports":
-      return { icon: "CheckCircle", label: "supports", tone: "ok" };
+      return chip("verdict", v, "CheckCircle", "ok");
     case "partial":
-      return { icon: "AlertTriangle", label: "partial", tone: "warn" };
+      return chip("verdict", v, "AlertTriangle", "warn");
     case "contradicts":
-      return { icon: "XOctagon", label: "contradicts", tone: "bad" };
+      return chip("verdict", v, "XOctagon", "bad");
     case "irrelevant":
-      return { icon: "Minus", label: "irrelevant", tone: "muted" };
+      return chip("verdict", v, "Minus", "muted");
   }
 }
 
@@ -45,68 +62,66 @@ export type CertaintyLabel = "supported" | "contested" | "single-origin" | "assu
 export function certaintyChip(c: CertaintyLabel): ChipSpec {
   switch (c) {
     case "supported":
-      return { icon: "CheckCircle", label: "supported", tone: "ok" };
+      return chip("certainty", c, "CheckCircle", "ok");
     case "contested":
-      return { icon: "Zap", label: "contested", tone: "bad" }; // using Zap for contested/conflict
+      return chip("certainty", c, "Zap", "bad"); // Zap marks conflict
     case "single-origin":
-      return { icon: "AlertTriangle", label: "single origin", tone: "warn" };
+      return chip("certainty", c, "AlertTriangle", "warn");
     case "assumed":
-      return { icon: "HelpCircle", label: "System inference", tone: "muted" };
+      return chip("certainty", c, "HelpCircle", "muted");
   }
 }
 
 /** Typed failure names (SSOT section 18) and source statuses. */
 export function failureChip(name: string): ChipSpec {
-  return { icon: "XOctagon", label: name, tone: "bad" };
+  return chip("failure", name, "XOctagon", "bad");
 }
 
 export function sourceStatusChip(s: SourceStatus): ChipSpec {
   switch (s) {
     case "found":
-      return { icon: "Search", label: "found", tone: "muted" };
+      return chip("source_status", s, "Search", "muted");
     case "fetched":
-      return { icon: "CheckCircle", label: "fetched", tone: "ok" };
+      return chip("source_status", s, "CheckCircle", "ok");
     case "SOURCE_UNAVAILABLE":
     case "SOURCE_EMPTY":
-      return failureChip(s);
+      return chip("source_status", s, "XOctagon", "bad");
   }
 }
 
 export function outcomeChip(o: ChallengeOutcome | null | undefined): ChipSpec {
   switch (o) {
     case "strengthened":
-      return { icon: "CheckCircle", label: "strengthened", tone: "ok" };
+      return chip("challenge_outcome", o, "CheckCircle", "ok");
     case "weakened":
-      return { icon: "ArrowDown", label: "weakened", tone: "bad" };
+      return chip("challenge_outcome", o, "ArrowDown", "bad");
     case "unresolved":
-      return { icon: "HelpCircle", label: "unresolved", tone: "warn" };
+      return chip("challenge_outcome", o, "HelpCircle", "warn");
     default:
-      return { icon: "Clock", label: "pending", tone: "muted" };
+      return chip("challenge_outcome", "pending", "Clock", "muted");
   }
 }
 
 export function conflictStatusChip(s: ConflictStatus): ChipSpec {
-  return s === "open"
-    ? { icon: "Zap", label: "open", tone: "bad" }
-    : { icon: "CheckCircle", label: "explained", tone: "ok" };
+  return s === "open" ? chip("conflict_status", s, "Zap", "bad") : chip("conflict_status", s, "CheckCircle", "ok");
 }
 
-export const conflictKindText: Record<ConflictKind, string> = {
-  unit_error: "unit mismatch (e.g. per day vs per month)",
-  scope_difference: "different scope",
-  temporal: "different time period",
-  definition: "different definition",
-  genuine: "genuine disagreement",
-};
+/** Label plus one-sentence meaning, e.g. "Different units. The sources use different units...". */
+export const conflictKindText = Object.fromEntries(
+  (Object.keys(GLOSSARY.conflict_kind) as ConflictKind[]).map((k) => {
+    const g = gloss("conflict_kind", k);
+    return [k, `${g.label}. ${g.meaning}`];
+  }),
+) as Record<ConflictKind, string>;
 
 export function finalStateChip(f: FinalState): ChipSpec {
   switch (f) {
     case "SUFFICIENT":
-      return { icon: "CheckCircle", label: "SUFFICIENT", tone: "ok" };
+      return chip("final_state", f, "CheckCircle", "ok");
     case "SUFFICIENT_WITH_CAVEATS":
-      return { icon: "AlertTriangle", label: "SUFFICIENT WITH CAVEATS", tone: "warn" };
+      return chip("final_state", f, "AlertTriangle", "warn");
     case "INSUFFICIENT":
-      return { icon: "Circle", label: "INSUFFICIENT", tone: "bad" };
+      return chip("final_state", f, "Circle", "bad");
   }
 }
 

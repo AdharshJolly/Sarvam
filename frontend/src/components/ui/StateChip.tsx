@@ -1,8 +1,11 @@
 import { type ChipSpec } from "./chips";
 import { Icon } from "./Icon";
+import { useReadingMode } from "../../lib/readingMode";
 
 /** State = colour + icon + text, never colour alone. Chips are at least 14 px. */
 export function StateChip({ spec, large = false }: { spec: ChipSpec; large?: boolean }) {
+  const detailed = useReadingMode() === "detailed";
+  const showRaw = detailed && spec.raw && spec.raw.toLowerCase() !== spec.label.toLowerCase();
   const isLucide = typeof spec.icon === 'string' && spec.icon.length > 2; // naive check
 
   // Generate tailwind classes based on tone
@@ -31,6 +34,7 @@ export function StateChip({ spec, large = false }: { spec: ChipSpec; large?: boo
 
   return (
     <span
+      title={spec.hint || undefined}
       className={`inline-flex w-fit items-center gap-1.5 rounded-md border font-semibold ${
         large ? "px-3 py-1 text-base" : "px-2 py-0.5 text-sm"
       } ${colorClasses}`}
@@ -41,6 +45,7 @@ export function StateChip({ spec, large = false }: { spec: ChipSpec; large?: boo
         <span aria-hidden="true" className="font-mono font-bold leading-none">{spec.icon}</span>
       )}
       <span className="leading-none">{spec.label}</span>
+      {showRaw ? <span className="font-mono text-sm font-normal opacity-70">({spec.raw})</span> : null}
     </span>
   );
 }

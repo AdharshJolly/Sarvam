@@ -164,7 +164,9 @@ def test_g3_the_report_carries_the_state_labels_conflicts_and_what_could_change(
         assert heading in md
     assert f"**Assurance state: {state.stop.state.value}**" in md
     assert "{{certainty:supported}}" in md and "{{certainty:contested}}" in md
-    assert "conflict (open," in md  # the price the challenge search found disagrees with the rest
+    assert (
+        "(not yet explained," in md
+    )  # the price the challenge search found disagrees with the rest
     assert all(c.attack.rstrip(".") in md for c in state.challenges)
     findings = [
         line for line in md.splitlines() if line.startswith("- ") and "{{certainty:" in line

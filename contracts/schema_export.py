@@ -3,6 +3,7 @@
     uv run python -m contracts.schema_export           # write contracts/generated/schema.json
     uv run python -m contracts.schema_export --check   # fail if the committed file is stale
 
+Also writes contracts/generated/glossary.ts from contracts/glossary.py (plain-language wording).
 Pipeline: Pydantic models -> contracts/generated/schema.json -> (bun run gen:types) ->
 contracts/generated/types.ts. Both generated files are committed and MUST NOT be edited by hand.
 """
@@ -15,10 +16,11 @@ from pathlib import Path
 
 from pydantic import TypeAdapter
 
-from contracts import events, models
+from contracts import events, glossary, models
 
 GENERATED_DIR = Path(__file__).parent / "generated"
 SCHEMA_PATH = GENERATED_DIR / "schema.json"
+GLOSSARY_PATH = GENERATED_DIR / "glossary.ts"
 
 # Exported roots. Each becomes a named TypeScript type.
 ROOTS: list[type] = [
@@ -80,19 +82,25 @@ def render() -> str:
 
 
 def main(argv: list[str]) -> int:
-    text = render()
+    outputs = {SCHEMA_PATH: render(), GLOSSARY_PATH: glossary.glossary_ts()}
     if "--check" in argv:
-        current = SCHEMA_PATH.read_text(encoding="utf-8") if SCHEMA_PATH.exists() else ""
-        if current != text:
-            print(
-                "contracts/generated/schema.json is stale; run `make contracts`.", file=sys.stderr
-            )
+        stale = [
+            p
+            for p, text in outputs.items()
+            if (p.read_text(encoding="utf-8") if p.exists() else "") != text
+        ]
+        if stale:
+            for p in stale:
+                print(
+                    f"contracts/generated/{p.name} is stale; run `make contracts`.", file=sys.stderr
+                )
             return 1
-        print("contracts/generated/schema.json is up to date.")
+        print("contracts/generated/schema.json and glossary.ts are up to date.")
         return 0
     GENERATED_DIR.mkdir(parents=True, exist_ok=True)
-    SCHEMA_PATH.write_text(text, encoding="utf-8", newline="\n")
-    print(f"wrote {SCHEMA_PATH}")
+    for p, text in outputs.items():
+        p.write_text(text, encoding="utf-8", newline="\n")
+        print(f"wrote {p}")
     return 0
 
 

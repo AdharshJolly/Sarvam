@@ -33,6 +33,10 @@ selectors.ts (pure)  ->  panels / components (props only)
 - **F6** Budget meters use the 2 s summary poll; amber at 80 percent, LIMIT at 100 percent.
 - **F7** Coverage rollups always come from the server; the UI never recomputes coverage rules.
 
+## Plain wording (B-36)
+
+Every user-visible enum value is worded by `contracts/glossary.py` (generated to `@contracts/glossary`). Components never hard-code state words: they call `chips.ts` (`gloss()` and the `*Chip` helpers). `StateChip` shows the plain label, the meaning as a tooltip, and the technical term in Detailed mode (`lib/readingMode.ts`, default Simple). `StopCard` holds the legend (`ReadingGuide`). See `docs/design/plain-language.md`.
+
 ## Mock mode
 
 `cd frontend && VITE_USE_MOCK=1 bun run dev`. Pick a scenario (complete, insufficient, budget-wrapup, failure, replay),
