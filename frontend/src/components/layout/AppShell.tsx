@@ -19,6 +19,7 @@ import { ActivityDock, ActivityTimeline, type DockFilter } from "../ActivityDock
 import type { MeterKind } from "../BudgetMeters";
 import { Landing } from "../Landing";
 import { MockControls } from "../MockControls";
+import { RunProgress } from "../RunProgress";
 import { StopCard } from "../StopCard";
 import { ChallengePanel } from "../panels/ChallengePanel";
 import { ConflictsPanel } from "../panels/ConflictsPanel";
@@ -197,6 +198,16 @@ function Shell() {
             <Landing />
           ) : (
             <div className="mx-auto flex max-w-6xl flex-col gap-4">
+              {running && !view.stop ? (
+                <RunProgress
+                  current={view.phase}
+                  now={nowText}
+                  live={running}
+                  usage={view.usage}
+                  budget={run?.budget}
+                  onOpenMeter={goMeter}
+                />
+              ) : null}
               {view.stop ? (
                 <StopCard
                   stop={view.stop}

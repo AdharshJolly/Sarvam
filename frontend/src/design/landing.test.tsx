@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Landing } from "../components/Landing";
 import { RunForm } from "../components/RunForm";
+import { RunProgress, phaseStatus } from "../components/RunProgress";
 import { SessionProvider } from "../state/useRunSession";
 
 // The session reads the URL hash while rendering; there is no DOM under bun, so give it a minimal one.
@@ -48,5 +49,44 @@ describe("run form", () => {
   test("shows no validation error before the first submit", () => {
     expect(html).not.toContain('role="alert"');
     expect(html).not.toContain("aria-invalid");
+  });
+});
+
+describe("run progress (live view)", () => {
+  const budget = { max_searches: 10, max_fetches: 20, max_llm_calls: 30, max_cost_usd: 1, max_wall_seconds_soft: 600 };
+  const usage = { searches: 9, fetches: 2, llm_calls: 30, cost_usd: 0.1, elapsed_seconds: 30 };
+  const html = renderToStaticMarkup(
+    <RunProgress
+      current="VERIFY"
+      now="Verifying claims"
+      live
+      usage={usage as never}
+      budget={budget as never}
+      onOpenMeter={() => {}}
+    />,
+  );
+
+  test("leads with what the run is doing now", () => {
+    expect(html).toContain("Now");
+    expect(html).toContain("Verifying claims");
+  });
+
+  test("marks exactly one phase current, and earlier ones done, in words", () => {
+    expect(html.match(/aria-current="step"/g)).toHaveLength(1);
+    expect(html).toContain("(done)");
+    expect(html).toContain("(current)");
+    expect(html).toContain("(not started)");
+  });
+
+  test("budget warnings carry an icon and a word, not colour alone", () => {
+    expect(html).toContain("80%+");
+    expect(html).toContain("LIMIT");
+  });
+});
+
+describe("phaseStatus", () => {
+  test("splits phases around the current one", () => {
+    expect([0, 1, 2].map((i) => phaseStatus(i, 1, false))).toEqual(["done", "active", "pending"]);
+    expect(phaseStatus(2, 1, true)).toBe("done");
   });
 });

@@ -1,3 +1,5 @@
+import { Icon } from "./Icon";
+
 export interface MeterProps {
   label: string;
   used: number;
@@ -34,7 +36,8 @@ export function Meter({ label, used, max, fmt = (n) => String(n), onClick }: Met
             </span>
           )}
           {alertText && (
-            <span className={`text-xs font-bold ${alertText === 'LIMIT' ? 'text-bad-fg' : 'text-warn-fg'}`}>
+            <span className={`flex items-center gap-1 text-sm font-bold ${alertText === "LIMIT" ? "text-bad-fg" : "text-warn-fg"}`}>
+              <Icon name={alertText === "LIMIT" ? "XOctagon" : "AlertTriangle"} size={14} aria-hidden />
               {alertText}
             </span>
           )}
