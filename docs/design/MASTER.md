@@ -123,7 +123,37 @@ Rules: use `Button`, not a raw `<button>`, for actions. Custom controls (tabs, m
 element but must have `type`, a visible focus ring and 44 px touch targets on touch devices. Do not
 hand-build a card with border classes; use `Card`.
 
-## 9. Theme mechanics
+## 9. Shell and navigation
+
+Breakpoints: phone below 768 px (`md`), tablet 768 to 1023 px, desktop from 1024 px (`lg`), wide from
+1280 px (`xl`).
+
+| Area | Wide (xl) | Desktop / laptop (lg) | Tablet (md) | Phone (below md) |
+|---|---|---|---|---|
+| Research-status rail | Expanded, 19 rem | Collapsed icon strip by default, expandable | Sheet from the left, opened from the header | Sheet from the left, opened from the header |
+| Current step | In the rail | In the rail | Strip under the header, tap opens the sheet | Same |
+| Activity timeline | Collapsible dock at the bottom | Same | Bottom sheet, opened from the header | Same |
+| View switcher | Tabs | Tabs | Tabs | Bottom tab bar (tabs hidden) |
+| Evidence drawer | Docked on the right | Modal | Modal | Modal |
+
+- **Rail preference:** the user can collapse or expand the rail at lg and up; the choice persists in
+  `localStorage` under `sarvam-rail`. Until chosen it is auto: collapsed below xl, and also collapsed
+  while the evidence drawer is docked below 1536 px, so the workspace keeps its room. An explicit
+  choice always wins.
+- **Header:** brand, the question as the page `<h1>` (one heading per view; the landing hero is the `<h1>`
+  when there is no run), the LIVE/REPLAY badge, and cost, time and tokens. The badge shows in the
+  header whenever the rail is not showing it, so the mode is always visible (SSOT section 12). Each header
+  metric and each budget meter opens the timeline filtered to the events behind the number.
+- **Phone header:** the question wraps onto its own row; New run, theme and mode shrink to icons.
+- **Routes:** `#/run/<id>/<tab>`; the default tab is omitted. Reload, shared links and Back restore both.
+- **Announcements:** exactly one polite live region in the shell announces the current step. The visible
+  "Now" text is not a live region, so nothing is read twice.
+- **Sheets** are native dialogs (`Dialog` placement `left` and `bottom`): focus is trapped, the page behind
+  is inert, Escape closes, and they close themselves if the window grows past lg.
+- **Touch:** every control is at least 44 px on coarse pointers; the bottom bar items are 56 px tall and
+  respect the device safe area.
+
+## 10. Theme mechanics
 
 - The user chooses system, light or dark. The resolved value is written to `<html data-theme>`, plus
   `color-scheme` and `<meta name="theme-color">`.
@@ -134,12 +164,12 @@ hand-build a card with border classes; use `Card`.
 - To add a token: define it in `:root` **and** `:root[data-theme="dark"]`, then expose it in
   `@theme`. Check its contrast against every surface it can sit on.
 
-## 10. Responsive targets
+## 11. Responsive targets
 
 Design and test at 375, 768, 1024 and 1440 px, both themes, with no horizontal page scroll. Behaviour
 per screen is defined in phase P6 of the redesign plan.
 
-## 11. Do and don't
+## 12. Do and don't
 
 - **Do** show every state as icon + word + colour.
 - **Do** keep a one-line reason next to every change of direction (SSOT section 12).
@@ -151,11 +181,13 @@ per screen is defined in phase P6 of the redesign plan.
 - **Don't** use `text-xs`, unicode glyph icons, or decorative motion.
 - **Don't** present a replayed run as live: REPLAY is always labelled.
 
-## 12. Decisions
+## 13. Decisions
 
 | Decision | Reason |
 |---|---|
 | Amber is a status colour only; brand is navy | An amber brand would collide with the AMBER coverage state |
+| The LIVE/REPLAY badge lives in the header whenever the rail is not showing it | The SSOT places it in the rail but also requires it always visible; the rail is collapsed or a sheet on most screens |
+| The question is the page `<h1>`, not the brand | One heading per view, and the run title is what identifies the page |
 | Dark theme uses a lighter brand blue and its own `on-brand` | Navy on a navy-ink surface is unreadable |
 | Dark background is navy ink, not pure black | Keeps parity with the light theme and avoids harsh contrast |
 | Fonts are not preloaded | Vite hashes asset names, so a static `<link rel="preload">` cannot name them; `font-display: swap` avoids invisible text |

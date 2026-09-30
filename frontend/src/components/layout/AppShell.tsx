@@ -4,6 +4,7 @@ import { formatSeconds, formatUsd } from "../../lib/format";
 import {
   LG_MIN,
   XL_MIN,
+  XXL_MIN,
   type RailPref,
   isRailCollapsed,
   readRailPref,
@@ -41,6 +42,7 @@ function Shell() {
   const ev = useEvidence();
   const isLg = useMediaQuery(`(min-width: ${LG_MIN}px)`);
   const isXl = useMediaQuery(`(min-width: ${XL_MIN}px)`);
+  const isXxl = useMediaQuery(`(min-width: ${XXL_MIN}px)`);
 
   const [tab, setTabState] = useState<TabId>(() => parseRoute(window.location.hash).tab);
   const [slotFilter, setSlotFilter] = useState<string | null>(null);
@@ -53,7 +55,8 @@ function Shell() {
   const run = view.run;
   const running = run?.status === "running" || run?.status === "queued";
   const tokens = view.timeline.reduce((n, t) => n + (t.tokens ?? 0), 0);
-  const collapsed = isRailCollapsed(railPref, isXl ? XL_MIN : LG_MIN);
+  // The evidence drawer is docked (beside the workspace) only from xl up.
+  const collapsed = isRailCollapsed(railPref, isXxl ? XXL_MIN : isXl ? XL_MIN : LG_MIN, ev.isOpen && isXl);
 
   const toggleRail = () => {
     const next: RailPref = collapsed ? "expanded" : "collapsed";
