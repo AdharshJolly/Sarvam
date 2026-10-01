@@ -39,31 +39,39 @@ export function GapList({
   onDigDeeper?: (gap: StopGap) => void;
 }) {
   return (
-    <ul className="space-y-2">
+    <ul className="space-y-3">
       {gaps.map((g) => (
-        <li key={g.slotId} className="leading-snug">
-          <button
-            type="button"
-            className="mr-1 text-left font-semibold text-brand hover:underline"
-            onClick={() => onOpenSlot(g.slotId)}
-          >
-            {g.name}
-          </button>
-          <span className="text-text-muted">: {g.reason}.</span>
-          {g.nextStep ? (
-            <span className="mt-0.5 block text-text">
-              <span className="font-semibold">Next step:</span> {g.nextStep}
-            </span>
-          ) : null}
-          {onDigDeeper ? (
+        <li
+          key={g.slotId}
+          className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 rounded-md border border-border-hairline bg-surface-2 p-3"
+        >
+          <div className="flex-1 leading-snug">
             <button
               type="button"
-              className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-brand hover:underline"
-              title="Opens the new-run form with a question about this gap. Nothing runs until you press Start."
-              onClick={() => onDigDeeper(g)}
+              className="mr-1 text-left font-semibold text-brand hover:underline"
+              onClick={() => onOpenSlot(g.slotId)}
             >
-              <Icon name="Search" size={14} aria-hidden /> Dig deeper on this
+              {g.name}
             </button>
+            <span className="text-text-muted">: {g.reason}.</span>
+            {g.nextStep ? (
+              <span className="mt-1 block text-text">
+                <span className="font-semibold">Next step:</span> {g.nextStep}
+              </span>
+            ) : null}
+          </div>
+          {onDigDeeper ? (
+            <div className="mt-2 shrink-0 self-start sm:mt-0 sm:self-center">
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={<Icon name="Search" size={14} aria-hidden />}
+                title="Opens the new-run form with a question about this gap. Nothing runs until you press Start."
+                onClick={() => onDigDeeper(g)}
+              >
+                Dig deeper on this
+              </Button>
+            </div>
           ) : null}
         </li>
       ))}
