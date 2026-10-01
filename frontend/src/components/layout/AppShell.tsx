@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { env } from "../../config/env";
-import { formatRunCost, formatSeconds } from "../../lib/format";
+import { formatSeconds } from "../../lib/format";
 import {
   LG_MIN,
   XL_MIN,

@@ -29,7 +29,7 @@ test("safeHref allows only http(s)", async () => {
 });
 
 test("formatRunCost never shows a misleading zero when cost is unknown", () => {
-  expect(formatRunCost({ cost_usd: 0, cost_known: false })).toBe("Not reported");
-  expect(formatRunCost({})).toBe("Not reported");
+  expect(formatRunCost({ cost_usd: 0, cost_known: false })).toBe("Cost unavailable");
+  expect(formatRunCost({})).toBe("Cost unavailable");
   expect(formatRunCost({ cost_usd: 0.0431, cost_known: true })).toBe("≈$0.043");
 });
