@@ -44,6 +44,19 @@ export function RunForm() {
   const [error, setError] = useState<string | null>(null);
   const questionRef = useRef<HTMLInputElement>(null);
 
+  // The recording matches the canonical question with an empty scope; anything else is a replay miss.
+  const chooseMode = (next: Mode) => {
+    setMode(next);
+    if (next === "REPLAY") {
+      setQuestion(CANONICAL_QUESTION);
+      setGeography("");
+      setHorizon("");
+      setConstraints("");
+      setFieldError(null);
+    }
+  };
+  const replayMiss = mode === "REPLAY" && (question.trim() !== CANONICAL_QUESTION || !!(geography || horizon || constraints).trim());
+
   // Debounced search animation while typing
   useEffect(() => {
     if (question.trim()) {
@@ -258,7 +271,7 @@ export function RunForm() {
                     : "border-border-hairline bg-surface hover:border-border-strong hover:bg-surface-2"
                 }`}
               >
-                <input type="radio" name="mode" className="sr-only" checked={selected} onChange={() => setMode(m.mode)} />
+                <input type="radio" name="mode" className="sr-only" checked={selected} onChange={() => chooseMode(m.mode)} />
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-sm text-text">
                     {m.mode}
@@ -277,6 +290,13 @@ export function RunForm() {
           })}
         </div>
       </fieldset>
+
+      {replayMiss ? (
+        <Banner tone="warn">
+          REPLAY only has the recorded canonical question with an empty scope. This question or scope was never recorded,
+          so the run will stop with an error. Use the canonical example, or switch to LIVE.
+        </Banner>
+      ) : null}
 
       {error ? <Banner tone="bad">{error}</Banner> : null}
 

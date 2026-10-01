@@ -83,7 +83,7 @@ export function ArchitecturePage() {
               </div>
               <h3 className="text-lg font-bold text-text">Dimension &amp; Slot Decomposition</h3>
               <p className="text-sm text-text-muted mt-2 leading-relaxed">
-                The user inquiry is parsed into discrete, falsifiable slots across orthogonal research dimensions (e.g. Unit Economics, Regulatory Compliance, Competitor Dynamics). Each slot receives a unique cryptographic identifier and acceptance criteria.
+                The user inquiry is parsed into discrete, falsifiable slots across orthogonal research dimensions (e.g. Unit Economics, Regulatory Compliance, Competitor Dynamics). Each slot receives a unique identifier and acceptance criteria.
               </p>
             </div>
 
@@ -92,7 +92,7 @@ export function ArchitecturePage() {
                 <span className="font-mono text-sm font-bold text-brand">Phase 02</span>
                 <span className="font-mono text-sm text-text-muted uppercase">Extraction</span>
               </div>
-              <h3 className="text-lg font-bold text-text">Passage Retrieval &amp; Cryptographic Offsets</h3>
+              <h3 className="text-lg font-bold text-text">Passage Retrieval &amp; Character Offsets</h3>
               <p className="text-sm text-text-muted mt-2 leading-relaxed">
                 Primary sources are fetched through authoritative web endpoints or local corpora. Text is segmented into immutable passages. Quotations must match character spans precisely; any hallucinated or drifting quote triggers automatic validation rejection.
               </p>

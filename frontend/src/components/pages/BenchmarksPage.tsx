@@ -2,33 +2,29 @@ import { ThemeToggle } from "../layout/ThemeToggle";
 import { Icon } from "../ui/Icon";
 import { useAuth } from "../../state/useAuth";
 
+/** Measured values from the one recorded live run (docs/benchmarks/canon-b3-o3.json); nothing here is estimated. */
 const BENCHMARK_SCENARIOS = [
   {
-    id: "canonical",
-    title: "Commercial EV Two-Wheelers in Bengaluru",
-    question: "Should a fleet logistics operator transition 500 delivery scooters in Bengaluru from petrol to electric in 2026?",
-    dimensions: ["Battery Degradation Curves", "FAME-II Subsidy Expiration", "Swapping vs Fixed Charging CapEx", "Monsoon Waterlogging Resilience"],
-    claimsVerified: 38,
-    conflictsResolved: 2,
-    originsDetected: 14,
-  },
-  {
-    id: "fleet",
-    title: "Indian Commercial EV Fleet Market 2027",
-    question: "What are the structural unit economics, battery leasing trends, and financing bottlenecks in India's electric three-wheeler cargo market?",
-    dimensions: ["LCOE Comparisons", "Priority Sector Lending Limits", "Residual Asset Valuation", "Battery Chemistry Longevity"],
-    claimsVerified: 45,
-    conflictsResolved: 3,
-    originsDetected: 19,
-  },
-  {
-    id: "solar",
-    title: "Residential Rooftop Solar in Karnataka",
-    question: "What are verified residential solar system costs, net-metering grid curtailments, and payback periods in Karnataka?",
-    dimensions: ["BESCOM Tariff Schedules", "Inverter Failure Rates", "Discom Grid Interconnect Delays", "Subsidy Disbursement Timelines"],
-    claimsVerified: 29,
-    conflictsResolved: 1,
-    originsDetected: 11,
+    id: "canon-b3-o3",
+    title: "Electric scooter subscription in Bengaluru",
+    question: "Should a company launch an electric scooter subscription service in Bengaluru in 2027?",
+    dimensions: [
+      "Demand and Target Market",
+      "Competitive Landscape",
+      "Unit Economics and Business Viability",
+      "Regulatory and Policy Framework",
+      "Infrastructure and Operations",
+    ],
+    claimsVerified: 57,
+    conflictsExplained: 6,
+    originsDetected: 28,
+    sourcesFound: 44,
+    searches: 22,
+    llmCalls: 53,
+    tokens: "155k",
+    seconds: 138,
+    coverage: "8 green, 1 amber, 1 red",
+    outcome: "Sufficient with caveats (stopped on the search budget)",
   },
 ];
 
@@ -92,30 +88,30 @@ export function BenchmarksPage() {
             Deterministic Evaluation
           </p>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-text">
-            Deterministic Benchmark Library
+            Recorded run and replay
           </h1>
           <p className="text-base sm:text-lg text-text-muted mt-3 leading-relaxed">
-            Record once, replay indefinitely. Test your prompts, pipelines, and evaluation harnesses offline with zero model drift and zero token costs.
+            One live run was recorded and can be replayed offline, with no network, no keys and no cost.
           </p>
         </div>
 
         {/* Overview */}
         <section className="mb-12">
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-text mb-3">
-            Why Deterministic Replays Matter
+            What the recording proves
           </h2>
           <p className="text-sm sm:text-base text-text-muted leading-relaxed mb-4">
-            In traditional generative AI systems, evaluating changes across releases is nearly impossible because live web queries return changing results and LLM outputs fluctuate.
+            Live web results and model answers change from run to run, so a live run cannot be repeated exactly. Sarvam can record every search, page fetch and model reply of a live run.
           </p>
           <p className="text-sm sm:text-base text-text-muted leading-relaxed">
-            Sarvam provides a built-in <strong className="text-text font-semibold">REPLAY execution mode</strong>. Recorded investigations capture all HTTP payloads, search rankings, passage extractions, and model completions down to exact byte timestamps. Replaying a scenario runs completely offline in milliseconds, proving regression correctness without external dependencies.
+            Replaying the recording offline rebuilt the run row for row: all 307 events and the stored sources, passages, claims, coverage and conflicts matched the live run. A replayed run is always labelled REPLAY, never LIVE. Replay covers this recorded question only.
           </p>
         </section>
 
         {/* Benchmark Scenarios */}
         <section className="mb-12">
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-text mb-6">
-            Standard Reference Scenarios
+            Recorded run
           </h2>
 
           <div className="space-y-6">
@@ -128,27 +124,31 @@ export function BenchmarksPage() {
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <h3 className="text-lg font-bold text-text">{s.title}</h3>
                     <span className="font-mono text-sm px-2.5 py-0.5 rounded bg-surface-2 border border-border-hairline text-brand">
-                      Scenario ID: {s.id}
+                      Recording: {s.id}
                     </span>
                   </div>
                   <p className="text-sm text-text-muted italic mb-4">
                     &ldquo;{s.question}&rdquo;
                   </p>
 
-                  <div className="grid grid-cols-3 gap-3 p-3.5 rounded-lg bg-surface-2/60 border border-border-hairline text-center mb-4">
-                    <div>
-                      <p className="font-mono text-base font-bold text-text">{s.claimsVerified}</p>
-                      <p className="text-sm text-text-muted">Verified Claims</p>
-                    </div>
-                    <div>
-                      <p className="font-mono text-base font-bold text-brand">{s.conflictsResolved}</p>
-                      <p className="text-sm text-text-muted">Resolved Conflicts</p>
-                    </div>
-                    <div>
-                      <p className="font-mono text-base font-bold text-text">{s.originsDetected}</p>
-                      <p className="text-sm text-text-muted">Independent Origins</p>
-                    </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3.5 rounded-lg bg-surface-2/60 border border-border-hairline text-center mb-4">
+                    {[
+                      [s.claimsVerified, "Supported claims"],
+                      [s.conflictsExplained, "Conflicts, all explained"],
+                      [`${s.originsDetected} of ${s.sourcesFound}`, "Independent origins / sources"],
+                      [s.searches, "Searches"],
+                      [s.llmCalls, "Model calls"],
+                      [`${s.tokens} / ${s.seconds} s`, "Tokens / wall time"],
+                    ].map(([value, label]) => (
+                      <div key={label}>
+                        <p className="font-mono text-base font-bold text-text">{value}</p>
+                        <p className="text-sm text-text-muted">{label}</p>
+                      </div>
+                    ))}
                   </div>
+                  <p className="text-sm text-text-muted mb-4">
+                    Coverage: {s.coverage}. Outcome: {s.outcome}. Cost was not reported by the provider, so none is shown.
+                  </p>
 
                   <div className="flex flex-wrap gap-2">
                     {s.dimensions.map((d) => (
@@ -163,12 +163,12 @@ export function BenchmarksPage() {
                 </div>
 
                 <div className="mt-5 pt-4 border-t border-border-hairline flex items-center justify-between">
-                  <span className="text-sm text-text-muted">Includes raw primary documents and passage offsets</span>
+                  <span className="text-sm text-text-muted">Recorded searches, pages and model replies</span>
                   <a
                     href="#/workspace"
                     className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:underline"
                   >
-                    <span>Run in Replay Mode</span>
+                    <span>Open the workspace</span>
                     <Icon name="ArrowRight" size={14} aria-hidden />
                   </a>
                 </div>

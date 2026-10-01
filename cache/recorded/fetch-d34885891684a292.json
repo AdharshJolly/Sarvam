@@ -1,0 +1,10 @@
+{
+  "attempt": 0,
+  "error": {
+    "failure": "SOURCE_UNAVAILABLE",
+    "message": "http_403"
+  },
+  "key": {
+    "url": "https://www.grandviewresearch.com/industry-analysis/bike-scooter-rental-market-report"
+  }
+}

@@ -9,6 +9,7 @@ controller owns budgets, rounds, wrap-up and failure handling; every failure bec
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import os
 from dataclasses import dataclass, field
@@ -61,7 +62,15 @@ from contracts.events import (
     RunFailedPayload,
     StopDecidedPayload,
 )
-from contracts.models import FailureType, Mode, Phase, Run, StopDecision, TerminationReason
+from contracts.models import (
+    Budget,
+    FailureType,
+    Mode,
+    Phase,
+    Run,
+    StopDecision,
+    TerminationReason,
+)
 
 log = logging.getLogger("sarvam.controller")
 
@@ -84,6 +93,37 @@ class RunnerDeps:
     fetcher: Fetcher | None = None
     llm: Any = None
     sleep: Any = None
+
+
+REPLAY_PROFILE = "MANIFEST.json"
+
+
+def apply_replay_profile(settings: Settings, run: Run) -> tuple[Settings, Run]:
+    """Make a REPLAY run use the knobs the recordings were made with.
+
+    Recordings are keyed by request content, so batch sizes, the extractor floor, passages per slot
+    and the budget must equal the recording run's, whatever the local .env says. The profile is
+    `<record_dir>/MANIFEST.json`; without it the settings are used as given.
+    """
+    path = settings.record_dir / REPLAY_PROFILE
+    if not path.is_file():
+        return settings, run
+    knobs = json.loads(path.read_text(encoding="utf-8"))["knobs"]
+    thresholds = settings.thresholds.model_copy(
+        update={
+            "passages_per_slot_source": knobs["passages_per_slot"],
+            "extractor_min_overlap": knobs["extractor_min_overlap"],
+        }
+    )
+    settings = settings.model_copy(
+        update={
+            "extractor_batch_size": knobs["extractor_batch"],
+            "verifier_batch_size": knobs["verifier_batch"],
+            "llm_compact_json": knobs["compact_json"],
+            "thresholds": thresholds,
+        }
+    )
+    return settings, run.model_copy(update={"budget": Budget(**knobs["budget"])})
 
 
 def build_gateway(settings: Settings, run: Run, deps: RunnerDeps | None, on_warning) -> ToolGateway:
@@ -230,6 +270,8 @@ async def run_research(
         run = repo.get_run(conn, run_id)
         if run is None:
             raise GatewayError(FailureType.BLOCKED, f"run {run_id} does not exist")
+        if run.mode is Mode.REPLAY:
+            settings, run = apply_replay_profile(settings, run)
         repo.set_run_status(conn, run_id, "running")
 
         def warn(w: BudgetWarning) -> None:

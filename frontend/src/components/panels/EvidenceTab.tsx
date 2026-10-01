@@ -50,13 +50,13 @@ export function EvidenceTab({
             <li>
               <button onClick={() => scrollTo('sources')} className="flex justify-between items-center text-left font-medium text-text-muted hover:text-brand transition-colors w-full py-1">
                 <span>Sources</span>
-                <span className="text-xs bg-surface-2 px-2 py-0.5 rounded-full">{sources.length}</span>
+                <span className="text-sm bg-surface-2 px-2 py-0.5 rounded-full">{sources.length}</span>
               </button>
             </li>
             <li>
               <button onClick={() => scrollTo('claims')} className="flex justify-between items-center text-left font-medium text-text-muted hover:text-brand transition-colors w-full py-1">
                 <span>Claims</span>
-                <span className="text-xs bg-surface-2 px-2 py-0.5 rounded-full">{claims.length}</span>
+                <span className="text-sm bg-surface-2 px-2 py-0.5 rounded-full">{claims.length}</span>
               </button>
             </li>
           </ul>

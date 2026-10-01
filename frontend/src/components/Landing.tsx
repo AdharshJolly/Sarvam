@@ -176,7 +176,7 @@ export function Landing() {
                 {/* Subtle Recurring Concept: Evidence Trail */}
                 <div className="space-y-2.5 pt-2 border-t border-border-hairline">
                   <span className="font-mono text-sm uppercase tracking-wider text-text-muted block mb-1">
-                    Evidence Trail
+                    Evidence Trail (illustrative example)
                   </span>
 
                   <div className="p-3 rounded-lg bg-bg border border-border-hairline text-sm space-y-1">
@@ -367,7 +367,7 @@ export function Landing() {
             {/* Evidence Trail Breakdown */}
             <div className="pt-4 border-t border-border-hairline">
               <span className="font-mono text-sm uppercase tracking-wider text-text-muted block mb-4">
-                Evidence Trail (Claim → Evidence / Conflict → Source)
+                Evidence Trail (illustrative example: Claim → Evidence / Conflict → Source)
               </span>
 
               <div className="space-y-3">

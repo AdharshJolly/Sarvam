@@ -126,7 +126,7 @@ export function MethodologyPage() {
                   Verbatim Passage Anchoring
                 </h3>
                 <p className="text-sm text-text-muted mt-2 leading-relaxed">
-                  Claims cannot cite an entire 40-page document broadly. Every citation requires character-precise span offsets from raw, immutable HTML/PDF passages cached during extraction.
+                  Claims cannot cite an entire 40-page document broadly. Every citation requires character-precise span offsets from stored, immutable HTML passages cached during extraction.
                 </p>
               </div>
             </div>

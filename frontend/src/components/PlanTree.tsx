@@ -52,7 +52,7 @@ export function PlanTree({
                   
                   {tasks.filter((t) => t.slot_id === s.id).length > 0 && (
                     <div className="mt-auto pt-3 border-t border-border-hairline">
-                      <h5 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2.5">Queries</h5>
+                      <h5 className="text-sm font-semibold text-text-muted uppercase tracking-wider mb-2.5">Queries</h5>
                       <ul className="flex flex-col gap-2">
                         {tasks
                           .filter((t) => t.slot_id === s.id)

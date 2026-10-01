@@ -1,0 +1,10 @@
+{
+  "attempt": 0,
+  "error": {
+    "failure": "SOURCE_UNAVAILABLE",
+    "message": "http_403"
+  },
+  "key": {
+    "url": "https://www.niti.gov.in/sites/default/files/2023-02/EV_Handbook_Final_14Oct.pdf"
+  }
+}

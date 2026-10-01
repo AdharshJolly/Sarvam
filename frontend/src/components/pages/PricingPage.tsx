@@ -1,5 +1,4 @@
 import { ThemeToggle } from "../layout/ThemeToggle";
-import { Icon } from "../ui/Icon";
 import { useAuth } from "../../state/useAuth";
 
 export function PricingPage() {
@@ -57,138 +56,47 @@ export function PricingPage() {
 
       {/* Main Content */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="border-b border-border-hairline pb-8 mb-10 text-center">
+        <div className="border-b border-border-hairline pb-8 mb-10">
           <p className="font-mono text-sm uppercase tracking-wider text-brand font-semibold mb-2">
-            Transparent Economics
+            Costs and limits
           </p>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-text">
-            Simple, Pass-Through Pricing
+            What a Sarvam run uses
           </h1>
-          <p className="text-base sm:text-lg text-text-muted mt-3 leading-relaxed max-w-2xl mx-auto">
-            Zero per-seat markups. You pay pure model token and web search pass-through costs with full budget bounding controls.
+          <p className="text-base sm:text-lg text-text-muted mt-3 leading-relaxed">
+            Sarvam is a hackathon project with no paid plans. You run it yourself with your own search and model keys, and every run is capped by a budget you can see.
           </p>
         </div>
 
-        {/* Pricing Cards */}
-        <section className="grid gap-6 md:grid-cols-2 mb-12">
-          {/* Card 1: Self-Hosted / Local Engine */}
-          <div className="p-7 rounded-[1.3rem] border border-border-hairline bg-surface flex flex-col justify-between">
-            <div>
-              <span className="font-mono text-sm font-semibold uppercase tracking-wider text-brand">
-                Open Engine
-              </span>
-              <h2 className="text-2xl font-bold text-text mt-1">
-                Developer &amp; Local
-              </h2>
-              <p className="text-sm text-text-muted mt-2 leading-relaxed">
-                Run the full FastAPI and React pipeline locally on your infrastructure with your own API keys.
-              </p>
-
-              <div className="my-6">
-                <span className="text-4xl font-bold text-text">$0</span>
-                <span className="text-sm text-text-muted ml-1.5">/ software license</span>
-              </div>
-
-              <ul className="space-y-3 text-sm text-text-muted mb-6">
-                <li className="flex items-center gap-2">
-                  <Icon name="Check" size={16} className="text-brand shrink-0" />
-                  <span>Bring your own LLM keys (OpenAI, Anthropic, Gemini, Ollama)</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Icon name="Check" size={16} className="text-brand shrink-0" />
-                  <span>Local SQLite provenance with cryptographic audit logs</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Icon name="Check" size={16} className="text-brand shrink-0" />
-                  <span>Offline deterministic benchmark REPLAY mode</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Icon name="Check" size={16} className="text-brand shrink-0" />
-                  <span>Complete REST API with Swagger documentation</span>
-                </li>
-              </ul>
-            </div>
-
-            <a
-              href="#/workspace"
-              className="w-full py-2.5 px-4 rounded-lg border border-border-hairline bg-surface-2 hover:bg-surface text-text font-medium text-sm text-center transition-colors block"
-            >
-              Start Local Investigation
-            </a>
-          </div>
-
-          {/* Card 2: Enterprise Cloud */}
-          <div className="p-7 rounded-[1.3rem] border-2 border-brand/40 bg-surface flex flex-col justify-between relative shadow-sm">
-            <div>
-              <span className="font-mono text-sm font-semibold uppercase tracking-wider text-brand">
-                Managed Enterprise
-              </span>
-              <h2 className="text-2xl font-bold text-text mt-1">
-                Institutional Research
-              </h2>
-              <p className="text-sm text-text-muted mt-2 leading-relaxed">
-                Dedicated cloud clusters with enterprise rate limits, managed web proxies, and team isolation.
-              </p>
-
-              <div className="my-6">
-                <span className="text-4xl font-bold text-text">Pass-Through</span>
-                <span className="text-sm text-text-muted ml-1.5">+ SLA compute</span>
-              </div>
-
-              <ul className="space-y-3 text-sm text-text-muted mb-6">
-                <li className="flex items-center gap-2">
-                  <Icon name="Check" size={16} className="text-brand shrink-0" />
-                  <span>Average run cost: $0.05 to $0.35 per deep inquiry</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Icon name="Check" size={16} className="text-brand shrink-0" />
-                  <span>Hard budget caps (searches, fetches, cost ceilings)</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Icon name="Check" size={16} className="text-brand shrink-0" />
-                  <span>Multi-tenant isolation and user ID audit logs</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Icon name="Check" size={16} className="text-brand shrink-0" />
-                  <span>Priority support and custom connector pipelines</span>
-                </li>
-              </ul>
-            </div>
-
-            <a
-              href="#/register"
-              className="w-full py-2.5 px-4 rounded-lg bg-brand hover:opacity-90 text-white font-medium text-sm text-center transition-all shadow-sm block"
-            >
-              Create Institutional Account
-            </a>
-          </div>
+        <section className="p-6 rounded-xl border border-border-hairline bg-surface mb-8">
+          <h2 className="text-lg font-bold text-text mb-2">Hard limits on every run</h2>
+          <p className="text-sm text-text-muted leading-relaxed">
+            The controller stops a run when a limit is reached, and the stop card says what was left undone. The default limits are 24 searches, 40 page fetches, 150 model calls, 8 minutes of wall time (soft) and 2 follow-up rounds.
+          </p>
         </section>
 
-        {/* Typical Run Unit Economics Breakdown */}
         <section className="p-6 rounded-xl border border-border-hairline bg-surface-2/60 mb-12">
-          <h2 className="text-lg font-bold text-text mb-2">
-            Unit Economics of an Autonomous Investigation
-          </h2>
+          <h2 className="text-lg font-bold text-text mb-2">Measured on the recorded run</h2>
           <p className="text-sm text-text-muted leading-relaxed mb-4">
-            Unlike opaque subscription platforms, Sarvam exposes the exact resource meter for every run:
+            One live run of the canonical question (docs/benchmarks/canon-b3-o3.json). A single run is not an average; claim counts and call counts vary between runs.
           </p>
           <div className="grid gap-4 sm:grid-cols-3 text-center">
             <div className="p-4 rounded-lg bg-surface border border-border-hairline">
               <p className="text-sm text-text-muted">Searches</p>
-              <p className="font-mono text-xl font-bold text-text mt-1">10–15</p>
-              <p className="text-sm text-text-muted mt-0.5">&lt; $0.03 total</p>
+              <p className="font-mono text-xl font-bold text-text mt-1">22 of 24</p>
             </div>
             <div className="p-4 rounded-lg bg-surface border border-border-hairline">
-              <p className="text-sm text-text-muted">Passage Fetches</p>
-              <p className="font-mono text-xl font-bold text-text mt-1">20–30</p>
-              <p className="text-sm text-text-muted mt-0.5">Cached in SQLite</p>
+              <p className="text-sm text-text-muted">Page fetches</p>
+              <p className="font-mono text-xl font-bold text-text mt-1">40 of 40</p>
             </div>
             <div className="p-4 rounded-lg bg-surface border border-border-hairline">
-              <p className="text-sm text-text-muted">LLM Synthesis</p>
-              <p className="font-mono text-xl font-bold text-text mt-1">~120k Tokens</p>
-              <p className="text-sm text-text-muted mt-0.5">~$0.18 on avg</p>
+              <p className="text-sm text-text-muted">Model calls and tokens</p>
+              <p className="font-mono text-xl font-bold text-text mt-1">53 / 155k</p>
             </div>
           </div>
+          <p className="text-sm text-text-muted leading-relaxed mt-4">
+            Money cost is not shown because the model provider did not report one and no price is configured. Replay mode costs nothing.
+          </p>
         </section>
       </main>
 

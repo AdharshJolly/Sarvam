@@ -1,0 +1,10 @@
+{
+  "attempt": 0,
+  "error": {
+    "failure": "SOURCE_UNAVAILABLE",
+    "message": "http_406"
+  },
+  "key": {
+    "url": "https://erajyapatra.karnataka.gov.in/WriteReadData/2025/8211.pdf"
+  }
+}
