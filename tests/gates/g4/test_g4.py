@@ -92,7 +92,11 @@ def test_g4_replay_reproduces_the_live_run_event_for_event(replayed):
     counts: dict[str, int] = {}
     for t in event_types(replayed):
         counts[t] = counts.get(t, 0) + 1
-    assert counts == RUN_GOLDEN["events"]
+    # budget.warning depends on price configuration (the cost_unavailable warning), not on the run.
+    drop = "budget.warning"
+    assert {k: v for k, v in counts.items() if k != drop} == {
+        k: v for k, v in RUN_GOLDEN["events"].items() if k != drop
+    }
 
 
 def test_g4_replay_reproduces_the_stop_decision_and_coverage(replayed):

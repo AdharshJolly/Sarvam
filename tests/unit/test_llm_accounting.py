@@ -157,3 +157,11 @@ def test_fakellm_still_works_without_usage_split():
     call(gw)
     op = gw.llm_ops[0]
     assert op.total_tokens == 10 and op.input_tokens is None
+
+
+def test_default_model_price_gives_an_estimate_when_no_env_price_is_set(monkeypatch):
+    monkeypatch.setattr("backend.gateway.core.DEFAULT_MODEL_PRICES", {"sm": (1.0, 2.0)})
+    gw = gw_for(UsageLLM(['{"ok": true}']))
+    call(gw)
+    assert gw.llm_ops[0].cost_source == "estimated"
+    assert gw.usage().cost_known is True

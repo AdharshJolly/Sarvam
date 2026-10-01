@@ -45,6 +45,14 @@ LLM_MAX_ATTEMPTS = 3  # first try plus 2 validation retries (SSOT 10)
 WARN_FRACTION = 0.8
 
 
+# USD per 1M tokens (input, output): Gemini list prices read 1 Oct 2026, used only when no
+# SARVAM_LLM_PRICE_* is set and the provider reports no cost. Always shown as an estimate.
+DEFAULT_MODEL_PRICES: dict[str, tuple[float, float]] = {
+    "gemini-3.1-flash-lite": (0.25, 1.50),
+    "gemini-3.6-flash": (0.75, 3.75),
+}
+
+
 @dataclass
 class LLMOpStats:
     """One logical LLM operation (a gateway.llm call); validation attempts and provider requests
@@ -155,6 +163,9 @@ class ToolGateway:
         st = self.settings
         strong = ROLE_SETTINGS[role].tier is LLMTier.STRONG
         price = st.llm_price_strong if strong else st.llm_price_fast
+        if price is None:
+            model = st.llm_model_strong if strong else st.llm_model_fast
+            price = DEFAULT_MODEL_PRICES.get(model)  # labelled "estimated"; env prices win
         if price is None or tin is None or tout is None:
             return None
         return (tin * price[0] + tout * price[1]) / 1_000_000
