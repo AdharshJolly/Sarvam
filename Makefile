@@ -47,7 +47,7 @@ fixtures:
 
 # Offline gate suites (G0 needs provider keys for its live cases; G1-G3 are deterministic).
 gates:
-	uv run pytest tests/gates/g1/test_g1.py tests/gates/g2 tests/gates/g3
+	uv run pytest tests/gates/g1/test_g1.py tests/gates/g2 tests/gates/g3 tests/gates/g4
 
 # Live LLM benchmark (needs provider keys): LABEL=baseline RUNS=3 make benchmark-llm. Env overrides
 # (SARVAM_LLM_MAX_TOKENS, SARVAM_VERIFIER_BATCH_SIZE, ...) select the configuration under test.

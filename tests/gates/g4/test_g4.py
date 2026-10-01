@@ -1,4 +1,4 @@
-"""Gate G4 (SSOT 13.3, M2): the committed canonical recording replays offline and failures are typed.
+"""Gate G4 (SSOT 13.3, M2): the committed recording replays offline; failures are typed.
 
 Zero credits: no provider keys, and DNS is disabled so any attempt to reach the network fails.
 The golden values come from `docs/benchmarks/canon-b3-o3.json`, the record of the live run that
@@ -19,8 +19,8 @@ from backend.intel.stop import recompute_stop
 from backend.store import repo
 from backend.store.db import init_db
 from contracts.config import Settings
-from contracts.models import Budget
 from contracts.events import EventType
+from contracts.models import Budget
 
 ROOT = Path(__file__).resolve().parents[3]
 RECORDED = ROOT / "cache" / "recorded"
@@ -57,7 +57,9 @@ def execute(st: Settings, conn, handle: RunHandle | None = None) -> None:
 
 
 def event_types(conn) -> list[str]:
-    return [r["type"] for r in conn.execute("SELECT type FROM events WHERE run_id='R1' ORDER BY id")]
+    return [
+        r["type"] for r in conn.execute("SELECT type FROM events WHERE run_id='R1' ORDER BY id")
+    ]
 
 
 @pytest.fixture(scope="module")
@@ -98,7 +100,9 @@ def test_g4_replay_reproduces_the_stop_decision_and_coverage(replayed):
     assert run.stop_state.value == RUN_GOLDEN["stop_state"]
     assert run.termination_reason.value == RUN_GOLDEN["termination_reason"]
     last = replayed.execute("SELECT MAX(round) FROM coverage").fetchone()[0]
-    cells = replayed.execute("SELECT state, COUNT(*) FROM coverage WHERE round=? GROUP BY 1", (last,))
+    cells = replayed.execute(
+        "SELECT state, COUNT(*) FROM coverage WHERE round=? GROUP BY 1", (last,)
+    )
     assert dict(cells.fetchall()) == RUN_GOLDEN["coverage_last_round"]
     assert recompute_stop(replayed, "R1").state.value == RUN_GOLDEN["stop_state"]
 
@@ -117,16 +121,16 @@ def test_g4_the_replayed_report_is_verified_and_all_citations_resolve(replayed):
     assert view is not None and view.citations
     claim_ids = {r["id"] for r in replayed.execute("SELECT id FROM claims")}
     assert {c.claim_id for c in view.citations} <= claim_ids
-    assert view.dropped_sentences == [] or len(view.dropped_sentences) == RUN_GOLDEN["report_verified"][
-        "dropped_count"
-    ]
+    assert len(view.dropped_sentences) == RUN_GOLDEN["report_verified"]["dropped_count"]
 
 
 def test_g4_failed_sources_are_typed_and_visible_not_hidden(replayed):
-    failed = replayed.execute("SELECT status, fail_reason FROM sources WHERE status != 'fetched'")
-    reasons = {(r["status"], r["fail_reason"] is not None) for r in failed}
-    assert ("SOURCE_UNAVAILABLE", True) in reasons or ("SOURCE_UNAVAILABLE", False) in reasons
-    assert event_types(replayed).count(EventType.SOURCE_FAILED.value) == RUN_GOLDEN["events"]["source.failed"]
+    failed = replayed.execute("SELECT status FROM sources WHERE status = 'SOURCE_UNAVAILABLE'")
+    assert len(failed.fetchall()) == RUN_GOLDEN["events"]["source.failed"]
+    assert (
+        event_types(replayed).count(EventType.SOURCE_FAILED.value)
+        == RUN_GOLDEN["events"]["source.failed"]
+    )
 
 
 def test_g4_an_unrecorded_question_in_replay_fails_with_a_typed_event(tmp_path):

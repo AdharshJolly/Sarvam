@@ -44,15 +44,17 @@ The agent stops when a rule-based sufficiency policy is satisfied or a hard limi
 
 ## Quickstart
 
-To run the agent locally using the recorded offline replay (no API keys required):
+Requires Python 3.11+, [uv](https://docs.astral.sh/uv/) and [Bun](https://bun.sh). To run the agent locally on the recorded canonical run (offline, no API keys, no cost):
 
-`ash
+```bash
 git clone https://github.com/AdharshJolly/Sarvam.git
 cd Sarvam
 make demo
-`
+```
 
-Open http://localhost:5173.
+Open http://localhost:5173, choose **REPLAY** in the run form and start the pre-filled canonical question. REPLAY only knows the one recorded question; for any other question, put your own search and model keys in `.env` (see `.env.example`) and choose **LIVE**. A live run uses credits and takes a few minutes.
+
+`make gates` runs the offline gate suites (G1 to G4); `make check` is the full quality gate. Do not run `make check` with live keys in `.env`: it also runs the live G0 and G1 tests.
 
 ## How it works
 
