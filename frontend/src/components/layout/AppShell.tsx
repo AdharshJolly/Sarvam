@@ -14,7 +14,7 @@ import { onAnchorClick } from "../../lib/anchor";
 import { buildHash, getRoutePage, parseRoute, type PageId } from "../../lib/route";
 import { useMediaQuery } from "../../lib/useMediaQuery";
 import { EvidenceProvider, useEvidence } from "../../state/EvidenceContext";
-import { openConflictCount, worstCriticalSlots } from "../../state/selectors";
+import { openConflictCount, worstCriticalSlots, cellsForRound, latestRound } from "../../state/selectors";
 import { useDigDeeper } from "../../state/useDigDeeper";
 import { useSession } from "../../state/useRunSession";
 import { ActivityDock, ActivityTimeline, type DockFilter } from "../ActivityDock";
@@ -246,16 +246,24 @@ function Shell() {
                 />
               ) : null}
               {view.stop ? (
-                <StopCard
-                  runId={runId}
-                  stop={view.stop}
-                  gaps={worstCriticalSlots(view)}
-                  challenges={Object.values(view.challenges)}
-                  onOpenSlot={goEvidenceForSlot}
-                  onOpenConflicts={goConflicts}
-                  onViewReport={goReport}
-                  onDigDeeper={digDeeper}
-                />
+                (() => {
+                  const cells = cellsForRound(view, latestRound(view));
+                  const counts = { GREEN: 0, AMBER: 0, RED: 0 };
+                  for (const c of cells) counts[c.state] += 1;
+                  return (
+                    <StopCard
+                      runId={runId}
+                      stop={view.stop}
+                      gaps={worstCriticalSlots(view)}
+                      challenges={Object.values(view.challenges)}
+                      onOpenSlot={goEvidenceForSlot}
+                      onOpenConflicts={goConflicts}
+                      onViewReport={goReport}
+                      onDigDeeper={digDeeper}
+                      counts={counts}
+                    />
+                  );
+                })()
               ) : null}
               <CenterTabs
                 active={tab}

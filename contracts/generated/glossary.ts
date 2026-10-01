@@ -81,7 +81,7 @@ export const GLOSSARY = {
       "next_step": "Treat this point as open."
     },
     "pending": {
-      "label": "Not challenged yet",
+      "label": "Outcome pending",
       "meaning": "No challenge result has been recorded for this attack.",
       "next_step": ""
     }

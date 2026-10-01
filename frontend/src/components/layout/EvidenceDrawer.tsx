@@ -41,16 +41,16 @@ function ClaimEvidenceView({ runId, claimId }: { runId: string; claimId: string 
         </button>
       </div>
     );
-  const { claim, passage, source, origin, verdict } = load.data;
-  const hl = highlightRanges(passage.text, load.data.quote_start, load.data.quote_end, claim.quote);
-  const unestablished = load.data.independence === "unestablished";
-  const href = safeHref(source.url);
+  const { claim, passage, source, origin, verdict } = load.data || {};
+  const hl = highlightRanges(passage?.text || "", load.data?.quote_start, load.data?.quote_end, claim?.quote || "");
+  const unestablished = load.data?.independence === "unestablished";
+  const href = source?.url ? safeHref(source.url) : undefined;
   return (
     <Card as="article" pad="md" className="flex flex-col gap-4">
       <header>
-        <p className="label mb-1">{termTitle("claim")} {claim.id}</p>
-        <h3 className="font-display text-xl font-semibold leading-snug">{claim.text}</h3>
-        {claim.value_num != null ? (
+        <p className="label mb-1">{termTitle("claim")} {claim?.id}</p>
+        <h3 className="font-display text-xl font-semibold leading-snug">{claim?.text}</h3>
+        {claim?.value_num != null ? (
           <p className="text-base text-text-muted">
             {claim.entity ?? "?"} / {claim.attribute ?? "?"} = {claim.value_num} {claim.unit ?? ""}
             {claim.period ? ` per ${claim.period}` : ""}
@@ -61,7 +61,7 @@ function ClaimEvidenceView({ runId, claimId }: { runId: string; claimId: string 
         {verdict ? (
           <div className="flex flex-wrap items-center gap-2">
             <StateChip spec={verdictChip(verdict)} />
-            <span>{load.data.verdict_rationale}</span>
+            <span>{load.data?.verdict_rationale}</span>
           </div>
         ) : (
           <Badge>Not yet verified</Badge>
@@ -69,10 +69,10 @@ function ClaimEvidenceView({ runId, claimId }: { runId: string; claimId: string 
       </section>
       <section aria-label="Stored passage">
         <h4 className="label mb-1">
-          Passage <span className="mono">{passage.id}</span>{" "}
+          Passage <span className="mono">{passage?.id}</span>{" "}
           <span className="text-sm font-normal text-text-muted">
-            (source characters {passage.char_start} to {passage.char_end}
-            {load.data.quote_start != null ? `; quote at ${load.data.quote_start} to ${load.data.quote_end}` : ""})
+            (source characters {passage?.char_start} to {passage?.char_end}
+            {load.data?.quote_start != null ? `; quote at ${load.data.quote_start} to ${load.data.quote_end}` : ""})
           </span>
         </h4>
         <p className="rounded-md p-3 leading-relaxed bg-surface-2 whitespace-pre-wrap">
@@ -108,27 +108,27 @@ function ClaimEvidenceView({ runId, claimId }: { runId: string; claimId: string 
         ) : null}
       </section>
       <section aria-label="Source">
-        <h4 className="label mb-1">Source <span className="mono">{source.id}</span></h4>
+        <h4 className="label mb-1">Source <span className="mono">{source?.id}</span></h4>
         <ul className="text-base flex flex-col gap-1">
           <li>
             {href ? (
               <a href={href} target="_blank" rel="noopener noreferrer" className="underline hover:text-brand transition-colors">
-                {source.url}
+                {source?.url}
               </a>
             ) : (
-              <span>{source.url} (not a web link)</span>
+              <span>{source?.url} (not a web link)</span>
             )}
           </li>
           <li>
-            {source.domain} <Badge>{source.source_type ?? "unknown"}</Badge> <Badge>{`Tier ${source.authority_tier ?? 3}`}</Badge>
+            {source?.domain} <Badge>{source?.source_type ?? "unknown"}</Badge> <Badge>{`Tier ${source?.authority_tier ?? 3}`}</Badge>
           </li>
           <li>
-            Published: {source.published_at ?? "unknown"} <Badge>{ageBucket(source.published_at, now)}</Badge>
+            Published: {source?.published_at ?? "unknown"} <Badge>{ageBucket(source?.published_at, now)}</Badge>
           </li>
-          <li>Retrieved: {source.retrieved_at ?? "unknown"}</li>
+          <li>Retrieved: {source?.retrieved_at ?? "unknown"}</li>
           <li>
-            Status: <StateChip spec={sourceStatusChip(source.status ?? "found")} />
-            {source.fail_reason ? <span className="text-bad-fg ml-1">{source.fail_reason}</span> : ""}
+            Status: <StateChip spec={sourceStatusChip(source?.status ?? "found")} />
+            {source?.fail_reason ? <span className="text-bad-fg ml-1">{source.fail_reason}</span> : ""}
           </li>
         </ul>
       </section>

@@ -92,7 +92,7 @@ export function ConflictList({
               <Side side="A" claimId={c.claim_a} claim={claims.get(c.claim_a)} />
               <div className="text-center">
                 <p className="label">differ by</p>
-                <p className="mono text-xl font-bold">{c.delta_pct.toFixed(1)}%</p>
+                <p className="mono text-xl font-bold">{c.delta_pct != null ? c.delta_pct.toFixed(1) : "?"}%</p>
               </div>
               <Side side="B" claimId={c.claim_b} claim={claims.get(c.claim_b)} />
             </div>

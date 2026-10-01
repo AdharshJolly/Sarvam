@@ -34,7 +34,12 @@ export function ClaimList({
           </h4>
           <ul className="flex flex-col gap-2">
             {list.map((c) => {
-              const v = verdicts[c.id];
+              const v = verdicts[c.id] 
+                || (c.status === "supported" ? "supports" : undefined)
+                || (c.status === "partial" ? "partial" : undefined)
+                || (c.status === "contested" ? "contradicts" : undefined)
+                || (c.status === "rejected" ? "irrelevant" : undefined);
+                
               const numeric = c.value_num != null;
               const sourceId = (c as unknown as { source_id?: string }).source_id;
               const source = sourceId ? sources[sourceId] : undefined;
@@ -49,7 +54,7 @@ export function ClaimList({
                   >
                     <div className="flex items-start gap-3">
                       <div className="shrink-0 mt-0.5">
-                        {v ? <StateChip spec={verdictChip(v)} /> : <StateChip spec={{ icon: "Clock", label: "pending", tone: "muted" }} />}
+                        {v ? <StateChip spec={verdictChip(v as Verdict)} /> : <StateChip spec={{ icon: "Clock", label: "pending", tone: "muted" }} />}
                       </div>
                       <div className="flex flex-col gap-1 flex-1">
                         <div>

@@ -9,12 +9,8 @@ import {
   roundsAvailable,
   slotStats,
   slotsOf,
-  worstCriticalSlots,
 } from "../../state/selectors";
-import { useDigDeeper } from "../../state/useDigDeeper";
 import { useSession } from "../../state/useRunSession";
-import { showsCoverageGrid, useReadingMode } from "../../lib/readingMode";
-import { GapList } from "../StopCard";
 import { CoverageMatrix, MatrixTable } from "../CoverageMatrix";
 import { OriginGroupView } from "../OriginGroupView";
 import { EmptyState } from "../ui/EmptyState";
@@ -58,14 +54,11 @@ export function MatrixPanel({
   onOpenSource: (sourceId: string) => void;
 }) {
   const { view, hydrating } = useSession();
-  const digDeeper = useDigDeeper();
   const rounds = roundsAvailable(view);
   const latest = latestRound(view);
   const [picked, setPicked] = useState<number | null>(null);
   const [compare, setCompare] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
-  const mode = useReadingMode();
-  const [expanded, setExpanded] = useState(false);
   const [matrixView, setMatrixView] = useState<"grid" | "table">("grid");
   const round = picked !== null && rounds.includes(picked) ? picked : latest;
 
@@ -110,44 +103,8 @@ export function MatrixPanel({
   const counts = { GREEN: 0, AMBER: 0, RED: 0 };
   for (const c of cells) counts[c.state] += 1;
 
-  const detailToggle = (
-    <Button
-      aria-expanded={expanded}
-      icon={<Icon name={expanded ? "Minus" : "Plus"} size={16} aria-hidden />}
-      onClick={() => setExpanded(!expanded)}
-    >
-      {expanded ? "Hide details" : "Show details"}
-    </Button>
-  );
-
-  if (!showsCoverageGrid(mode, expanded)) {
-    const gaps = worstCriticalSlots(view);
-    return (
-      <Card as="section" pad="md" aria-label="Coverage summary" className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-2" aria-label="Totals">
-          {(["GREEN", "AMBER", "RED"] as const).map((s) => (
-            <span key={s} className="inline-flex items-center gap-1.5 rounded border border-border-hairline bg-surface px-2 py-0.5 text-sm">
-              <StateChip spec={coverageChip(s)} />
-              <span className="mono font-semibold">{counts[s]}</span>
-            </span>
-          ))}
-        </div>
-        {gaps.length > 0 ? (
-          <div>
-            <p className="label mb-1">What is missing</p>
-            <GapList gaps={gaps} onOpenSlot={onOpenClaims} onDigDeeper={digDeeper} />
-          </div>
-        ) : (
-          <p className="text-base text-text-muted">Every key point is well supported.</p>
-        )}
-        <div>{detailToggle}</div>
-      </Card>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-4">
-      {mode === "simple" ? <div>{detailToggle}</div> : null}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-border-hairline/60">
         <div className="flex flex-wrap items-center gap-3">
           {rounds.length > 1 ? (

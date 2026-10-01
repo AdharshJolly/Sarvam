@@ -137,6 +137,7 @@ export function StopCard({
   onOpenConflicts,
   onViewReport,
   onDigDeeper,
+  counts,
 }: {
   runId: string;
   stop: StopDecision;
@@ -146,8 +147,9 @@ export function StopCard({
   onOpenConflicts: () => void;
   onViewReport?: () => void;
   onDigDeeper?: (gap: StopGap) => void;
+  counts?: { GREEN: number; AMBER: number; RED: number };
 }) {
-  const crit = stop.critical_slots ?? {};
+  const crit = counts ?? stop.critical_slots ?? { GREEN: 0, AMBER: 0, RED: 0 };
   const openConflicts = stop.open_conflicts ?? 0;
   const rounds = stop.challenge_rounds_completed ?? 0;
   const challengeSkipped = NO_CHALLENGE.includes(stop.termination_reason) && rounds === 0;
@@ -202,8 +204,8 @@ export function StopCard({
         ) : null}
       </div>
 
-      {/* 3 Balanced Columns */}
-      <div className="grid gap-6 p-5 sm:p-6 md:grid-cols-2 xl:grid-cols-3">
+      {/* Top Details Row */}
+      <div className="grid gap-6 p-5 sm:p-6 md:grid-cols-2">
         {/* Column 1: Why the research stopped */}
         <section aria-labelledby="stop-why" className="space-y-2">
           <h3 id="stop-why" className="font-mono text-sm tracking-wider uppercase text-text-muted">
@@ -231,21 +233,21 @@ export function StopCard({
           </h3>
           <div className="flex gap-2">
             <Tile
-              count={crit.green ?? 0}
+              count={(crit as any).GREEN ?? (crit as any).green ?? 0}
               word={gloss("coverage_state", "GREEN").label}
               icon="Check"
               tone="border-ok-border bg-ok-bg/50 text-ok-fg"
               href={buildHash(runId, "matrix")}
             />
             <Tile
-              count={crit.amber ?? 0}
+              count={(crit as any).AMBER ?? (crit as any).amber ?? 0}
               word={gloss("coverage_state", "AMBER").label}
               icon="AlertTriangle"
               tone="border-warn-border bg-warn-bg/50 text-warn-fg"
               href={buildHash(runId, "matrix")}
             />
             <Tile
-              count={crit.red ?? 0}
+              count={(crit as any).RED ?? (crit as any).red ?? 0}
               word={gloss("coverage_state", "RED").label}
               icon="XOctagon"
               tone="border-bad-border bg-bad-bg/50 text-bad-fg"
@@ -262,9 +264,11 @@ export function StopCard({
             </button>
           </p>
         </section>
+      </div>
 
-        {/* Column 3: What is missing */}
-        <section aria-labelledby="stop-missing" className="space-y-2 md:col-span-2 xl:col-span-1">
+      {/* Bottom Details Row: What is missing & Challenges */}
+      <div className="border-t border-border-hairline p-5 sm:p-6 grid gap-6 md:grid-cols-2">
+        <section aria-labelledby="stop-missing" className="space-y-2">
           <h3 id="stop-missing" className="font-mono text-sm tracking-wider uppercase text-text-muted">
             What is missing
           </h3>
@@ -282,19 +286,21 @@ export function StopCard({
           ) : (
             <p className="text-sm text-text-muted">No critical gaps or caveats.</p>
           )}
+        </section>
 
+        <section aria-labelledby="stop-change" className="space-y-2">
+          <h3 id="stop-change" className="font-mono text-sm tracking-wider uppercase text-text-muted">
+            What could change this conclusion
+          </h3>
           {wouldChange.length > 0 ? (
-            <div className="pt-2 border-t border-border-hairline">
-              <h4 className="font-mono text-sm tracking-wider uppercase text-text-muted mb-1.5">
-                What could change this conclusion
-              </h4>
-              <ul className="list-disc pl-4 space-y-1 text-sm text-text-muted">
-                {wouldChange.map((c) => (
-                  <li key={c.id}>{c.would_change_if}</li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
+            <ul className="list-disc pl-4 space-y-1 text-sm text-text-muted">
+              {wouldChange.map((c) => (
+                <li key={c.id}>{c.would_change_if}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-text-muted">No specific challenges would change this conclusion.</p>
+          )}
         </section>
       </div>
       <ReadingGuide />

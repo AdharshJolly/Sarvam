@@ -111,7 +111,7 @@ GLOSSARY: dict[str, dict[str, GlossaryEntry]] = {
             "Treat this point as open.",
         ),
         CHALLENGE_PENDING: _e(
-            "Not challenged yet", "No challenge result has been recorded for this attack."
+            "Outcome pending", "No challenge result has been recorded for this attack."
         ),
     },
     "conflict_kind": {

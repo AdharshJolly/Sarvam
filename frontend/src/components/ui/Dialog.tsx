@@ -42,9 +42,9 @@ export function Dialog({ isOpen, onClose, title, children, placement = "center",
       if (!docked) saveFocus(); // save focus before modal opens
       
       if (docked) {
-        dialog.show();
+        try { dialog.show(); } catch (e) { console.error(e); }
       } else {
-        dialog.showModal();
+        try { dialog.showModal(); } catch (e) { console.error(e); }
         document.body.style.overflow = "hidden"; // scroll lock while modal
       }
     } else {

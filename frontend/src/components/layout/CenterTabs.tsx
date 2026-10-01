@@ -36,7 +36,7 @@ export function CenterTabs({
       active={active}
       onChange={onChange}
       renderPanel={renderPanel}
-      listClassName="max-md:hidden"
+      listClassName="max-md:hidden sticky top-16 z-20 bg-bg/95 backdrop-blur-md pt-2 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
     />
   );
 }
