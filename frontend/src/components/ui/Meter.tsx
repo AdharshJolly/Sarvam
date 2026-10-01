@@ -28,11 +28,11 @@ export function Meter({ label, used, max, fmt = (n) => String(n), onClick }: Met
         <div className="flex items-center gap-2">
           {onClick ? (
             <button type="button" className="mono text-sm underline hover:text-brand-secondary" onClick={onClick}>
-              {fmt(used)} of {max !== undefined ? fmt(max) : "n/a"}
+              {max !== undefined ? `${fmt(used)} of ${fmt(max)}` : fmt(used)}
             </button>
           ) : (
             <span className="mono text-sm">
-              {fmt(used)} of {max !== undefined ? fmt(max) : "n/a"}
+              {max !== undefined ? `${fmt(used)} of ${fmt(max)}` : fmt(used)}
             </span>
           )}
           {alertText && (

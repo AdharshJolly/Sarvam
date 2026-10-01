@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { env } from "../../config/env";
-import { formatSeconds, formatUsd } from "../../lib/format";
+import { formatRunCost, formatSeconds } from "../../lib/format";
 import {
   LG_MIN,
   XL_MIN,
@@ -175,9 +175,8 @@ function Shell() {
         running={running}
         showMode={!isLg || collapsed}
         metrics={[
-          { label: "Cost", value: formatUsd(view.usage.cost_usd ?? 0), onClick: () => openActivity("cost") },
+          { label: "Cost unavailable", value: `${tokens.toLocaleString()} tokens, ${view.usage.llm_calls ?? 0} calls`, onClick: () => openActivity("llm") },
           { label: "Time", value: formatSeconds(view.usage.elapsed_seconds ?? 0), onClick: () => openActivity("time") },
-          { label: "Tokens", value: tokens.toLocaleString(), onClick: () => openActivity("llm") },
         ]}
         onNewRun={newRun}
         onOpenStatus={() => setStatusOpen(true)}

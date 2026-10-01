@@ -6,11 +6,15 @@
         build contracts contracts-check check graph fixtures gates benchmark-llm
 
 help:
-	@echo "Targets: install dev backend frontend lint typecheck test build contracts contracts-check check graph fixtures gates"
+	@echo "Targets: install dev demo backend frontend lint typecheck test build contracts contracts-check check graph fixtures gates"
 
 install:
 	uv sync
 	bun install
+
+demo: install
+	@python -c "import os, shutil; shutil.copy('.env.example', '.env') if not os.path.exists('.env') else None"
+	$(MAKE) dev
 
 # Run backend and frontend together (two parallel jobs).
 dev:

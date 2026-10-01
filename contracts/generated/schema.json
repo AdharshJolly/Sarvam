@@ -1119,6 +1119,16 @@
           "default": 0.0,
           "title": "Elapsed Seconds",
           "type": "number"
+        },
+        "tokens": {
+          "default": 0,
+          "title": "Tokens",
+          "type": "integer"
+        },
+        "cost_known": {
+          "default": false,
+          "title": "Cost Known",
+          "type": "boolean"
         }
       },
       "title": "BudgetUsage",

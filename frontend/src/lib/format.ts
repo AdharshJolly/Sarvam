@@ -6,6 +6,11 @@ export function formatUsd(v: number): string {
   return `$${v.toFixed(v < 1 ? 3 : 2)}`;
 }
 
+/** Run cost for display: a figure only when one is known; otherwise say so, never a misleading $0.000. */
+export function formatRunCost(usage: { cost_usd?: number; cost_known?: boolean }): string {
+  return usage.cost_known ? `≈${formatUsd(usage.cost_usd ?? 0)}` : "Cost unavailable";
+}
+
 export function formatSeconds(s: number): string {
   const total = Math.max(0, Math.round(s));
   const m = Math.floor(total / 60);

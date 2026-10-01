@@ -6,7 +6,7 @@
 
 *Research that knows when it isn't done.*
 
-![Status](https://img.shields.io/badge/status-G3%20offline-yellow)
+![Status](https://img.shields.io/badge/status-G4%20replay-green)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
@@ -41,6 +41,18 @@ Most AI research tools optimize for finding information and writing a fluent ans
 > Research that knows when it isn't done.
 
 The agent stops when a rule-based sufficiency policy is satisfied or a hard limit is hit, and it shows the reason. Four moments are always visible: the coverage matrix, independence collapse ("9 sources, 3 independent origins"), claim-to-passage drill-down, and the stop card. Sarvam is an evidence-assurance layer over a research pipeline; it does not claim to detect truth.
+
+## Quickstart
+
+To run the agent locally using the recorded offline replay (no API keys required):
+
+`ash
+git clone https://github.com/AdharshJolly/Sarvam.git
+cd Sarvam
+make demo
+`
+
+Open http://localhost:5173.
 
 ## How it works
 

@@ -41,7 +41,14 @@ export function BudgetMeters({
         <Meter key="searches" label="Searches" used={usage.searches ?? 0} max={budget.max_searches} fmt={n} onClick={() => onOpenKind?.("searches")} />
         <Meter key="fetches" label="Fetches" used={usage.fetches ?? 0} max={budget.max_fetches} fmt={n} onClick={() => onOpenKind?.("fetches")} />
         <Meter key="llm" label="LLM calls" used={usage.llm_calls ?? 0} max={budget.max_llm_calls} fmt={n} onClick={() => onOpenKind?.("llm")} />
-        <Meter key="cost" label="Cost (USD)" used={usage.cost_usd ?? 0} max={budget.max_cost_usd} fmt={formatUsd} onClick={() => onOpenKind?.("cost")} />
+        {usage.cost_known ? (
+          <Meter key="cost" label="Cost (estimate)" used={usage.cost_usd ?? 0} max={budget.max_cost_usd} fmt={formatUsd} onClick={() => onOpenKind?.("cost")} />
+        ) : (
+          <p key="cost" className="text-sm text-text-muted">
+            Cost: not reported by the provider, so the cost cap cannot apply. Tokens used:{" "}
+            <span className="mono">{(usage.tokens ?? 0).toLocaleString()}</span>
+          </p>
+        )}
         <Meter key="time" label="Time" used={usage.elapsed_seconds ?? 0} max={budget.max_wall_seconds_soft} fmt={formatSeconds} onClick={() => onOpenKind?.("time")} />
       </div>
     </section>

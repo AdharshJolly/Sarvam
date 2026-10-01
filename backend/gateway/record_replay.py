@@ -63,6 +63,8 @@ class RecordReplay:
         path = self._path(kind, key, attempt)
         if self.mode is RecordMode.REPLAY:
             if not path.exists():
+                with open(f"miss_{path.stem}.json", "w", encoding="utf-8") as f:
+                    json.dump(key_material, f, indent=2)
                 raise GatewayError(
                     FailureType.BLOCKED, f"replay miss: {path.stem} (attempt {attempt + 1})"
                 )

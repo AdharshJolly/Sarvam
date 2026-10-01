@@ -141,6 +141,8 @@ class ToolGateway:
             llm_calls=self._llm_calls,
             cost_usd=round(self._cost, 6),
             elapsed_seconds=round(self.elapsed(), 3),
+            tokens=sum(op.total_tokens or 0 for op in self.llm_ops),
+            cost_known=(self._cost_reported + self._cost_estimated) > 0,
         )
 
     def cost_breakdown(self) -> CostBreakdown:

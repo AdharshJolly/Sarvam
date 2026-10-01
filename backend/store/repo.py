@@ -129,6 +129,8 @@ def build_usage(
     agg = conn.execute(
         "SELECT COALESCE(SUM(cost_usd), 0) AS cost,"
         " SUM(CASE WHEN tokens IS NOT NULL THEN 1 ELSE 0 END) AS llm,"
+        " COALESCE(SUM(tokens), 0) AS tokens,"
+        " SUM(CASE WHEN cost_usd IS NOT NULL THEN 1 ELSE 0 END) AS priced,"
         " MIN(ts) AS t0, MAX(ts) AS t1 FROM events WHERE run_id=?",
         (run_id,),
     ).fetchone()
@@ -144,6 +146,8 @@ def build_usage(
         llm_calls=agg["llm"] or 0,
         cost_usd=float(agg["cost"]),
         elapsed_seconds=elapsed,
+        tokens=int(agg["tokens"]),
+        cost_known=(agg["priced"] or 0) > 0,
     )
 
 

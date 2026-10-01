@@ -120,6 +120,15 @@ def test_unavailable_cost_is_not_counted_and_warns_once():
     assert [w.limit for w in warnings].count("cost_unavailable") == 1
 
 
+def test_usage_reports_tokens_and_whether_cost_is_known():
+    unpriced = gw_for(UsageLLM(['{"ok": true}']))
+    call(unpriced)
+    assert unpriced.usage().tokens == 150 and unpriced.usage().cost_known is False
+    priced = gw_for(UsageLLM(['{"ok": true}']), llm_price_strong=(1.0, 2.0))
+    call(priced)
+    assert priced.usage().tokens == 150 and priced.usage().cost_known is True
+
+
 def test_max_cost_below_at_above():
     mk = lambda: gw_for(UsageLLM(['{"ok": true}'], cost=0.4), Budget(max_cost_usd=1.0))  # noqa: E731
     gw = mk()

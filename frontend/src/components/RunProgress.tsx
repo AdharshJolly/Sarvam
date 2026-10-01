@@ -78,7 +78,11 @@ export function RunProgress({
           <Meter label="Searches" used={usage.searches ?? 0} max={budget.max_searches} fmt={n} onClick={() => onOpenMeter("searches")} />
           <Meter label="Fetches" used={usage.fetches ?? 0} max={budget.max_fetches} fmt={n} onClick={() => onOpenMeter("fetches")} />
           <Meter label="LLM calls" used={usage.llm_calls ?? 0} max={budget.max_llm_calls} fmt={n} onClick={() => onOpenMeter("llm")} />
-          <Meter label="Cost" used={usage.cost_usd ?? 0} max={budget.max_cost_usd} fmt={formatUsd} onClick={() => onOpenMeter("cost")} />
+          {usage.cost_known ? (
+            <Meter label="Cost (estimate)" used={usage.cost_usd ?? 0} max={budget.max_cost_usd} fmt={formatUsd} onClick={() => onOpenMeter("cost")} />
+          ) : (
+            <Meter label="Tokens" used={usage.tokens ?? 0} max={undefined} fmt={(v) => `${Math.round(v / 1000)}k`} onClick={() => onOpenMeter("llm")} />
+          )}
           <Meter label="Time" used={usage.elapsed_seconds ?? 0} max={budget.max_wall_seconds_soft} fmt={formatSeconds} onClick={() => onOpenMeter("time")} />
         </div>
       ) : null}

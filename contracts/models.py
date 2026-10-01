@@ -374,6 +374,8 @@ class BudgetUsage(Contract):
     llm_calls: int = 0
     cost_usd: float = 0.0
     elapsed_seconds: float = 0.0
+    tokens: int = 0
+    cost_known: bool = False  # False: the provider reported no cost and no price is configured
 
 
 class PlanTask(Contract):

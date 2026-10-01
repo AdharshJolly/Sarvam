@@ -113,6 +113,8 @@ export type Fetches = number
 export type LlmCalls = number
 export type CostUsd6 = number
 export type ElapsedSeconds = number
+export type Tokens5 = number
+export type CostKnown = boolean
 export type Limit1 = string
 export type Used = number
 export type Max = number
@@ -254,7 +256,7 @@ export type Round5 = number
  */
 export type EventType = ("run.started" | "phase.entered" | "plan.created" | "task.started" | "source.found" | "source.fetched" | "source.failed" | "passages.created" | "claim.created" | "claim.rejected" | "claim.verified" | "origin.updated" | "conflict.detected" | "coverage.updated" | "round.started" | "challenge.created" | "challenge.outcome" | "stop.decided" | "report.draft" | "report.verified" | "budget.warning" | "run.completed" | "run.failed")
 export type StepMs = (number | null)
-export type Tokens5 = (number | null)
+export type Tokens6 = (number | null)
 export type CostUsd7 = (number | null)
 export type Id14 = string
 export type ClaimId2 = string
@@ -761,6 +763,8 @@ fetches?: Fetches
 llm_calls?: LlmCalls
 cost_usd?: CostUsd6
 elapsed_seconds?: ElapsedSeconds
+tokens?: Tokens5
+cost_known?: CostKnown
 }
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
@@ -1012,7 +1016,7 @@ ts: Ts2
 round?: Round5
 type: EventType
 step_ms?: StepMs
-tokens?: Tokens5
+tokens?: Tokens6
 cost_usd?: CostUsd7
 payload?: Payload
 }
