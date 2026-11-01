@@ -11,7 +11,6 @@ import {
 } from "react";
 import { ApiError } from "../api/client";
 import { openStream, runApi } from "../api";
-import { addHistory } from "../lib/history";
 import { parseRoute } from "../lib/route";
 import { type RunView, initialView, reduce } from "./runStore";
 
@@ -125,7 +124,6 @@ function useRunSessionState(): Session {
 
   const start = useCallback(async (body: RunCreate) => {
     const run = await runApi.createRun(body); // errors surface in the form
-    addHistory({ id: run.id, question: run.question, startedAt: run.started_at, mode: run.mode });
     window.location.hash = `#/run/${encodeURIComponent(run.id)}`;
     setRunId(run.id);
   }, []);

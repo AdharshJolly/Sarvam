@@ -1,52 +1,65 @@
 import { describe, expect, test } from "bun:test";
-import { HISTORY_MAX, type HistoryEntry, parseHistory, withEntry } from "./history";
+import type { Run } from "@contracts/types";
+import { HISTORY_PAGE_SIZE, appendPage, filterRuns, hasMore, runOutcome } from "./history";
 
-const entry = (id: string, question = `q ${id}`): HistoryEntry => ({
-  id,
-  question,
-  startedAt: "2026-09-30T10:00:00+00:00",
-  mode: "LIVE",
-});
+const run = (id: string, extra: Partial<Run> = {}): Run =>
+  ({
+    id,
+    question: `question ${id}`,
+    mode: "LIVE",
+    status: "completed",
+    started_at: "2026-09-30T10:00:00+00:00",
+    ...extra,
+  }) as Run;
 
-describe("parseHistory", () => {
-  test("reads a well-formed list", () => {
-    const list = [entry("R1"), entry("R2")];
-    expect(parseHistory(JSON.stringify(list))).toEqual(list);
+describe("appendPage", () => {
+  test("adds the next page after the current list", () => {
+    expect(appendPage([run("R1")], [run("R2"), run("R3")]).map((r) => r.id)).toEqual(["R1", "R2", "R3"]);
   });
 
-  test("missing, empty or corrupted values give an empty list and never throw", () => {
-    for (const raw of [null, undefined, "", "not json", "{", "null", "42", '"text"', '{"id":"R1"}']) {
-      expect(parseHistory(raw)).toEqual([]);
-    }
-  });
-
-  test("malformed entries are dropped and good ones kept", () => {
-    const raw = JSON.stringify([entry("R1"), { id: "R2" }, null, 7, { ...entry("R3"), mode: 5 }, { ...entry(""), id: "" }]);
-    expect(parseHistory(raw).map((e) => e.id)).toEqual(["R1"]);
-  });
-
-  test("an over-long stored list is capped", () => {
-    const many = Array.from({ length: HISTORY_MAX + 5 }, (_, i) => entry(`R${i}`));
-    expect(parseHistory(JSON.stringify(many))).toHaveLength(HISTORY_MAX);
+  test("a run already listed is not repeated (a new run shifts the offsets)", () => {
+    expect(appendPage([run("R1"), run("R2")], [run("R2"), run("R3")]).map((r) => r.id)).toEqual(["R1", "R2", "R3"]);
   });
 });
 
-describe("withEntry", () => {
-  test("puts the newest run first", () => {
-    expect(withEntry([entry("R1")], entry("R2")).map((e) => e.id)).toEqual(["R2", "R1"]);
+describe("hasMore", () => {
+  test("a full page means there may be another", () => {
+    expect(hasMore(HISTORY_PAGE_SIZE)).toBe(true);
   });
 
-  test("a run that is already listed moves to the front instead of repeating", () => {
-    const out = withEntry([entry("R1"), entry("R2"), entry("R3")], entry("R3", "updated"));
-    expect(out.map((e) => e.id)).toEqual(["R3", "R1", "R2"]);
-    expect(out[0]?.question).toBe("updated");
+  test("a short or empty page is the last one", () => {
+    expect(hasMore(HISTORY_PAGE_SIZE - 1)).toBe(false);
+    expect(hasMore(0)).toBe(false);
+  });
+});
+
+describe("runOutcome", () => {
+  test("a stopped run reports its final state and the plain-language reason", () => {
+    const out = runOutcome(run("R1", { stop_state: "SUFFICIENT_WITH_CAVEATS", termination_reason: "budget" }));
+    expect(out?.state).toBe("SUFFICIENT_WITH_CAVEATS");
+    expect(out?.reason).toBeTruthy();
+    expect(out?.reason).not.toBe("budget");
   });
 
-  test("the list never grows past the cap, dropping the oldest", () => {
-    const full = Array.from({ length: HISTORY_MAX }, (_, i) => entry(`R${i}`));
-    const out = withEntry(full, entry("NEW"));
-    expect(out).toHaveLength(HISTORY_MAX);
-    expect(out[0]?.id).toBe("NEW");
-    expect(out.some((e) => e.id === `R${HISTORY_MAX - 1}`)).toBe(false);
+  test("a run without a stop decision has no outcome", () => {
+    expect(runOutcome(run("R1", { status: "running" }))).toBeNull();
+    expect(runOutcome(run("R1", { stop_state: null }))).toBeNull();
+  });
+
+  test("a final state without a recorded reason still reports the state", () => {
+    expect(runOutcome(run("R1", { stop_state: "INSUFFICIENT" }))).toEqual({ state: "INSUFFICIENT", reason: null });
+  });
+});
+
+describe("filterRuns", () => {
+  const runs = [run("R1", { question: "Scooter market in Bengaluru" }), run("R2", { question: "EV battery costs" })];
+
+  test("matches the question or the id, ignoring case", () => {
+    expect(filterRuns(runs, "bengaluru").map((r) => r.id)).toEqual(["R1"]);
+    expect(filterRuns(runs, "r2").map((r) => r.id)).toEqual(["R2"]);
+  });
+
+  test("a blank query keeps every run", () => {
+    expect(filterRuns(runs, "  ")).toHaveLength(2);
   });
 });

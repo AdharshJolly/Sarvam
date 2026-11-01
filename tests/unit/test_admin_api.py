@@ -152,6 +152,23 @@ def test_anonymous_run_list_hides_owned_runs(client):
     assert ids == {"shared"}
 
 
+def test_run_list_pages_newest_first(client):
+    conn = client.app.state.db
+    user, headers = _register(client, "pager@sarvam.ai")
+    base = datetime.now(UTC)
+    for i in range(5):
+        _seed_run(conn, f"p{i}", user_id=user["id"], started=base + timedelta(minutes=i))
+    conn.commit()
+    first = [r["id"] for r in client.get("/api/runs?limit=2", headers=headers).json()]
+    second = [r["id"] for r in client.get("/api/runs?limit=2&offset=2", headers=headers).json()]
+    assert first == ["p4", "p3"]
+    assert second == ["p2", "p1"]
+    assert len(client.get("/api/runs", headers=headers).json()) == 5
+    assert client.get("/api/runs?limit=0", headers=headers).status_code == 422
+    assert client.get("/api/runs?limit=201", headers=headers).status_code == 422
+    assert client.get("/api/runs?offset=-1", headers=headers).status_code == 422
+
+
 def test_stop_run_requires_ownership(client):
     conn = client.app.state.db
     owner, _ = _register(client, "owner@sarvam.ai")

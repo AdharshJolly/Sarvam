@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Landing } from "../components/Landing";
 import { WorkspacePage } from "../components/workspace/WorkspacePage";
-import { AdminPage } from "../components/admin/AdminPage";
+import { HistoryPage } from "../components/history/HistoryPage";
 import { AuthContext, type AuthContextValue } from "../state/useAuth";
 import type { UserPublic } from "@contracts/types";
 import { SessionProvider } from "../state/useRunSession";
@@ -69,7 +69,7 @@ describe("user flow & access control", () => {
     expect(html).toContain("Start a research run");
     expect(html).toContain('id="question"');
     expect(html).toContain("Dr. Eleanor Vance");
-    expect(html).toContain("Investigation History");
+    expect(html).toContain('href="#/history"');
   });
 
   test("landing page does not contain removed guarantee and audit tags", () => {
@@ -82,11 +82,11 @@ describe("user flow & access control", () => {
     expect(html).not.toContain("Pricing");
   });
 
-  test("investigation history page requires credentials when logged out", () => {
-    const html = renderWithAuth(<AdminPage />, null);
+  test("run history page requires credentials when logged out", () => {
+    const html = renderWithAuth(<HistoryPage />, null);
     // Credentials prompt
-    expect(html).toContain("Investigation History");
-    expect(html).toContain("Sign In to Access History");
+    expect(html).toContain("Run history");
+    expect(html).toContain("Sign in to see your history");
     expect(html).toContain('id="history-login-email"');
     expect(html).toContain('id="history-login-password"');
     // Does not say Admin Panel or Admin Portal

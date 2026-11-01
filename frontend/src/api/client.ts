@@ -104,7 +104,21 @@ export interface RunApi {
   getClaim: (id: string, claimId: string) => Promise<ClaimEvidence>;
   getReport: (id: string) => Promise<ReportView>;
   stopRun: (id: string) => Promise<RunSummary>;
-  listRuns: () => Promise<Run[]>;
+  listRuns: (page?: RunPage) => Promise<Run[]>;
+}
+
+/** One page of the caller's run history (newest first). */
+export interface RunPage {
+  limit?: number;
+  offset?: number;
+}
+
+function runsPath(page?: RunPage): string {
+  const q = new URLSearchParams();
+  if (page?.limit !== undefined) q.set("limit", String(page.limit));
+  if (page?.offset !== undefined) q.set("offset", String(page.offset));
+  const qs = q.toString();
+  return qs ? `${routes.runs()}?${qs}` : routes.runs();
 }
 
 export const realApi: RunApi = {
@@ -114,7 +128,7 @@ export const realApi: RunApi = {
   getClaim: (id, cid) => request<ClaimEvidence>(routes.claim(id, cid)),
   getReport: (id) => request<ReportView>(routes.report(id)),
   stopRun: (id) => request<RunSummary>(routes.stop(id), { method: "POST" }),
-  listRuns: () => request<Run[]>(routes.runs()),
+  listRuns: (page?: RunPage) => request<Run[]>(runsPath(page)),
 };
 
 export interface UserUpdateData {
@@ -136,7 +150,7 @@ export const api = {
     request<UserPublic>(routes.authMe(), { method: "PATCH", body: JSON.stringify(body) }),
   deleteAccount: () =>
     request<{ ok: boolean }>(routes.authMe(), { method: "DELETE" }),
-  listRuns: () => request<Run[]>(routes.runs()),
+  listRuns: (page?: RunPage) => request<Run[]>(runsPath(page)),
   stopRun: (id: string) => request<RunSummary>(routes.stop(id), { method: "POST" }),
 };
 

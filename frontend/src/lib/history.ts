@@ -1,58 +1,39 @@
 /**
- * Recent runs, kept in localStorage so the landing screen can offer them again. Purely a convenience:
- * every read is validated (a corrupted value yields an empty list) and every write is best effort.
+ * Run history helpers. The history itself lives on the server (GET /api/runs, newest first, paged);
+ * these pure functions shape what the history page and the workspace show.
  */
+import type { FinalState, Run } from "@contracts/types";
+import { gloss } from "../components/ui/chips";
 
-export interface HistoryEntry {
-  id: string;
-  question: string;
-  startedAt: string;
-  mode: string;
+export const HISTORY_PAGE_SIZE = 25;
+
+/** The list with the next page after it. A run already listed is skipped: a run started meanwhile shifts the offsets. */
+export function appendPage(current: readonly Run[], page: readonly Run[]): Run[] {
+  const seen = new Set(current.map((r) => r.id));
+  return [...current, ...page.filter((r) => !seen.has(r.id))];
 }
 
-export const HISTORY_KEY = "sarvam-runs";
-export const HISTORY_MAX = 20;
-
-function isEntry(value: unknown): value is HistoryEntry {
-  if (typeof value !== "object" || value === null) return false;
-  const v = value as Record<string, unknown>;
-  return (
-    typeof v.id === "string" &&
-    v.id.length > 0 &&
-    typeof v.question === "string" &&
-    typeof v.startedAt === "string" &&
-    typeof v.mode === "string"
-  );
+/** A full page means the server may have more; a short page is the last one. */
+export function hasMore(pageLength: number, pageSize: number = HISTORY_PAGE_SIZE): boolean {
+  return pageLength >= pageSize;
 }
 
-/** Parse a stored value. Anything that is not an array of well-formed entries is dropped, never thrown. */
-export function parseHistory(raw: string | null | undefined): HistoryEntry[] {
-  if (!raw) return [];
-  try {
-    const data: unknown = JSON.parse(raw);
-    return Array.isArray(data) ? data.filter(isEntry).slice(0, HISTORY_MAX) : [];
-  } catch {
-    return [];
-  }
+export interface RunOutcome {
+  state: FinalState;
+  /** Plain-language stop reason from the glossary, or null when none was recorded. */
+  reason: string | null;
 }
 
-/** The list with `entry` first. A run already in the list moves to the front instead of repeating. */
-export function withEntry(list: readonly HistoryEntry[], entry: HistoryEntry): HistoryEntry[] {
-  return [entry, ...list.filter((e) => e.id !== entry.id)].slice(0, HISTORY_MAX);
+/** The stop decision of a finished run, or null while it has none. */
+export function runOutcome(run: Run): RunOutcome | null {
+  if (!run.stop_state) return null;
+  const reason = run.termination_reason ? gloss("termination_reason", run.termination_reason).label : null;
+  return { state: run.stop_state, reason };
 }
 
-export function readHistory(): HistoryEntry[] {
-  try {
-    return parseHistory(localStorage.getItem(HISTORY_KEY));
-  } catch {
-    return []; // storage blocked
-  }
-}
-
-export function addHistory(entry: HistoryEntry): void {
-  try {
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(withEntry(readHistory(), entry)));
-  } catch {
-    // Storage unavailable: the run itself is unaffected.
-  }
+/** Runs whose question or id contains the query (case-insensitive). */
+export function filterRuns(runs: readonly Run[], query: string): Run[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [...runs];
+  return runs.filter((r) => r.id.toLowerCase().includes(q) || r.question.toLowerCase().includes(q));
 }

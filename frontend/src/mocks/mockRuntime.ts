@@ -231,8 +231,10 @@ export const mockApi: RunApi = {
     restart(r);
     return summaryOf(r);
   },
-  async listRuns() {
-    return Array.from(runs.values()).map((r) => baseRun(r));
+  async listRuns(page) {
+    const all = Array.from(runs.values()).map((r) => baseRun(r)).reverse();
+    const offset = page?.offset ?? 0;
+    return all.slice(offset, offset + (page?.limit ?? 50));
   },
 };
 

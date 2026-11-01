@@ -1,17 +1,35 @@
 import { useEffect, useState, useMemo, type FormEvent } from "react";
-import type { Run, RunStatus } from "@contracts/types";
+import type { Run } from "@contracts/types";
 import { api } from "../../api/client";
+import { HISTORY_PAGE_SIZE, appendPage, filterRuns, hasMore, runOutcome } from "../../lib/history";
 import { useAuth } from "../../state/useAuth";
 import { Icon } from "../ui/Icon";
 import { StateChip } from "../ui/StateChip";
-import { runStatusChip } from "../ui/chips";
+import { finalStateChip, runStatusChip } from "../ui/chips";
 import { ThemeToggle } from "../layout/ThemeToggle";
 
-export function AdminPage() {
+function OutcomeCell({ run }: { run: Run }) {
+  const outcome = runOutcome(run);
+  if (!outcome) {
+    const text = run.status === "failed" ? "None (run failed)" : "Not decided yet";
+    return <span className="text-text-muted whitespace-nowrap">{text}</span>;
+  }
+  return (
+    <div className="flex flex-col items-start gap-1 whitespace-nowrap">
+      <StateChip spec={finalStateChip(outcome.state)} />
+      {outcome.reason ? <span className="text-sm text-text-muted">{outcome.reason}</span> : null}
+    </div>
+  );
+}
+
+/** The signed-in user's research runs, newest first, loaded from the server one page at a time. */
+export function HistoryPage() {
   const { user, login, logout, error: authError, clearError } = useAuth();
   const [runs, setRuns] = useState<Run[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [more, setMore] = useState(false);
   const [stoppingId, setStoppingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -28,13 +46,28 @@ export function AdminPage() {
     else setLoading(true);
     setError(null);
     try {
-      const list = await api.listRuns();
-      setRuns(list);
+      const page = await api.listRuns({ limit: HISTORY_PAGE_SIZE, offset: 0 });
+      setRuns(page);
+      setMore(hasMore(page.length));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load runs");
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  }
+
+  async function loadMore() {
+    setLoadingMore(true);
+    setError(null);
+    try {
+      const page = await api.listRuns({ limit: HISTORY_PAGE_SIZE, offset: runs.length });
+      setRuns((prev) => appendPage(prev, page));
+      setMore(hasMore(page.length));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load more runs");
+    } finally {
+      setLoadingMore(false);
     }
   }
 
@@ -50,10 +83,8 @@ export function AdminPage() {
     e.stopPropagation();
     setStoppingId(id);
     try {
-      await api.stopRun(id);
-      setRuns((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, status: "stopped" as RunStatus } : r))
-      );
+      const summary = await api.stopRun(id);
+      setRuns((prev) => prev.map((r) => (r.id === id ? summary.run : r)));
     } catch (err) {
       setError(err instanceof Error ? err.message : `Failed to stop run ${id}`);
     } finally {
@@ -74,13 +105,7 @@ export function AdminPage() {
     }
   }
 
-  const filteredRuns = useMemo(() => {
-    if (!search.trim()) return runs;
-    const q = search.toLowerCase();
-    return runs.filter(
-      (r) => r.id.toLowerCase().includes(q) || r.question.toLowerCase().includes(q)
-    );
-  }, [runs, search]);
+  const filteredRuns = useMemo(() => filterRuns(runs, search), [runs, search]);
 
   // If user is not authenticated, prompt for User ID and password
   if (!user) {
@@ -100,10 +125,10 @@ export function AdminPage() {
                 <Icon name="ShieldCheck" size={24} aria-hidden />
               </div>
               <h1 className="text-2xl font-bold tracking-tight text-text">
-                Investigation History
+                Run history
               </h1>
               <p className="text-sm text-text-muted mt-1.5 leading-relaxed">
-                Enter your researcher email and password to access investigation logs and historical verification records.
+                Sign in to see your past research runs and their results.
               </p>
             </div>
 
@@ -178,11 +203,11 @@ export function AdminPage() {
                 {loginSubmitting ? (
                   <>
                     <Icon name="RefreshCw" size={16} className="animate-spin" />
-                    <span>Verifying Credentials...</span>
+                    <span>Signing in...</span>
                   </>
                 ) : (
                   <>
-                    <span>Sign In to Access History</span>
+                    <span>Sign in to see your history</span>
                     <Icon name="ArrowRight" size={16} />
                   </>
                 )}
@@ -197,7 +222,7 @@ export function AdminPage() {
                   onClick={() => sessionStorage.setItem("sarvam_auth_redirect", "#/history")}
                   className="font-medium text-brand hover:underline"
                 >
-                  Create research account
+                  Create an account
                 </a>
               </p>
             </div>
@@ -231,7 +256,7 @@ export function AdminPage() {
           </a>
           <span className="text-border-hairline">/</span>
           <span className="text-sm font-semibold uppercase tracking-wider text-text-muted">
-            Investigation History
+            History
           </span>
         </div>
 
@@ -285,10 +310,10 @@ export function AdminPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-text">
-              Investigation Audit History
+              Run history
             </h1>
             <p className="text-sm text-text-muted mt-0.5">
-              Review all autonomous research pipelines, status verifications, and run records
+              Every run you started, newest first. Open one to see its evidence and report.
             </p>
           </div>
 
@@ -314,18 +339,20 @@ export function AdminPage() {
           {loading ? (
             <div className="p-12 text-center text-sm text-text-muted flex flex-col items-center gap-3">
               <Icon name="RefreshCw" size={20} className="animate-spin text-brand" />
-              <span>Loading investigation records...</span>
+              <span>Loading your runs...</span>
             </div>
           ) : filteredRuns.length === 0 ? (
             <div className="p-12 text-center text-sm text-text-muted flex flex-col items-center gap-2">
               <Icon name="FileText" size={28} className="text-text-muted/40" />
               <p className="font-medium text-text">
-                {runs.length === 0 ? "No investigations recorded yet" : "No matching investigations"}
+                {runs.length === 0 ? "No runs yet" : "No matching runs"}
               </p>
               <p>
                 {runs.length === 0
-                  ? "Start a new autonomous run from the research workspace"
-                  : "Try clearing your search query"}
+                  ? "Start your first research run from the workspace."
+                  : more
+                    ? "Only loaded runs are searched. Load older runs or change the search."
+                    : "Try a different search."}
               </p>
               {runs.length === 0 ? (
                 <a
@@ -341,10 +368,10 @@ export function AdminPage() {
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
                   <tr className="border-b border-border-hairline bg-surface-2/60 text-text-muted font-semibold uppercase tracking-wider text-sm">
-                    <th className="py-3 px-4">Run ID</th>
                     <th className="py-3 px-4">Research Question</th>
                     <th className="py-3 px-3">Mode</th>
                     <th className="py-3 px-3">Status</th>
+                    <th className="py-3 px-3">Outcome</th>
                     <th className="py-3 px-4">Started At</th>
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
@@ -358,11 +385,11 @@ export function AdminPage() {
                         window.location.hash = `#/run/${encodeURIComponent(r.id)}`;
                       }}
                     >
-                      <td className="py-3.5 px-4 font-mono font-medium text-brand">
-                        {r.id}
-                      </td>
-                      <td className="py-3.5 px-4 max-w-md font-medium text-text truncate">
-                        {r.question}
+                      <td className="py-3.5 px-4 max-w-[18rem]">
+                        <div className="font-medium text-text truncate" title={r.question}>
+                          {r.question}
+                        </div>
+                        <div className="font-mono text-sm text-text-muted">{r.id}</div>
                       </td>
                       <td className="py-3.5 px-3">
                         <span className="inline-block px-2.5 py-0.5 rounded-full text-sm font-semibold bg-accent text-brand border border-border-hairline">
@@ -372,7 +399,10 @@ export function AdminPage() {
                       <td className="py-3.5 px-3">
                         <StateChip spec={runStatusChip(r.status)} />
                       </td>
-                      <td className="py-3.5 px-4 text-text-muted">
+                      <td className="py-3.5 px-3">
+                        <OutcomeCell run={r} />
+                      </td>
+                      <td className="py-3.5 px-4 text-text-muted whitespace-nowrap">
                         {new Date(r.started_at).toLocaleString()}
                       </td>
                       <td className="py-3.5 px-4 text-right">
@@ -405,6 +435,20 @@ export function AdminPage() {
             </div>
           )}
         </div>
+
+        {!loading && more ? (
+          <div className="mt-4 flex justify-center">
+            <button
+              type="button"
+              onClick={loadMore}
+              disabled={loadingMore}
+              className="h-9 px-4 border border-border-hairline hover:bg-surface text-text text-sm font-medium rounded-lg flex items-center gap-1.5 transition-colors disabled:opacity-50"
+            >
+              {loadingMore ? <Icon name="RefreshCw" size={14} className="animate-spin" aria-hidden /> : null}
+              <span>{loadingMore ? "Loading..." : "Load older runs"}</span>
+            </button>
+          </div>
+        ) : null}
       </main>
     </div>
   );

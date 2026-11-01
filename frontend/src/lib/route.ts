@@ -12,6 +12,7 @@ export const DEFAULT_TAB: TabId = "matrix";
 export type PageId =
   | "landing"
   | "workspace"
+  | "history"
   | "run"
   | "signin"
   | "register"
@@ -38,7 +39,7 @@ export function getRoutePage(hash: string): PageId {
   if (hash.startsWith("#/register")) return "register";
   if (hash.startsWith("#/account")) return "account";
   if (hash.startsWith("#/workspace") || hash.startsWith("#/new")) return "workspace";
-  if (hash.startsWith("#/history")) return "admin"; // per-user run history
+  if (hash.startsWith("#/history")) return "history"; // the user's run history
   if (hash.startsWith("#/admin")) return "console"; // operator console (role-gated, ADR B-36)
   if (hash.startsWith("#/privacy")) return "privacy";
   if (hash.startsWith("#/terms")) return "terms";

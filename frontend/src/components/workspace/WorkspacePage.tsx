@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { type HistoryEntry, readHistory } from "../../lib/history";
+import type { Run } from "@contracts/types";
+import { runApi } from "../../api";
 import { useAuth } from "../../state/useAuth";
 import { RunForm } from "../RunForm";
 import { Icon } from "../ui/Icon";
@@ -7,11 +8,23 @@ import { ThemeToggle } from "../layout/ThemeToggle";
 
 export function WorkspacePage() {
   const { user, logout } = useAuth();
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [history, setHistory] = useState<Run[]>([]);
 
+  // The three newest runs from the server. The strip is a shortcut: if loading fails it stays hidden
+  // and the full history page shows the error.
   useEffect(() => {
-    setHistory(readHistory());
-  }, []);
+    if (!user) return;
+    let cancelled = false;
+    runApi
+      .listRuns({ limit: 3 })
+      .then((runs) => {
+        if (!cancelled) setHistory(runs);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   if (!user) {
     return (
@@ -93,7 +106,7 @@ export function WorkspacePage() {
             className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-border-hairline hover:bg-surface text-text-muted hover:text-text text-sm font-medium rounded-lg transition-colors"
           >
             <Icon name="Clock" size={15} aria-hidden />
-            <span className="hidden sm:inline">Investigation History</span>
+            <span className="hidden sm:inline">History</span>
           </a>
 
           <div className="flex items-center gap-2 border-l border-border-hairline pl-3">
@@ -141,10 +154,10 @@ export function WorkspacePage() {
           <div className="mt-6 p-4 rounded-xl bg-surface/50 border border-border-hairline flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-sm font-semibold text-text-muted">
               <Icon name="Clock" size={16} aria-hidden />
-              <span>Recent local investigations:</span>
+              <span>Recent runs:</span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              {history.slice(0, 3).map((h) => (
+              {history.map((h) => (
                 <a
                   key={h.id}
                   href={`#/run/${encodeURIComponent(h.id)}`}

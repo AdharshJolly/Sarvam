@@ -42,7 +42,7 @@ import { LeftRail, RailContent } from "./LeftRail";
 import { SignInPage } from "../auth/SignInPage";
 import { RegisterPage } from "../auth/RegisterPage";
 import { WorkspacePage } from "../workspace/WorkspacePage";
-import { AdminPage } from "../admin/AdminPage";
+import { HistoryPage } from "../history/HistoryPage";
 import { AdminConsole } from "../admin-portal/AdminConsole";
 import { AccountPage } from "../account/AccountPage";
 import { PrivacyPolicyPage } from "../legal/PrivacyPolicyPage";
@@ -109,7 +109,7 @@ function Shell() {
   if (page === "signin") return <SignInPage />;
   if (page === "register") return <RegisterPage />;
   if (page === "workspace") return <WorkspacePage />;
-  if (page === "admin") return <AdminPage />;
+  if (page === "history") return <HistoryPage />;
   if (page === "console") return <AdminConsole />;
   if (page === "account") return <AccountPage />;
   if (page === "privacy") return <PrivacyPolicyPage />;

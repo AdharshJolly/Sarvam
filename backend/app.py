@@ -236,19 +236,25 @@ def create_app(settings: Settings | None = None, *, runner: Runner | None = None
     # ------------------------------------------------------------ run routes
 
     @api.get("/runs")
-    def list_runs(request: Request) -> list[Run]:
+    def list_runs(
+        request: Request,
+        limit: int = Query(default=50, ge=1, le=200),
+        offset: int = Query(default=0, ge=0),
+    ) -> list[Run]:
+        """The caller's runs, newest first, one page at a time."""
         conn = request.app.state.db
         user = get_current_user(request)
         if user:
             rows = conn.execute(
                 "SELECT * FROM runs WHERE hidden = 0 AND (user_id = ? OR user_id IS NULL)"
-                " ORDER BY started_at DESC LIMIT 50",
-                (user.id,),
+                " ORDER BY started_at DESC, id DESC LIMIT ? OFFSET ?",
+                (user.id, limit, offset),
             ).fetchall()
         else:  # anonymous callers only see unowned runs (B-36: no cross-user leak)
             rows = conn.execute(
                 "SELECT * FROM runs WHERE hidden = 0 AND user_id IS NULL"
-                " ORDER BY started_at DESC LIMIT 50"
+                " ORDER BY started_at DESC, id DESC LIMIT ? OFFSET ?",
+                (limit, offset),
             ).fetchall()
         return [repo.row_to_run(r) for r in rows]
 
