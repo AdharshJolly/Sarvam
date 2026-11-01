@@ -4,14 +4,14 @@
 
 - **Project name:** Sarvam
 - **Product:** Evidence-First Autonomous Research Agent
-- **Stage:** product (hackathon ended; hackathon constraints lifted)
+- **Stage:** product
 - **Domain:** ResearchOps
 - **Core USP:** "Research that knows when it isn't done."
 - **Architecture reference:** `docs/architecture/README.md`. Security: `docs/architecture/security.md`. Docs map: `docs/README.md`.
 
 ## Product Rules
 
-1. The SSOT is retired. `docs/architecture/` and `docs/decisions/` are the reference; update them when architecture changes.
+1. `docs/architecture/` and `docs/decisions/` are the reference; update them when architecture changes.
 2. Scope is set by the user per task; do not gold-plate.
 3. SQLite remains the store until a task explicitly moves it (hosted multi-user deployment may require this; record it in the decision log).
 4. The controller is plain code; do not add an orchestration framework without a decision-log row.

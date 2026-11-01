@@ -1051,7 +1051,7 @@
     },
     "Budget": {
       "additionalProperties": false,
-      "description": "Hard run limits (FR-03, SSOT 5.1). Enforced by the controller / ToolGateway.",
+      "description": "Hard run limits (FR-03). Enforced by the controller / ToolGateway.",
       "properties": {
         "max_searches": {
           "default": 24,
@@ -2051,7 +2051,7 @@
       "type": "object"
     },
     "FailureType": {
-      "description": "Typed failure states (SSOT section 18). No silent failures (NFR-04).",
+      "description": "Typed failure states. No silent failures (NFR-04).",
       "enum": [
         "RATE_LIMITED",
         "SOURCE_UNAVAILABLE",
@@ -2199,7 +2199,7 @@
       "type": "object"
     },
     "Phase": {
-      "description": "Lifecycle phase announced by the phase.entered event (SSOT FR-22, section 7).",
+      "description": "Lifecycle phase announced by the phase.entered event (FR-22).",
       "enum": [
         "PLAN",
         "DISCOVER",
@@ -2235,7 +2235,7 @@
     },
     "Plan": {
       "additionalProperties": false,
-      "description": "Planner output (SSOT Appendix B); also the plan.created payload.",
+      "description": "Planner output; also the plan.created payload.",
       "properties": {
         "dimensions": {
           "items": {
@@ -2682,7 +2682,7 @@
     },
     "RunCreate": {
       "additionalProperties": false,
-      "description": "POST /api/runs body (SSOT section 11): question, scope, mode, optional budget overrides.",
+      "description": "POST /api/runs body: question, scope, mode, optional budget overrides.",
       "properties": {
         "question": {
           "maxLength": 2000,
@@ -3175,7 +3175,7 @@
       "type": "object"
     },
     "SourceStatus": {
-      "description": "Source status: found/fetched plus the typed fetch failures from section 18.",
+      "description": "Source status: found/fetched plus the typed fetch failures.",
       "enum": [
         "found",
         "fetched",
@@ -3211,7 +3211,7 @@
     },
     "StopDecision": {
       "additionalProperties": false,
-      "description": "Deterministic stop outcome (SSOT 9.10, Appendix B).",
+      "description": "Deterministic stop outcome.",
       "properties": {
         "state": {
           "$ref": "#/$defs/FinalState"

@@ -1,4 +1,4 @@
-"""ANALYZE phase (SSOT section 7, state 7): origins, numeric conflicts, coverage, rollups.
+"""ANALYZE phase (state 7): origins, numeric conflicts, coverage, rollups.
 
 The decision logic lives in the pure modules (`origins`, `numeric`, `conflicts`, `coverage`); this
 module reads stored rows, calls them, persists the result and emits the events. Every pass is a

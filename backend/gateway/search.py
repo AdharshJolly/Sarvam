@@ -1,4 +1,4 @@
-"""Search provider interface (SSOT 6.2: one primary provider, one optional fallback). Task T02."""
+"""Search provider interface (one primary provider, one optional fallback). Task T02."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ class SearchProvider(Protocol):
 
 
 class TavilySearch:
-    """Tavily search provider (returns cleaned page text, the SSOT extraction fallback)."""
+    """Tavily search provider (returns cleaned page text, the extraction fallback)."""
 
     name = "tavily"
     url = "https://api.tavily.com/search"

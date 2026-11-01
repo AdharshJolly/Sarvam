@@ -124,7 +124,7 @@ function Tile({
 }
 
 /**
- * The verdict (SSOT sections 9.10 and 12): the final state as a headline, why the run stopped, where
+ * The verdict: the final state as a headline, why the run stopped, where
  * the critical slots stand, and what is still missing. The same card sits above the tabs and at the top
  * of the report. Announced once when it appears (aria-live).
  */

@@ -1,6 +1,6 @@
 # Sarvam architecture
 
-Derived from SSOT v2.0 sections 6, 7, 8 and 11. If this file and the SSOT disagree, the SSOT wins.
+The reference architecture. Keep it in step with the code; record changes in `docs/decisions/`.
 
 ## System context
 
@@ -31,7 +31,7 @@ flowchart LR
 | Component | Location | Responsibility |
 | --- | --- | --- |
 | Frontend | `frontend/` | Renders run state from REST snapshots and the SSE event stream. Types come from `contracts/generated/`. |
-| API | `backend/app.py` | Creates runs, streams events, serves state, claim evidence, report (7 endpoints, SSOT 11). |
+| API | `backend/app.py` | Creates runs, streams events, serves state, claim evidence, report (7 endpoints). |
 | Controller | `backend/controller.py` | Owns lifecycle, rounds, budgets, retries, wrap-up and the stop decision. |
 | ToolGateway | `backend/gateway/` | The only path to search, fetch, LLM. Budgets, SSRF guard, concurrency, typed errors, record/replay. |
 | Pipeline | `backend/pipeline/` | Question to stored sources, passages and quote-verified claims. |

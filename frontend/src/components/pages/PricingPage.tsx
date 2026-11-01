@@ -64,7 +64,7 @@ export function PricingPage() {
             What a Sarvam run uses
           </h1>
           <p className="text-base sm:text-lg text-text-muted mt-3 leading-relaxed">
-            Sarvam is a hackathon project with no paid plans. You run it yourself with your own search and model keys, and every run is capped by a budget you can see.
+            Sarvam has no paid plans yet. You run it yourself with your own search and model keys, and every run is capped by a budget you can see.
           </p>
         </div>
 

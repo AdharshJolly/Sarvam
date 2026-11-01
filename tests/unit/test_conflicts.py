@@ -1,4 +1,4 @@
-"""T11: numeric conflict detection on synthetic claims (SSOT 9.7); fixtures cover the corpus."""
+"""T11: numeric conflict detection on synthetic claims; fixtures cover the corpus."""
 
 from __future__ import annotations
 

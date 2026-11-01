@@ -1,4 +1,4 @@
-/** Pure URL builders for the API surface in SSOT section 11. */
+/** Pure URL builders for the API surface. */
 const API_PREFIX = "/api";
 
 export function apiUrl(base: string, path: string): string {

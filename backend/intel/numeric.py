@@ -1,4 +1,4 @@
-"""Numeric normalisation (SSOT 9.7, FR-12): Indian formats, currency to INR, period to per month.
+"""Numeric normalisation (FR-12): Indian formats, currency to INR, period to per month.
 
 Deterministic and pure. The extractor supplies `value`, `unit` and `period`; this module turns them
 into values that can be compared, and reads amounts out of raw text (lakh, crore, k, M, comma

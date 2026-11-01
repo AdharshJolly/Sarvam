@@ -1,4 +1,4 @@
-"""Quote guard and claim extraction (SSOT FR-08, FR-09, 9.3, 9.4, task T06).
+"""Quote guard and claim extraction (FR-08, FR-09, 9.3, 9.4, task T06).
 
 Every claim carries a passage id and a verbatim quote that code proves occurs in that stored
 passage. Failing claims are discarded and logged as `claim.rejected` events only (decision D6).
@@ -87,7 +87,7 @@ def _numbers(text: str) -> set[str]:
 
 
 def quote_in_passage(quote: str, passage_text: str, fuzzy: float = 0.95) -> QuoteMatch:
-    """Exact substring or fuzzy partial ratio >= `fuzzy` (SSOT 9.4) on normalised text.
+    """Exact substring or fuzzy partial ratio >= `fuzzy` on normalised text.
 
     Two additions that only ever reject more: a quote under 4 words is refused, and a fuzzy match
     must contain every number the quote states (one altered digit scores ~0.97 on a short quote).

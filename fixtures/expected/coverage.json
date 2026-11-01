@@ -1,5 +1,5 @@
 {
-  "note": "Expected coverage matrix (SSOT 9.8) and dimension rollups after the full analysis of the corpus. `reason_contains` are lower-case fragments the stored human-readable reason must contain.",
+  "note": "Expected coverage matrix and dimension rollups after the full analysis of the corpus. `reason_contains` are lower-case fragments the stored human-readable reason must contain.",
   "round": 0,
   "cells": {
     "D1S1": {"state": "GREEN", "independent_origins": 1, "open_conflicts": 0, "reason_contains": ["tier-1"]},

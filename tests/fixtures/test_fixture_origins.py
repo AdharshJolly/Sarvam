@@ -1,4 +1,4 @@
-"""T10 on the fixture corpus: a press release copied across four sites is one origin (SSOT 16.2)."""
+"""T10 on the fixture corpus: a press release copied across four sites is one origin."""
 
 from __future__ import annotations
 

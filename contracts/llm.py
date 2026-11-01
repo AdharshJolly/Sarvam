@@ -1,4 +1,4 @@
-"""Backend-internal LLM input/output schemas (SSOT section 10, Appendix B).
+"""Backend-internal LLM input/output schemas.
 
 These validate model output inside the gateway and pipeline. They are NOT part of the REST or event
 surface, so they are not exported to TypeScript.
@@ -35,7 +35,7 @@ class VerdictOut(Contract):
 
 
 class VerdictBatch(Contract):
-    """Verifier output for a batch of about 5 claim-passage pairs (SSOT 7, state 6; CL-06)."""
+    """Verifier output for a batch of about 5 claim-passage pairs (CL-06)."""
 
     verdicts: list[VerdictOut] = Field(default_factory=list)
 
@@ -46,7 +46,7 @@ class AttackTarget(Contract):
 
 
 class AttackDraft(Contract):
-    """One challenger attack (SSOT Appendix B ChallengeSet)."""
+    """One challenger attack."""
 
     attack_hypothesis: str
     target: AttackTarget = Field(default_factory=AttackTarget)

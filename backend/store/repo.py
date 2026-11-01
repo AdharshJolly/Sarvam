@@ -1,4 +1,4 @@
-"""Plain-SQL persistence helpers returning contract models (no ORM, SSOT ADR-101).
+"""Plain-SQL persistence helpers returning contract models (no ORM, ADR-101).
 
 Insert helpers that allocate a global id (`next_id`) insert the row and commit in one transaction,
 so concurrent runs never collide (decision B-09).
@@ -505,7 +505,7 @@ def list_claims(
 
 # Verdict -> claim status (FR-10, decision B-21). Only supports and partial stay evidence; a claim
 # its own passage contradicts, or that is irrelevant to its slot, is dropped as `rejected`.
-# `contested` is never set here: it means "member of an open numeric conflict" (SSOT 9.11) and is
+# `contested` is never set here: it means "member of an open numeric conflict" and is
 # derived by the conflict detector.
 VERDICT_STATUS = {
     Verdict.SUPPORTS: "supported",
@@ -888,7 +888,7 @@ def build_run_summary(
 
 
 def build_rollups(conn: sqlite3.Connection, run_id: str) -> list[RoundRollups]:
-    """Dimension rollups per round, derived from the stored coverage cells (SSOT 9.8)."""
+    """Dimension rollups per round, derived from the stored coverage cells."""
     slots = [
         CoverageSlot(s.id, s.dimension_id, s.name, s.critical, s.min_independent, s.primary_ok)
         for s in list_slots(conn, run_id)

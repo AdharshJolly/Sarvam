@@ -1,4 +1,4 @@
-"""ToolGateway: the only path to search, fetch and LLM (SSOT 6.1, FR-03, ADR-102/108).
+"""ToolGateway: the only path to search, fetch and LLM (FR-03, ADR-102/108).
 
 Enforces budgets (hard limits raise BudgetExceeded; 80 percent raises a one-time warning), bounded
 concurrency, search backoff and fallback, structured LLM output with validation retries, and
@@ -41,7 +41,7 @@ LLM_RATE_LIMIT_RETRIES = 3
 # tier) need waits of tens of seconds, so these are longer than the search backoff.
 LLM_RATE_LIMIT_BACKOFF = (5.0, 15.0, 30.0)
 LLM_RATE_LIMIT_MAX_WAIT = 60.0  # seconds; provider hints are honoured up to this cap
-LLM_MAX_ATTEMPTS = 3  # first try plus 2 validation retries (SSOT 10)
+LLM_MAX_ATTEMPTS = 3  # first try plus 2 validation retries
 WARN_FRACTION = 0.8
 
 

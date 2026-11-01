@@ -1,4 +1,4 @@
-"""Gate G4 (SSOT 13.3, M2): the committed recording replays offline; failures are typed.
+"""Gate G4 (M2): the committed recording replays offline; failures are typed.
 
 Zero credits: no provider keys, and DNS is disabled so any attempt to reach the network fails.
 The golden values come from `golden_canon.json`, the record of the live run that

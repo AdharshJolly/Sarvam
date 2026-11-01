@@ -17,7 +17,7 @@ export const TABS: ReadonlyArray<{ id: TabId; label: string }> = TAB_IDS.map((id
   label: LABELS[id],
 }));
 
-/** The five research views (SSOT section 12). Panels are supplied by the caller. */
+/** The five research views. Panels are supplied by the caller. */
 export function CenterTabs({
   active,
   onChange,

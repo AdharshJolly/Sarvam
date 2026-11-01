@@ -17,7 +17,7 @@ export interface StreamHandlers {
 export type OpenStream = (runId: string, handlers: StreamHandlers, after?: number) => RunEventStream;
 
 /**
- * Subscribe to a run's event stream (SSOT section 11). The server sends unnamed `data:` messages with
+ * Subscribe to a run's event stream. The server sends unnamed `data:` messages with
  * `id:`, so `onmessage` receives everything. Native EventSource reconnects and sends Last-Event-ID;
  * `after` resumes the first connect after hydrating from /state (EventSource cannot set headers).
  */

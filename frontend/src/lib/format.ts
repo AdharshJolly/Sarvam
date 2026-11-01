@@ -20,7 +20,7 @@ export function formatSeconds(s: number): string {
 
 export type AgeBucket = "under 12 months" | "12 to 36 months" | "over 36 months" | "date unknown";
 
-/** Freshness badge only (SSOT 9.2); never used in scoring. */
+/** Freshness badge only; never used in scoring. */
 export function ageBucket(publishedAt: string | null | undefined, now: Date): AgeBucket {
   if (!publishedAt) return "date unknown";
   const t = Date.parse(publishedAt);

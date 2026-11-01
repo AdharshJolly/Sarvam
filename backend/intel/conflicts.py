@@ -1,4 +1,4 @@
-"""Numeric conflict detection (SSOT 9.7, FR-12). Pure and deterministic; the explainer is separate.
+"""Numeric conflict detection (FR-12). Pure and deterministic; the explainer is separate.
 
 Claims in one slot that are about the same entity and attribute are brought to comparable terms
 (`numeric.normalize_value`) and grouped into *positions*: claims whose normalised values agree
@@ -46,7 +46,7 @@ class ConflictClaim:
     authority_tier: int
     domain: str
     published_at: str | None
-    verdict: str  # only claims judged `supports` can conflict (SSOT 9.7: two supported claims)
+    verdict: str  # only claims judged `supports` can conflict
 
 
 @dataclass

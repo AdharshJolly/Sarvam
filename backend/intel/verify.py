@@ -1,4 +1,4 @@
-"""Independent verification (SSOT 9.5, FR-10, task T09): a separate judge labels every claim.
+"""Independent verification (FR-10, task T09): a separate judge labels every claim.
 
 The verifier is a separate gateway call with its own prompt. It sees only the claim text and the
 stored passage, never the extractor's quote, reasoning or slot; retrieved text is untrusted data.
@@ -29,7 +29,7 @@ from contracts.events import (
 from contracts.llm import VerdictBatch, VerdictOut
 from contracts.models import Claim, FailureType, Passage, Phase
 
-BATCH_SIZE = 5  # SSOT section 7, state 6: batch about 5 pairs per call
+BATCH_SIZE = 5  # batch about 5 pairs per call
 MAX_CALLS_PER_BATCH = 2  # the call itself, plus one for pairs the model skipped
 
 

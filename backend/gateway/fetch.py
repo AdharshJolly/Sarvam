@@ -1,4 +1,4 @@
-"""Fetch (SSOT FR-06, section 17). HTML only in the MVP; every hop goes through the SSRF guard."""
+"""Fetch (FR-06). HTML only in the MVP; every hop goes through the SSRF guard."""
 
 from __future__ import annotations
 

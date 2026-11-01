@@ -8,5 +8,5 @@
 
 Both are committed so the frontend typechecks on a fresh checkout. `make contracts-check`
 fails if either is stale relative to `contracts/models.py` / `contracts/events.py`.
-To change a shape, edit the Pydantic model (with a change-log row per SSOT section 21),
+To change a shape, edit the Pydantic model (with a change-log row in docs/decisions/README.md),
 then regenerate.

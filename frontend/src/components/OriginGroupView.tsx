@@ -34,7 +34,7 @@ function useSettled(delayMs = 350): boolean {
 const plural = (n: number, one: string, many = `${one}s`) => (n === 1 ? one : many);
 
 /**
- * The independence collapse (SSOT: "N sources -> M independent origins"). Each origin is one card:
+ * The independence collapse ("N sources -> M independent origins"). Each origin is one card:
  * its source pages are listed on the left, joined by a brace when several pages count as one origin,
  * and the origin itself, why the pages were grouped, and any doubt about its independence on the
  * right. Copies count once, which is the point of the picture.

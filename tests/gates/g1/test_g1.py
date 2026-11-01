@@ -1,4 +1,4 @@
-"""Gate G1 (SSOT 13.3, offline and deterministic): a question goes in through POST /api/runs and
+"""Gate G1 (offline and deterministic): a question goes in through POST /api/runs and
 comes out as a plan, sources, passages, quote-verified claims and a report whose citations all
 resolve to stored passages, streamed as events.
 

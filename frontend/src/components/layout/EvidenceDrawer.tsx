@@ -136,7 +136,7 @@ function ClaimEvidenceView({ runId, claimId }: { runId: string; claimId: string 
   );
 }
 
-/** Right drawer: claim, highlighted passage, verdict, origin, source (SSOT FR-24). Single instance via context. */
+/** Right drawer: claim, highlighted passage, verdict, origin, source (FR-24). Single instance via context. */
 export function EvidenceDrawer() {
   const ev = useEvidence();
   const { runId } = useSession();

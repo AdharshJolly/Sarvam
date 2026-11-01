@@ -15,7 +15,7 @@ from contracts.models import (
     TerminationReason,
 )
 
-SSOT_EVENT_TYPES = {
+BASE_EVENT_TYPES = {
     "run.started", "plan.created", "task.started", "source.found", "source.fetched",
     "source.failed", "passages.created", "claim.created", "claim.rejected", "claim.verified",
     "origin.updated", "conflict.detected", "coverage.updated", "round.started",
@@ -24,9 +24,9 @@ SSOT_EVENT_TYPES = {
 }  # fmt: skip
 
 
-def test_event_types_match_ssot_plus_phase_entered():
-    # SSOT section 11 lists 22 types; CL-02 adds phase.entered (FR-22 transitions).
-    assert {t.value for t in EventType} == SSOT_EVENT_TYPES | {"phase.entered"}
+def test_event_types_match_base_plus_phase_entered():
+    # The base API lists 22 types; CL-02 adds phase.entered (FR-22 transitions).
+    assert {t.value for t in EventType} == BASE_EVENT_TYPES | {"phase.entered"}
 
 
 def test_event_envelope_validates():
@@ -77,7 +77,7 @@ def test_stop_decision_matches_appendix_b():
     assert sd.termination_reason is TerminationReason.MAX_ROUNDS
 
 
-def test_settings_defaults_match_ssot_budget():
+def test_settings_defaults_match_default_budget():
     s = Settings.from_env({})
     assert (s.budget.max_searches, s.budget.max_fetches, s.budget.max_llm_calls) == (24, 40, 250)
     assert s.budget.max_cost_usd == 3.00

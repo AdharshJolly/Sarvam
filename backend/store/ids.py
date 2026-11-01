@@ -1,4 +1,4 @@
-"""Globally unique short ids (SSOT section 8; decision B-09).
+"""Globally unique short ids (decision B-09).
 
 `schema.sql` makes sources, passages, claims and other rows globally keyed, so ids such as S3 or
 C41 must not repeat across runs. `next_id` takes the database write lock (BEGIN IMMEDIATE) and

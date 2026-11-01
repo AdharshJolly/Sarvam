@@ -682,7 +682,7 @@ export function HealthView({ health }: { health: AdminHealth }) {
           ))}
         </dl>
       </Panel>
-      <Panel title="Typed failures (SSOT 18)">
+      <Panel title="Typed failures">
         {Object.keys(health.failures).length === 0 ? (
           <p className="text-sm text-text-muted">No failures recorded.</p>
         ) : (

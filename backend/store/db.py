@@ -1,8 +1,8 @@
-"""SQLite access (SSOT ADR-101): plain sqlite3, WAL mode, foreign keys on, no ORM.
+"""SQLite access (ADR-101): plain sqlite3, WAL mode, foreign keys on, no ORM.
 
 Migration strategy for a 24-hour MVP: schema.sql is idempotent (CREATE ... IF NOT EXISTS) and the
 database carries PRAGMA user_version. Any schema change bumps SCHEMA_VERSION together with a
-change-log row (SSOT section 21); an unknown version fails loudly instead of guessing.
+change-log row; an unknown version fails loudly instead of guessing.
 """
 
 from __future__ import annotations
@@ -59,7 +59,7 @@ def init_db(db_path: str | Path) -> sqlite3.Connection:
         conn.close()
         raise SchemaVersionError(
             f"database schema version {version} != expected {SCHEMA_VERSION}; "
-            "see SSOT section 21 (change control)"
+            "see docs/decisions/README.md (change log)"
         )
     if version == 1:
         # Migrate runs table to include user_id if needed

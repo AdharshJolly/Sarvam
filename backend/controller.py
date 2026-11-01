@@ -1,6 +1,6 @@
-"""Run controller (SSOT section 7). Plain code, no orchestration framework.
+"""Run controller. Plain code, no orchestration framework.
 
-`run_research` drives the ten-state lifecycle (SSOT 7): round 0 runs PLAN to ANALYZE, then each
+`run_research` drives the ten-state lifecycle: round 0 runs PLAN to ANALYZE, then each
 follow-up round runs CHALLENGE and states 2 to 7 on the delta only, until the stop policy
 (`intel/stop.py`, a pure function of the stored tables) ends the run; then SYNTHESIZE. The
 controller owns budgets, rounds, wrap-up and failure handling; every failure becomes a typed event.
@@ -262,7 +262,7 @@ async def run_research(
     and challenge tasks (CHALLENGE) and runs DISCOVER to ANALYZE on the delta only. A stop request,
     the soft time limit, a budget limit or a provider outage takes the wrap-up path from any point:
     coverage is scored from the evidence already stored (code only, no LLM) and the run goes to
-    STOP POLICY and SYNTHESIZE (SSOT 7.1).
+    STOP POLICY and SYNTHESIZE.
     """
     conn = connect(settings.db_path)
     em = Emitter(conn, run_id)
@@ -386,7 +386,7 @@ async def run_research(
             termination = await followup_round(round)
 
         if round not in analyzed:
-            # Wrap-up: the matrix must still show the gaps (SSOT 7.1). Code only, no LLM calls.
+            # Wrap-up: the matrix must still show the gaps. Code only, no LLM calls.
             await run_analyze(
                 gateway,
                 conn,

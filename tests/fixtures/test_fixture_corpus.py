@@ -28,7 +28,7 @@ def corpus(tmp_path_factory):
     return build_corpus(tmp_path_factory.mktemp("corpus"), verdicts=False)
 
 
-def test_corpus_has_the_fourteen_documents_of_ssot_16_2():
+def test_corpus_has_the_fourteen_documents():
     assert sorted(manifest()["documents"]) == FIXTURE_IDS
     for fid in FIXTURE_IDS:
         assert (CORPUS_DIR / f"{fid}.html").is_file()

@@ -1,4 +1,4 @@
-"""Gate G2 (SSOT 13.3, offline and deterministic): the intelligence layer works on a real run.
+"""Gate G2 (offline and deterministic): the intelligence layer works on a real run.
 
 G2 must be true: fixture tests pass for verifier, origins, conflicts and coverage (tests/fixtures,
 run by `make fixtures`); the matrix renders from a real run; the verifier is a separate call.

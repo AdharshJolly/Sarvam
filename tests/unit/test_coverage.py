@@ -1,4 +1,4 @@
-"""T12: coverage states, reasons, dimension rollups and gap tasks (SSOT 9.8, FR-13, FR-14)."""
+"""T12: coverage states, reasons, dimension rollups and gap tasks (FR-13, FR-14)."""
 
 from __future__ import annotations
 

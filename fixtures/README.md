@@ -1,6 +1,6 @@
 # Fixtures
 
-Synthetic corpus and expected results for the intelligence layer (SSOT 16.2, task T08). It makes
+Synthetic corpus and expected results for the intelligence layer (task T08). It makes
 origins, conflicts, coverage and the verifier testable without network or LLM variance. All names,
 companies and domains are fictional (`.example`, plus a government suffix and a blog platform).
 
@@ -14,7 +14,7 @@ companies and domains are fictional (`.example`, plus a government suffix and a 
 | `expected/origins.json` | Expected origin clusters, the signals that must fire, and what must never merge. |
 | `expected/conflicts.json` | The three planted conflicts and how they are explained (rule or scripted explainer). |
 | `expected/coverage.json` | Expected matrix cells, dimension rollups and gap tasks. |
-| `questions.yaml` | The five golden questions (SSOT 16.4). |
+| `questions.yaml` | The five golden questions. |
 
 The scenario in one paragraph: a fictional scooter subscription, VoltRide, launched in Bengaluru. One
 press release is copied by four outlets (F02-F05, one of them rewritten) and cited by a blog (F06): six
@@ -29,4 +29,4 @@ pipeline (`tests/support/corpus.py`): the fake fetcher serves the HTML, `run_acq
 `tests/gates/g2` drives the same corpus through `POST /api/runs`.
 
 Changing an expected file changes what the algorithms must do. Do it only with a decision or
-change-log row (SSOT 21), never to make a failing test pass.
+change-log row, never to make a failing test pass.

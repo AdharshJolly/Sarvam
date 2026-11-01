@@ -1,4 +1,4 @@
-"""Gate G3 (SSOT 13.3, offline and deterministic): the full lifecycle runs on the fixture corpus.
+"""Gate G3 (offline and deterministic): the full lifecycle runs on the fixture corpus.
 
 G3 must be true: at least one challenge round with follow-up research, a stop state with a reason,
 a verified report, and the four visible moments working. Two fixture pages are held back from

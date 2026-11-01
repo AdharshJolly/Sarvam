@@ -1,4 +1,4 @@
-"""Coverage matrix and dimension rollups (SSOT 9.8, FR-13). Pure and deterministic.
+"""Coverage matrix and dimension rollups (FR-13). Pure and deterministic.
 
 | State | Rule per slot |
 | GREEN | at least `min_independent` origins support the slot (verdict supports) and no open
@@ -7,7 +7,7 @@
 | RED   | no supporting origin |
 
 Every cell carries a human-readable reason. Explained conflicts never downgrade a cell; only open
-ones do. Unestablished independence still counts as an origin (SSOT 9.6, S0) and the reason says so.
+ones do. Unestablished independence still counts as an origin (S0) and the reason says so.
 
 Rollup: the worst state among a dimension's critical slots; with no critical slot, the median of
 its slots (the lower median for an even count, the conservative choice; decision B-22).

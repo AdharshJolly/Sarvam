@@ -1,4 +1,4 @@
-"""ToolGateway: the ONLY path to search, fetch and LLM (SSOT section 6.1, ADR-102/108).
+"""ToolGateway: the ONLY path to search, fetch and LLM (ADR-102/108).
 
 No pipeline, intel or synth module may import an HTTP client or an LLM provider SDK. They receive
 a gateway and call gateway.search / gateway.fetch / gateway.llm. The gateway (implemented in T02)
@@ -17,7 +17,7 @@ from contracts.models import FailureType
 
 
 class GatewayError(Exception):
-    """Typed gateway failure (SSOT section 18). Never swallowed silently (NFR-04)."""
+    """Typed gateway failure. Never swallowed silently (NFR-04)."""
 
     def __init__(
         self,
@@ -35,7 +35,7 @@ class GatewayError(Exception):
 
 
 class BudgetExceeded(GatewayError):
-    """A hard limit was hit; the controller reacts by taking the wrap-up path (SSOT 7.1)."""
+    """A hard limit was hit; the controller reacts by taking the wrap-up path."""
 
     def __init__(self, limit: str) -> None:
         super().__init__(FailureType.BLOCKED, f"budget exceeded: {limit}")

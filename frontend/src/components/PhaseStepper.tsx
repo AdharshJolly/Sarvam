@@ -2,7 +2,7 @@ import type { Phase } from "@contracts/types";
 import { phaseName } from "../lib/labels";
 import { Icon } from "./ui/Icon";
 
-/** The ten lifecycle states (SSOT section 7), in order. */
+/** The ten lifecycle states, in order. */
 export const PHASE_ORDER: Phase[] = [
   "PLAN",
   "DISCOVER",

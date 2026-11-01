@@ -67,7 +67,7 @@ function useFlashing(cells: CoverageCell[]): Set<string> {
 }
 
 /**
- * The coverage matrix (SSOT section 12): one row per dimension, one cell per evidence slot. It is an
+ * The coverage matrix: one row per dimension, one cell per evidence slot. It is an
  * ARIA grid with a roving tabindex, so Tab enters it once and the arrow keys move between cells.
  * Every cell shows its state as an icon and a word, and how many sources collapse into how many
  * independent origins.

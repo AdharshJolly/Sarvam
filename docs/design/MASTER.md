@@ -1,7 +1,7 @@
 # Sarvam design system (MASTER)
 
 Source of truth for how the Sarvam UI looks and behaves. If this file and the code disagree, fix
-whichever is wrong in the same change. The SSOT (section 12, NFR-10) always wins over this file.
+whichever is wrong in the same change. Accessibility rules (NFR-10) always win over this file.
 
 Code lives in `frontend/src`: tokens in `styles/tokens.css`, primitives in `components/ui/`, theme
 logic in `lib/theme.ts`. Status of each part is tracked in the redesign plan (phases P0 to P8).
@@ -10,7 +10,7 @@ logic in `lib/theme.ts`. Status of each part is tracked in the redesign plan (ph
 
 The product promise is trust in evidence, so the interface is institutional and precise, not
 flashy. Colour is reserved for meaning; every state is shown as **colour + icon + word**, never
-colour alone (SSOT section 12, NFR-10). Amber is a status colour only, never a brand colour.
+colour alone (NFR-10). Amber is a status colour only, never a brand colour.
 
 ## 2. Colour
 
@@ -72,7 +72,7 @@ Fonts are self-hosted (`@fontsource`) because REPLAY must work fully offline (NF
 
 - Every weight the UI uses is loaded, so nothing is synthesised: `font-normal` 400, `font-medium` 500,
   `font-semibold` 600, `font-bold` 700.
-- **Floors:** 16px for reading text (SSOT NFR-10); **14px for any label, chip or metadata**. Do not use
+- **Floors:** 16px for reading text (NFR-10); **14px for any label, chip or metadata**. Do not use
   `text-xs` (12px). Existing violations are tracked for the P5 sweep.
 - Use tabular numerals for meters and matrix counts so digits do not jump.
 - The combined `@fontsource/<font>/<weight>.css` files are imported (not the per-subset files)
@@ -142,7 +142,7 @@ Breakpoints: phone below 768 px (`md`), tablet 768 to 1023 px, desktop from 1024
   choice always wins.
 - **Header:** brand, the question as the page `<h1>` (one heading per view; the landing hero is the `<h1>`
   when there is no run), the LIVE/REPLAY badge, and cost, time and tokens. The badge shows in the
-  header whenever the rail is not showing it, so the mode is always visible (SSOT section 12). Each header
+  header whenever the rail is not showing it, so the mode is always visible. Each header
   metric and each budget meter opens the timeline filtered to the events behind the number.
 - **Phone header:** the question wraps onto its own row; New run, theme and mode shrink to icons.
 - **Routes:** `#/run/<id>/<tab>`; the default tab is omitted. Reload, shared links and Back restore both.
@@ -195,8 +195,8 @@ per screen is defined in phase P6 of the redesign plan.
 ## 12. Do and don't
 
 - **Do** show every state as icon + word + colour.
-- **Do** keep a one-line reason next to every change of direction (SSOT section 12).
-- **Do** make every number link to the record that produced it (SSOT section 12).
+- **Do** keep a one-line reason next to every change of direction.
+- **Do** make every number link to the record that produced it.
 - **Do** label every spinner; prefer skeletons that match the final layout.
 - **Do** keep failures visible on the affected source or cell and in the timeline.
 - **Don't** convey state by colour alone, or use `border-hairline` as a control edge.
@@ -209,7 +209,7 @@ per screen is defined in phase P6 of the redesign plan.
 | Decision | Reason |
 |---|---|
 | Amber is a status colour only; brand is navy | An amber brand would collide with the AMBER coverage state |
-| The LIVE/REPLAY badge lives in the header whenever the rail is not showing it | The SSOT places it in the rail but also requires it always visible; the rail is collapsed or a sheet on most screens |
+| The LIVE/REPLAY badge lives in the header whenever the rail is not showing it | It belongs in the rail but must always be visible; the rail is collapsed or a sheet on most screens |
 | The question is the page `<h1>`, not the brand | One heading per view, and the run title is what identifies the page |
 | Dark theme uses a lighter brand blue and its own `on-brand` | Navy on a navy-ink surface is unreadable |
 | Dark background is navy ink, not pure black | Keeps parity with the light theme and avoids harsh contrast |

@@ -1,4 +1,4 @@
-"""Deterministic Markdown renderer (SSOT 9.11, task T07).
+"""Deterministic Markdown renderer (task T07).
 
 Citations are written `[C41]` from stored claim ids only. `verify_citations` proves that every
 cited id resolves claim -> passage -> a passage that contains the quote (NFR-05). Certainty chips

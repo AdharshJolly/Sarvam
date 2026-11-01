@@ -1,4 +1,4 @@
-"""Planner (SSOT 9.1, task T03): LLM proposes, deterministic code validates and normalises.
+"""Planner (task T03): LLM proposes, deterministic code validates and normalises.
 
 The model never decides ids or budgets. Limits (decision B-12): 4 to 5 dimensions, exactly 2
 slots per dimension, exactly 1 task per slot, at most `max_initial_tasks` tasks, at least 3

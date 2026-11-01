@@ -72,7 +72,7 @@ export function certaintyChip(c: CertaintyLabel): ChipSpec {
   }
 }
 
-/** Typed failure names (SSOT section 18) and source statuses. */
+/** Typed failure names and source statuses. */
 export function failureChip(name: string): ChipSpec {
   return chip("failure", name, "XOctagon", "bad");
 }

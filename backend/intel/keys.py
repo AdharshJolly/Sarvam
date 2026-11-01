@@ -1,4 +1,4 @@
-"""Claim-key helpers shared by origin clustering (S3) and numeric conflicts (SSOT 9.6, 9.7).
+"""Claim-key helpers shared by origin clustering (S3) and numeric conflicts.
 
 The claim key is (entity, attribute, period). Slot attribute lists keep attribute names stable;
 entities come from free text, so two entities match when their content words are equal or when the

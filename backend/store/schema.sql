@@ -1,5 +1,5 @@
--- Sarvam SQLite schema, version 4 (SSOT v2.0 section 8 + Auth + admin role + admin controls).
--- Changing this file requires a change-log row (SSOT section 21) and a SCHEMA_VERSION bump in db.py.
+-- Sarvam SQLite schema, version 4 (core data model + auth + admin role + admin controls).
+-- Changing this file requires a change-log row (docs/decisions/README.md) and a SCHEMA_VERSION bump in db.py.
 -- Sources, passages and events are immutable once written. Claims, coverage and reports are
 -- versioned by round. IDs are short readable strings (S3, P12, C41) except events.id (integer).
 

@@ -1,4 +1,4 @@
-"""Loads the fixture corpus (SSOT 16.2, task T08) into a real store through the real pipeline.
+"""Loads the fixture corpus (task T08) into a real store through the real pipeline.
 
 Sources are qualified by `discover.classify`, fetched through `run_acquire` (a FakeFetcher serves
 the HTML, F14 answers 403), split into passages by `run_extract`, and the seeded claims are inserted

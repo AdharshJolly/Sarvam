@@ -1,5 +1,5 @@
 {
-  "note": "Expected qualification (SSOT 9.2) of each fixture URL, the fetch outcome and the freshness bucket relative to manifest.as_of.",
+  "note": "Expected qualification of each fixture URL, the fetch outcome and the freshness bucket relative to manifest.as_of.",
   "sources": {
     "F01": {"source_type": "regulator", "authority_tier": 1, "status": "fetched", "freshness": "under_12_months"},
     "F02": {"source_type": "unknown", "authority_tier": 3, "status": "fetched", "freshness": "under_12_months"},

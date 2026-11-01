@@ -1,4 +1,4 @@
-"""Challenge loop and rule-based outcomes (SSOT 9.9, FR-15, task T13).
+"""Challenge loop and rule-based outcomes (FR-15, task T13).
 
 The challenger (STRONG tier) attacks the weakest slots and claims. Code validates its output,
 turns each attack into one follow-up task of kind `challenge`, and later decides the outcome by
@@ -39,8 +39,8 @@ from contracts.models import (
     Verdict,
 )
 
-MAX_ATTACKS = 3  # SSOT 9.9
-MIN_RELEVANT_TO_STRENGTHEN = 3  # SSOT 9.9
+MAX_ATTACKS = 3
+MIN_RELEVANT_TO_STRENGTHEN = 3
 PASSAGES_PER_ATTACK = 6  # keeps a challenge to two verifier calls
 BATCH_SIZE = 5
 TOP_CLAIMS_PER_SLOT = 3
@@ -52,7 +52,7 @@ _STATE_RANK = {CoverageState.RED: 0, CoverageState.AMBER: 1, CoverageState.GREEN
 
 
 def outcome_by_rule(verdicts: list[Verdict]) -> ChallengeOutcome:
-    """SSOT 9.9. `verdicts` are the verifier's labels of the attack against each new passage."""
+    """`verdicts` are the verifier's labels of the attack against each new passage."""
     if any(v is Verdict.SUPPORTS for v in verdicts):
         return ChallengeOutcome.WEAKENED
     relevant = sum(1 for v in verdicts if v is not Verdict.IRRELEVANT)

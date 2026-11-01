@@ -1,4 +1,4 @@
-"""Record/replay fidelity (SSOT FR-26, OP-01): a replayed run is event-for-event the recorded run.
+"""Record/replay fidelity (FR-26, OP-01): a replayed run is event-for-event the recorded run.
 
 The record run is perturbed on purpose: providers answer after random delays (so real concurrency
 reorders completions), some pages time out once (the acquire retry path) and the fetch budget is

@@ -1,4 +1,4 @@
-"""Origin clustering: how many independent origins stand behind the evidence (SSOT 9.6, FR-11).
+"""Origin clustering: how many independent origins stand behind the evidence (FR-11).
 
 Two sources are the same origin if any signal fires; clusters are merged with union-find.
 

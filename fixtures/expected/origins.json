@@ -1,5 +1,5 @@
 {
-  "note": "Expected origin clustering (SSOT 9.6). `sources` are fixture ids. A cluster that contains an S4 unretrieved primary is labelled with that entity; any other label is the most primary member's publisher. `edges` are pairs on which a signal must fire (the test checks they are a subset of the fired signals). F14 failed to fetch and belongs to no origin.",
+  "note": "Expected origin clustering. `sources` are fixture ids. A cluster that contains an S4 unretrieved primary is labelled with that entity; any other label is the most primary member's publisher. `edges` are pairs on which a signal must fire (the test checks they are a subset of the fired signals). F14 failed to fetch and belongs to no origin.",
   "origins": [
     {"sources": ["F01"], "method": "none", "label": "transport.karnataka.gov.in"},
     {"sources": ["F02", "F03", "F04", "F05", "F06"], "method": "near_duplicate", "label": "VoltRide Mobility"},

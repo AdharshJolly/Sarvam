@@ -29,4 +29,4 @@ def test_forbidden_python_dependencies_absent():
         "sqlalchemy", "celery", "redis", "langchain", "langgraph", "crewai", "autogen",
         "psycopg", "qdrant", "neo4j", "kafka",
     ):  # fmt: skip
-        assert banned not in text, f"{banned} is not permitted by the SSOT"
+        assert banned not in text, f"{banned} is not permitted (CLAUDE.md)"

@@ -1,4 +1,4 @@
-"""T13: challenge loop and the rule-based outcome (SSOT 9.9, FR-15)."""
+"""T13: challenge loop and the rule-based outcome (FR-15)."""
 
 from __future__ import annotations
 

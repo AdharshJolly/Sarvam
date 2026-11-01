@@ -1,4 +1,4 @@
-"""Acquire: fetch, clean and store pages (SSOT FR-06, section 18, task T05).
+"""Acquire: fetch, clean and store pages (FR-06, task T05).
 
 One bad source never aborts the run: every failure becomes a typed `source.failed` event and a
 stored status (SOURCE_UNAVAILABLE or SOURCE_EMPTY). Timeouts are retried once, nothing else.
@@ -25,7 +25,7 @@ from contracts.events import (
 )
 from contracts.models import FailureType, Phase, Source, SourceStatus
 
-PROVIDER_TEXT_MIN_WORDS = 100  # SSOT section 18: usable provider-supplied cleaned text
+PROVIDER_TEXT_MIN_WORDS = 100  # usable provider-supplied cleaned text
 
 
 def _provider_text(settings: Settings, run_id: str, source: Source) -> str | None:

@@ -65,7 +65,7 @@ def test_fuzzy_threshold_behaviour():
     noisy = "the monthly prlce of the baslc plan starts at affordabIe levls for every comuter"
     ratio = fuzz.partial_ratio(noisy, passage.lower()) / 100
     assert 0.90 <= ratio < 0.95
-    assert not quote_in_passage(noisy, passage, fuzzy=0.95).ok  # rejected at the SSOT threshold
+    assert not quote_in_passage(noisy, passage, fuzzy=0.95).ok  # rejected at the default threshold
     assert quote_in_passage(noisy, passage, fuzzy=0.90).ok  # the threshold is what decides it
 
 

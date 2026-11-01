@@ -1,4 +1,4 @@
-"""Discover and qualify (SSOT FR-04, FR-05, 9.2, task T04). Queries and qualification are code.
+"""Discover and qualify (FR-04, FR-05, 9.2, task T04). Queries and qualification are code.
 
 Two differently phrased queries per task go through the gateway; hits are canonicalised,
 de-duplicated per run, classified by rule (type and authority tier) and stored as `found` sources.
@@ -73,7 +73,7 @@ def _host_in(host: str, domains: tuple[str, ...] | set[str]) -> bool:
 
 
 def classify(url: str) -> tuple[SourceType, int, str]:
-    """(source_type, authority_tier, domain) by rule, no LLM (SSOT 9.2). Lists are starters."""
+    """(source_type, authority_tier, domain) by rule, no LLM. Lists are starters."""
     parts = urlsplit(url)
     host = (parts.hostname or "").lower().removeprefix("www.")
     path = parts.path.lower()

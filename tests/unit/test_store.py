@@ -24,7 +24,7 @@ def _run(conn, run_id="R1"):
     conn.commit()
 
 
-def test_init_creates_ssot_tables_wal_and_fk(tmp_path):
+def test_init_creates_tables_wal_and_fk(tmp_path):
     conn = init_db(tmp_path / "t.db")
     tables = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     assert EXPECTED_TABLES <= tables

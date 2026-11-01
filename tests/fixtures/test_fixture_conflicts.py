@@ -1,4 +1,4 @@
-"""T11 on the fixture corpus: planted conflicts found, unit trap explained by rule (SSOT 16.1)."""
+"""T11 on the fixture corpus: planted conflicts found, unit trap explained by rule."""
 
 from __future__ import annotations
 

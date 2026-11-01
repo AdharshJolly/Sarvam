@@ -171,7 +171,7 @@ export type PublishedAt = (string | null)
 export type RetrievedAt = (string | null)
 export type ContentHash = (string | null)
 /**
- * Source status: found/fetched plus the typed fetch failures from section 18.
+ * Source status: found/fetched plus the typed fetch failures.
  */
 export type SourceStatus = ("found" | "fetched" | "SOURCE_UNAVAILABLE" | "SOURCE_EMPTY")
 export type FailReason = (string | null)
@@ -272,7 +272,7 @@ export type Attributes = string[]
 export type MinIndependent = number
 export type PrimaryOk = boolean
 /**
- * Typed failure states (SSOT section 18). No silent failures (NFR-04).
+ * Typed failure states. No silent failures (NFR-04).
  * 
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "FailureType".
@@ -286,7 +286,7 @@ export type OriginMethod1 = ("domain" | "near_duplicate" | "shared_number" | "at
 export type SourceId2 = string
 export type Count = number
 /**
- * Lifecycle phase announced by the phase.entered event (SSOT FR-22, section 7).
+ * Lifecycle phase announced by the phase.entered event (FR-22).
  * 
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "Phase".
@@ -369,7 +369,7 @@ export type SourceId4 = string
 export type Chars = number
 export type ContentHash1 = string
 /**
- * Source status: found/fetched plus the typed fetch failures from section 18.
+ * Source status: found/fetched plus the typed fetch failures.
  * 
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "SourceStatus".
@@ -588,7 +588,7 @@ running_runs: RunningRuns
 failures: Failures
 }
 /**
- * Hard run limits (FR-03, SSOT 5.1). Enforced by the controller / ToolGateway.
+ * Hard run limits (FR-03). Enforced by the controller / ToolGateway.
  * 
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "Budget".
@@ -1075,7 +1075,7 @@ phase: Phase
 reason: Reason3
 }
 /**
- * Planner output (SSOT Appendix B); also the plan.created payload.
+ * Planner output; also the plan.created payload.
  * 
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "Plan".
@@ -1220,7 +1220,7 @@ stop_state?: (FinalState | null)
 termination_reason?: (TerminationReason | null)
 }
 /**
- * POST /api/runs body (SSOT section 11): question, scope, mode, optional budget overrides.
+ * POST /api/runs body: question, scope, mode, optional budget overrides.
  * 
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "RunCreate".
@@ -1284,7 +1284,7 @@ round?: Round8
 status?: Status1
 }
 /**
- * Deterministic stop outcome (SSOT 9.10, Appendix B).
+ * Deterministic stop outcome.
  * 
  * This interface was referenced by `SarvamContracts`'s JSON-Schema
  * via the `definition` "StopDecision".

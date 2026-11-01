@@ -1,5 +1,4 @@
-"""Canonical domain models. Field names and shapes follow SSOT v2.0 section 8 (data model),
-section 9.10 / Appendix B (StopDecision) and section 18 (typed failures).
+"""Canonical domain models. They define the data model, the stop decision and the typed failures.
 
 The frontend never defines its own copies: TypeScript types are generated from these models
 (see contracts/schema_export.py).
@@ -36,7 +35,7 @@ class RunStatus(StrEnum):
 
 
 class FailureType(StrEnum):
-    """Typed failure states (SSOT section 18). No silent failures (NFR-04)."""
+    """Typed failure states. No silent failures (NFR-04)."""
 
     RATE_LIMITED = "RATE_LIMITED"
     SOURCE_UNAVAILABLE = "SOURCE_UNAVAILABLE"
@@ -47,7 +46,7 @@ class FailureType(StrEnum):
 
 
 class SourceStatus(StrEnum):
-    """Source status: found/fetched plus the typed fetch failures from section 18."""
+    """Source status: found/fetched plus the typed fetch failures."""
 
     FOUND = "found"
     FETCHED = "fetched"
@@ -154,7 +153,7 @@ class Scope(Contract):
 
 
 class Budget(Contract):
-    """Hard run limits (FR-03, SSOT 5.1). Enforced by the controller / ToolGateway."""
+    """Hard run limits (FR-03). Enforced by the controller / ToolGateway."""
 
     max_searches: int = 24
     max_fetches: int = 40
@@ -165,7 +164,7 @@ class Budget(Contract):
     max_followup_rounds: int = 2
 
 
-# ---------------------------------------------------------------- entities (section 8)
+# ---------------------------------------------------------------- entities
 
 
 class Run(Contract):
@@ -331,7 +330,7 @@ class CriticalSlotCounts(Contract):
 
 
 class StopDecision(Contract):
-    """Deterministic stop outcome (SSOT 9.10, Appendix B)."""
+    """Deterministic stop outcome."""
 
     state: FinalState
     termination_reason: TerminationReason
@@ -345,7 +344,7 @@ class StopDecision(Contract):
 
 
 class Phase(StrEnum):
-    """Lifecycle phase announced by the phase.entered event (SSOT FR-22, section 7)."""
+    """Lifecycle phase announced by the phase.entered event (FR-22)."""
 
     PLAN = "PLAN"
     DISCOVER = "DISCOVER"
@@ -360,7 +359,7 @@ class Phase(StrEnum):
 
 
 class RunCreate(Contract):
-    """POST /api/runs body (SSOT section 11): question, scope, mode, optional budget overrides."""
+    """POST /api/runs body: question, scope, mode, optional budget overrides."""
 
     question: str = Field(min_length=1, max_length=2000)
     scope: Scope = Field(default_factory=Scope)
@@ -403,7 +402,7 @@ class PlanDimension(Contract):
 
 
 class Plan(Contract):
-    """Planner output (SSOT Appendix B); also the plan.created payload."""
+    """Planner output; also the plan.created payload."""
 
     dimensions: list[PlanDimension]
     budget: Budget

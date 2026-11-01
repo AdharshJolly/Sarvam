@@ -1,7 +1,7 @@
-"""Typed configuration: one object for all thresholds, limits and paths (SSOT section 9 preamble).
+"""Typed configuration: one object for all thresholds, limits and paths.
 
 Values come from environment variables (see .env.example); secrets are read here only and must
-never be logged, put in prompts or written to events (SSOT section 17).
+never be logged, put in prompts or written to events.
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ def read_env_file(path: str | Path = ".env") -> dict[str, str]:
 
 
 class Thresholds(BaseModel):
-    """Algorithm thresholds (SSOT 9.x). Tuned on golden questions at hours 14-16."""
+    """Algorithm thresholds. Tuned on the golden questions."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -57,7 +57,7 @@ class Thresholds(BaseModel):
 
 
 class SSRFPolicy(BaseModel):
-    """Fetch limits and SSRF guard parameters (SSOT section 17). Enforced by backend/gateway."""
+    """Fetch limits and SSRF guard parameters. Enforced by backend/gateway."""
 
     model_config = ConfigDict(frozen=True)
 

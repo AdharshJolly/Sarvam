@@ -1,4 +1,4 @@
-"""Stop policy: a pure function of coverage, conflicts and challenge outcomes (SSOT 9.10, FR-17).
+"""Stop policy: a pure function of coverage, conflicts and challenge outcomes (FR-17).
 
 `next_termination` tells the controller whether the run ends after a round and why; `final_decision`
 turns the stored tables into the final state. Neither reads a clock, a budget or an LLM: hard limits
@@ -44,7 +44,7 @@ class StopCell:
 
 
 def marginal_gain(previous: dict[str, CoverageState], current: dict[str, CoverageState]) -> int:
-    """Number of slots whose state improved between two rounds (SSOT 9.10)."""
+    """Number of slots whose state improved between two rounds."""
     return sum(
         1 for slot, state in current.items() if _RANK[state] > _RANK[previous.get(slot, state)]
     )
@@ -84,7 +84,7 @@ def next_termination(
     A hard limit wins over everything. Otherwise the run ends when the criteria are met, when a
     completed challenge round brought no marginal gain (`gain` is None for round 0), or when the
     follow-up rounds are used up. Before a challenge round has completed, only the round limit and
-    hard limits end the run: at least one challenge must run (SSOT 7.1).
+    hard limits end the run: at least one challenge must run.
     """
     if hard_limit is not None:
         return hard_limit
@@ -103,7 +103,7 @@ def final_decision(
     challenges: list[Challenge],
     reason: TerminationReason,
 ) -> StopDecision:
-    """The final state for a run that ends with `reason` (SSOT 9.10 table).
+    """The final state for a run that ends with `reason`.
 
     INSUFFICIENT when any critical slot is RED, whatever the reason. SUFFICIENT only when the
     criteria are met, and its reason is then `criteria_met` (the table pairs them). Everything

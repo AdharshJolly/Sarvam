@@ -1,4 +1,4 @@
-"""Report verifier (SSOT 9.11, FR-19, FR-20, task T15). Deterministic, no LLM.
+"""Report verifier (FR-19, FR-20, task T15). Deterministic, no LLM.
 
 Every findings sentence must cite at least one stored claim, and every number in the sentence must
 appear in the claims it cites (after normalisation: `1,299` equals `1299`). A sentence that breaks a

@@ -1,4 +1,4 @@
-"""T15: report verifier and certainty labels (SSOT 9.11, FR-19, FR-20)."""
+"""T15: report verifier and certainty labels (FR-19, FR-20)."""
 
 from __future__ import annotations
 

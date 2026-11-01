@@ -337,7 +337,7 @@ function Shell() {
   );
 }
 
-/** Application shell (SSOT section 12): status rail, tabbed workspace, docked evidence drawer, activity timeline. */
+/** Application shell: status rail, tabbed workspace, docked evidence drawer, activity timeline. */
 export function AppShell() {
   return (
     <EvidenceProvider>

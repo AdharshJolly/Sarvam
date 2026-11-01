@@ -13,7 +13,7 @@
 @import "@fontsource/fira-code/600.css";
 
 html {
-  font-size: 16px; /* projector-readable body text (SSOT NFR-10) */
+  font-size: 16px; /* readable body text (NFR-10) */
   font-family: var(--font-sans);
 }
 

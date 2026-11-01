@@ -1,4 +1,4 @@
-"""Freshness bucket for a source (SSOT 9.2). Badge only in the MVP; used in the report note."""
+"""Freshness bucket for a source. Badge only in the MVP; used in the report note."""
 
 from __future__ import annotations
 

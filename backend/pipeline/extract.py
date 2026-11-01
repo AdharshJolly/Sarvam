@@ -1,4 +1,4 @@
-"""Text extraction, passage splitting and BM25 ranking (SSOT FR-07, FR-08, task T05).
+"""Text extraction, passage splitting and BM25 ranking (FR-07, FR-08, task T05).
 
 All deterministic. Passages are immutable citation targets: for every stored passage,
 `cleaned_text[char_start:char_end] == text` and passages never overlap.

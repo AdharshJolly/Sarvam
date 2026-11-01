@@ -1,4 +1,4 @@
-"""Gate G0 (SSOT 13.3): repo boots; POST /api/runs creates a run row and event; gateway reaches the
+"""Gate G0: repo boots; POST /api/runs creates a run row and event; gateway reaches the
 search provider and the LLM with real keys; cost and latency logged; contracts and fixtures
 committed and frozen.
 
@@ -145,21 +145,21 @@ def test_g0_fixtures_folder_committed():
         ["git", "ls-files", "fixtures", "cache/recorded"], cwd=ROOT, capture_output=True, text=True
     ).stdout.split()
     assert "fixtures/questions.yaml" in tracked
-    # T08 replaced the placeholders with the real corpus and its expected results (SSOT 16.2)
+    # T08 replaced the placeholders with the real corpus and its expected results
     corpus = [f"fixtures/corpus/F{i:02d}.html" for i in range(1, 15)]
     expected = [
         f"fixtures/expected/{n}.json"
         for n in ("plan", "claims", "sources", "origins", "conflicts", "coverage")
     ]
     assert set(corpus + expected + ["fixtures/corpus/manifest.json"]) <= set(tracked)
-    # cache/ is local-only: recordings are never tracked and no placeholder is needed
-    assert not [t for t in tracked if t.startswith("cache/")]
+    # Only the canonical recorded run (cache/recorded/) is tracked; the rest of cache/ is local.
+    assert "cache/recorded/MANIFEST.json" in tracked
     ignored = subprocess.run(
-        ["git", "check-ignore", "-q", "cache/recorded/fetch-0000000000000000.json"], cwd=ROOT
+        ["git", "check-ignore", "-q", "cache/scratch/fetch-0000000000000000.json"], cwd=ROOT
     )
-    assert ignored.returncode == 0, "cache/ must be git-ignored"
+    assert ignored.returncode == 0, "cache/ outside cache/recorded/ must be git-ignored"
     text = (ROOT / "fixtures/questions.yaml").read_text(encoding="utf-8")
-    assert len(re.findall(r"^\s+- id: Q\d", text, re.M)) == 5  # SSOT 16.4: five golden questions
+    assert len(re.findall(r"^\s+- id: Q\d", text, re.M)) == 5  # five golden questions
 
 
 def test_g0_recorder_creates_missing_record_dir(tmp_path):

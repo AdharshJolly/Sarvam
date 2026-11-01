@@ -1,4 +1,4 @@
-"""Event envelope and canonical event types (SSOT section 11, FR-22).
+"""Event envelope and canonical event types (FR-22).
 
 The events table is the audit log AND the SSE source. Backend and frontend share this shape only
 through the generated schema; payload shapes per type are added here as they are implemented.

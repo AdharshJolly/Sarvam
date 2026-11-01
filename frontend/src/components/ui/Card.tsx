@@ -12,7 +12,7 @@ const PAD: Record<CardPad, string> = {
 };
 
 // A 4px edge in the status colour. Pair it with an icon and a word elsewhere in the card:
-// colour alone never carries state (SSOT NFR-10).
+// colour alone never carries state (NFR-10).
 const ACCENT: Record<Tone, string> = {
   ok: "border-l-4 border-l-ok-fg",
   warn: "border-l-4 border-l-warn-fg",

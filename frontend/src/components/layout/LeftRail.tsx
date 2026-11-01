@@ -17,7 +17,7 @@ const connectionIcons: Record<Conn, { icon: IconName; label: string; className: 
 };
 
 /**
- * The orientation layer (SSOT section 12): question, Now line, phase stepper, budget meters, stream
+ * The orientation layer: question, Now line, phase stepper, budget meters, stream
  * state and stop. Used inside the desktop rail and inside the small-screen status sheet.
  * `showMode` adds the LIVE/REPLAY badge for places where the header is not already showing it.
  */

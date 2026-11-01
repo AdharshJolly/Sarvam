@@ -1,4 +1,4 @@
-"""Record/replay boundary (SSOT FR-26, ADR-108).
+"""Record/replay boundary (FR-26, ADR-108).
 
 RECORD stores the raw provider response (search, fetch and every individual LLM attempt) under
 record_dir. REPLAY serves them deterministically with no network and no API keys; a miss is a typed

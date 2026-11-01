@@ -1,5 +1,5 @@
 {
-  "note": "Expected numeric conflicts (SSOT 9.7) after the explainer ran. Claims are fixture claim keys (unordered pair). `explained_by`: `rule` = deterministic (normalisation resolved it), `llm` = the conflict explainer (scripted in fixture tests). Exactly these three conflicts may exist (recall 3/3, zero false positives).",
+  "note": "Expected numeric conflicts after the explainer ran. Claims are fixture claim keys (unordered pair). `explained_by`: `rule` = deterministic (normalisation resolved it), `llm` = the conflict explainer (scripted in fixture tests). Exactly these three conflicts may exist (recall 3/3, zero false positives).",
   "conflicts": [
     {"claims": ["F07.basic", "F08.basic"], "kind": "genuine", "status": "open", "explained_by": "llm", "delta_pct": 18.76, "slot": "D2S1"},
     {"claims": ["F07.premium", "F09.premium"], "kind": "unit_error", "status": "explained", "explained_by": "rule", "delta_pct": 96.67, "slot": "D2S2"},

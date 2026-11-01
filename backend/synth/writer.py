@@ -1,4 +1,4 @@
-"""Writer v0 (SSOT 9.11, task T07): an LLM drafts findings from verified claims; code enforces that
+"""Writer v0 (task T07): an LLM drafts findings from verified claims; code enforces that
 every finding cites only stored, eligible claims. The full sentence and number verifier, certainty
 labels and "System inference" handling are T15 (M1) and intentionally not built here.
 """
@@ -22,7 +22,7 @@ NO_CLAIMS_SUMMARY = (
 
 
 def eligible_statuses() -> frozenset[str]:
-    """Claim statuses the writer may use (SSOT 9.11, FR-18): claims an independent judge kept as
+    """Claim statuses the writer may use (FR-18): claims an independent judge kept as
     evidence. `contested` claims sit in an open conflict and are cited as contested. `pending`
     (not yet judged) and `rejected` claims never reach the writer (decision B-21)."""
     return frozenset({"supported", "partial", "contested"})

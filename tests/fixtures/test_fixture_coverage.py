@@ -1,4 +1,4 @@
-"""T12 on the fixture corpus: the ANALYZE pass reproduces expected/coverage.json (SSOT 16.1)."""
+"""T12 on the fixture corpus: the ANALYZE pass reproduces expected/coverage.json."""
 
 from __future__ import annotations
 

@@ -10,7 +10,7 @@ export function meterLevel(used: number, max: number | undefined): "ok" | "warn"
   return r >= 1 ? "limit" : r >= 0.8 ? "warn" : "ok";
 }
 
-/** Budget meters (SSOT 5.1 / section 12): amber at 80 percent, LIMIT at 100 percent, with icon and text. */
+/** Budget meters: amber at 80 percent, LIMIT at 100 percent, with icon and text. */
 export function BudgetMeters({
   usage,
   budget,

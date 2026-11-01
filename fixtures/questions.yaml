@@ -1,4 +1,4 @@
-# Golden questions (SSOT 16.4). Tune thresholds on Q2-Q5; keep Q1 as the untouched acceptance check.
+# Golden questions. Tune thresholds on Q2-Q5; keep Q1 as the untouched acceptance check.
 questions:
   - id: Q1
     canonical: true

@@ -1,4 +1,4 @@
-"""Gap task generator (SSOT FR-14). Pure and deterministic: no LLM writes these queries.
+"""Gap task generator (FR-14). Pure and deterministic: no LLM writes these queries.
 
 Every critical slot that is not GREEN gets one follow-up task, using the first query strategy that
 has not been tried for that slot. Which strategies are tried is read from the stored task queries:

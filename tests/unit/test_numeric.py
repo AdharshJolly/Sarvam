@@ -1,4 +1,4 @@
-"""T11: numeric normalisation: Indian formats, currency, period, units (SSOT 9.7)."""
+"""T11: numeric normalisation: Indian formats, currency, period, units."""
 
 from __future__ import annotations
 

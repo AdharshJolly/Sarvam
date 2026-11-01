@@ -1,5 +1,5 @@
 """T14 (part 1): the stop policy is a pure function of coverage, conflicts and challenges
-(SSOT 9.10, FR-17)."""
+(FR-17)."""
 
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ def challenge(n=1, round=1, outcome=ChallengeOutcome.STRENGTHENED):
 ALL_GREEN = [cell("S1", G), cell("S2", G), cell("S3", A, critical=False)]
 
 
-# ---------------------------------------------------------------- final state, SSOT 9.10 table
+# ---------------------------------------------------------------- final state table
 
 
 def test_sufficient_needs_green_critical_slots_no_conflict_a_challenge_and_no_weakening():

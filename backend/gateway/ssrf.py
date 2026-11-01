@@ -1,4 +1,4 @@
-"""SSRF guard (SSOT section 17, NFR-06). Every fetch and every redirect hop is checked here.
+"""SSRF guard (NFR-06). Every fetch and every redirect hop is checked here.
 
 Blocks: non-http(s) schemes, credentials in the URL, unusual ports, local hostnames, and any host
 that resolves (A or AAAA, every record) to a non-global address: loopback, RFC1918, link-local,

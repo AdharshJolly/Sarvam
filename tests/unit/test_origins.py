@@ -1,4 +1,4 @@
-"""T10: origin clustering signals S0-S4, one at a time (SSOT 9.6)."""
+"""T10: origin clustering signals S0-S4, one at a time."""
 
 from __future__ import annotations
 

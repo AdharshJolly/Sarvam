@@ -1,5 +1,5 @@
 {
-  "note": "Synthetic corpus for the intelligence layer (SSOT 16.2). All names and domains are fictional (.example). `fetch` is how the FakeFetcher answers for that URL.",
+  "note": "Synthetic corpus for the intelligence layer. All names and domains are fictional (.example). `fetch` is how the FakeFetcher answers for that URL.",
   "as_of": "2026-09-30",
   "documents": {
     "F01": {"url": "https://transport.karnataka.gov.in/notifications/ev-rental-permits", "fetch": "ok", "tests": "Regulator page stating a rule; primary_ok slot goes GREEN on one tier-1 origin."},

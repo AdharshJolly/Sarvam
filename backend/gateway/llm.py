@@ -1,4 +1,4 @@
-"""LLM interface (SSOT section 10). Task T02.
+"""LLM interface. Task T02.
 
 Every call is gateway.llm(role, prompt_id, schema, payload): validated against a schema, retried
 up to 2 times with the validation error appended, then a typed STEP_FAILED. Retrieved text is
@@ -137,7 +137,7 @@ def llm_from_settings(settings: Settings, *, on_call: MetricsSink | None = None)
     return OpenAICompatLLM(settings.llm_provider, key, on_call=on_call)
 
 
-# ---------------------------------------------------------------- structured calls (SSOT 10)
+# ---------------------------------------------------------------- structured calls
 
 
 @dataclass(frozen=True)
@@ -169,7 +169,7 @@ SYSTEM_PREFIX = (
 
 
 def max_tokens_for(role: LLMRole, settings: Settings) -> int:
-    """Output ceiling for a role: the SSOT-era default unless Settings overrides it."""
+    """Output ceiling for a role: the built-in default unless Settings overrides it."""
     return settings.llm_max_tokens.get(role.value, ROLE_SETTINGS[role].max_tokens)
 
 

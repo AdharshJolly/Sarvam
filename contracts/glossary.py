@@ -181,7 +181,7 @@ GLOSSARY: dict[str, dict[str, GlossaryEntry]] = {
             "Check the failure shown in the activity log, then run again.",
         ),
     },
-    # Typed failures (SSOT section 18): always shown, never hidden.
+    # Typed failures: always shown, never hidden.
     "failure": {
         FailureType.RATE_LIMITED.value: _e(
             "Provider was busy", "A search or AI provider asked the agent to slow down."
