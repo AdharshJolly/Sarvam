@@ -1,7 +1,7 @@
 """Gate G4 (SSOT 13.3, M2): the committed recording replays offline; failures are typed.
 
 Zero credits: no provider keys, and DNS is disabled so any attempt to reach the network fails.
-The golden values come from `docs/benchmarks/canon-b3-o3.json`, the record of the live run that
+The golden values come from `golden_canon.json`, the record of the live run that
 `cache/recorded/` holds (`MANIFEST.json` carries the knobs REPLAY must use).
 """
 
@@ -24,7 +24,7 @@ from contracts.models import Budget
 
 ROOT = Path(__file__).resolve().parents[3]
 RECORDED = ROOT / "cache" / "recorded"
-GOLDEN = json.loads((ROOT / "docs" / "benchmarks" / "canon-b3-o3.json").read_text("utf-8"))
+GOLDEN = json.loads((Path(__file__).parent / "golden_canon.json").read_text("utf-8"))
 RUN_GOLDEN = GOLDEN["runs"][0]
 QUESTION = GOLDEN["question"]
 

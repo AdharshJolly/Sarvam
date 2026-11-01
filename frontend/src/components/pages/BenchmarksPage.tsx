@@ -2,7 +2,7 @@ import { ThemeToggle } from "../layout/ThemeToggle";
 import { Icon } from "../ui/Icon";
 import { useAuth } from "../../state/useAuth";
 
-/** Measured values from the one recorded live run (docs/benchmarks/canon-b3-o3.json); nothing here is estimated. */
+/** Measured values from the one recorded live run (the recorded canonical run); nothing here is estimated. */
 const BENCHMARK_SCENARIOS = [
   {
     id: "canon-b3-o3",

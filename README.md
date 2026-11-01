@@ -6,7 +6,6 @@
 
 _Research that knows when it isn't done._
 
-[![Status](https://img.shields.io/badge/status-G4%20replay-green)](docs/STATUS.md)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 ![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
@@ -246,12 +245,9 @@ Deterministic modules are tested against a 14-document fixture corpus with expec
 
 | Document                                                       | Purpose                                  |
 | -------------------------------------------------------------- | ---------------------------------------- |
-| [docs/ssot/SSOT_v2.docx](docs/ssot/SSOT_v2.docx)               | Single Source of Truth (canonical)       |
-| [docs/STATUS.md](docs/STATUS.md)                               | Build status by task and gate, next plan |
 | [docs/architecture](docs/architecture/README.md)               | Architecture as built                    |
 | [docs/architecture/security.md](docs/architecture/security.md) | Security boundaries                      |
 | [docs/decisions](docs/decisions/README.md)                     | ADRs and change log                      |
-| [docs/audit](docs/audit/README.md)                             | Evaluation and manual audit              |
 | [docs/research](docs/research/README.md)                       | External evidence base                   |
 | [CLAUDE.md](CLAUDE.md)                                         | Operating manual for coding agents       |
 

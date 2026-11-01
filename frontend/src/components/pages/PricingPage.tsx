@@ -78,7 +78,7 @@ export function PricingPage() {
         <section className="p-6 rounded-xl border border-border-hairline bg-surface-2/60 mb-12">
           <h2 className="text-lg font-bold text-text mb-2">Measured on the recorded run</h2>
           <p className="text-sm text-text-muted leading-relaxed mb-4">
-            One live run of the canonical question (docs/benchmarks/canon-b3-o3.json). A single run is not an average; claim counts and call counts vary between runs.
+            One live run of the canonical question (the recorded canonical run). A single run is not an average; claim counts and call counts vary between runs.
           </p>
           <div className="grid gap-4 sm:grid-cols-3 text-center">
             <div className="p-4 rounded-lg bg-surface border border-border-hairline">

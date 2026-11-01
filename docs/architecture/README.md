@@ -78,7 +78,7 @@ challenge loop with rule-based outcomes (`intel/challenge.py`), the stop policy 
 (`intel/stop.py`), the round-based controller `controller.run_research` (round 0, then follow-up
 rounds on the delta only, wrap-up, stop decision, synthesis), the report verifier with certainty
 labels (`synth/report_verify.py`), the deterministic renderer and the full API including SSE.
-The frontend renders every panel from REST and SSE. Task-level status: [../STATUS.md](../STATUS.md).
+The frontend renders every panel from REST and SSE. Task-level status: the decision log.
 
 Not yet done: a live end-to-end run of the round loop against real providers (search budget and cost
 are unmeasured), failure states end to end (T24), recorded canonical runs and offline replay (T25),
