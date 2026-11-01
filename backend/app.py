@@ -1,4 +1,4 @@
-"""Sarvam FastAPI application (SSOT section 11).
+"""Sarvam FastAPI application.
 
 Endpoints under /api: health, POST /runs, GET /runs/{id}, GET /runs/{id}/events (SSE),
 GET /runs/{id}/state, GET /runs/{id}/claims/{cid}, GET /runs/{id}/report, POST /runs/{id}/stop.
@@ -11,15 +11,17 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import secrets
 import sqlite3
 from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
+from pathlib import Path
 
 from fastapi import APIRouter, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 
 from backend import __version__, auth
 from backend.admin import actions as admin_actions
@@ -51,6 +53,7 @@ from contracts.models import (
 
 Runner = Callable[[str, Settings, RunHandle], Awaitable[None]]
 
+_DEFAULT_FRONTEND_DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"
 HEARTBEAT_SECONDS = 15.0
 POLL_SECONDS = 0.25
 TERMINAL_EVENTS = {EventType.RUN_COMPLETED, EventType.RUN_FAILED}
@@ -377,7 +380,27 @@ def create_app(settings: Settings | None = None, *, runner: Runner | None = None
 
     api.include_router(build_admin_router(get_current_user))
     app.include_router(api)
+    _mount_frontend(app, settings.api_prefix)
     return app
+
+
+def _mount_frontend(app: FastAPI, api_prefix: str) -> None:
+    """Serve the built SPA (single-container deploys). No-op when no build exists (dev, tests)."""
+    env_dir = os.environ.get("SARVAM_FRONTEND_DIR")
+    dist = Path(env_dir) if env_dir else _DEFAULT_FRONTEND_DIST
+    index = dist / "index.html"
+    if not index.is_file():
+        return
+    root = dist.resolve()
+
+    @app.get("/{path:path}", include_in_schema=False)
+    def spa(path: str) -> FileResponse:
+        if path == api_prefix.strip("/") or path.startswith(api_prefix.strip("/") + "/"):
+            raise HTTPException(status_code=404, detail="Not Found")
+        candidate = (root / path).resolve()
+        if path and candidate.is_file() and root in candidate.parents:
+            return FileResponse(candidate)
+        return FileResponse(index)
 
 
 async def _event_stream(

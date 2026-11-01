@@ -91,6 +91,17 @@ Open <http://localhost:5173>, choose **REPLAY** in the run form and start the pr
 
 > REPLAY only knows the one recorded question. For any other question, add your own keys (see [Configuration](#configuration)) and choose **LIVE**. A live run uses credits and takes a few minutes.
 
+### Run with Docker
+
+One container serves the API and the built UI on one port. Data (SQLite database, artifacts) lives in the `sarvam-data` volume.
+
+```bash
+cp .env.example .env   # add provider keys here for LIVE runs
+make docker            # same as: docker compose up --build -d
+```
+
+Open <http://localhost:8000>. Set `SARVAM_PORT` to use a different host port. Stop with `docker compose down` (add `-v` to delete the data volume).
+
 ## Configuration
 
 `make demo` copies `.env.example` to `.env` if none exists. Never commit `.env`. A LIVE run needs at most three variables; everything else has a default.
@@ -196,7 +207,7 @@ Sarvam/
 ├── fixtures/        Synthetic corpus, expected outputs, golden questions
 ├── tests/           Unit tests, fixture tests, executable gates G1-G4
 ├── cache/recorded/  Canonical recorded runs for offline replay
-├── docs/            SSOT, architecture, decisions, audit, research
+├── docs/            architecture, decisions, design, research
 └── scripts/         Helper scripts
 ```
 
@@ -237,7 +248,7 @@ Deterministic modules are tested against a 14-document fixture corpus with expec
 
 **Non-goals:** proving objective truth or replacing analysts; a single opaque confidence score; enterprise search, connectors, authentication, multi-user or monitoring; infrastructure beyond SQLite and one process; agent frameworks; PDF ingestion, vector retrieval and graph visualization in the MVP.
 
-**Roadmap:** baseline comparison against a naive single-pass run, print-ready export, full decision sensitivity, cost/latency panel, prompt-injection demo, human source pinning, PDF ingestion, run history and diff, a larger golden set, freshness flags. Ranked in SSOT section 15.
+**Roadmap:** baseline comparison against a naive single-pass run, print-ready export, full decision sensitivity, cost/latency panel, prompt-injection demo, human source pinning, PDF ingestion, run history and diff, a larger golden set, freshness flags.
 
 ## Project status
 
@@ -253,7 +264,7 @@ Deterministic modules are tested against a 14-document fixture corpus with expec
 
 ## Contributing
 
-Issues and pull requests are welcome. Please read the SSOT and [CLAUDE.md](CLAUDE.md) first, keep changes small and focused, write the test before the code, and make sure `make check` is green. Commit messages follow `T12: coverage calculator` or `chore: ...`.
+Issues and pull requests are welcome. Please read [CLAUDE.md](CLAUDE.md) and `docs/architecture/` first, keep changes small and focused, write the test before the code, and make sure `make check` is green. Commit messages follow `T12: coverage calculator` or `chore: ...`.
 
 ## License
 

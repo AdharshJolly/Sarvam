@@ -1,0 +1,20 @@
+services:
+  sarvam:
+    build: .
+    image: sarvam:latest
+    ports:
+      - "${SARVAM_PORT:-8000}:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Same-origin deploy: the browser calls the API on the page's own origin.
+      SARVAM_CORS_ORIGINS: ""
+      SARVAM_DB_PATH: /data/sarvam.db
+      SARVAM_ARTIFACT_DIR: /data/artifacts
+    volumes:
+      - sarvam-data:/data
+    restart: unless-stopped
+
+volumes:
+  sarvam-data:

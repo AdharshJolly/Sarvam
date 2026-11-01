@@ -1,12 +1,11 @@
 # Sarvam task runner. Frontend commands use Bun only; backend commands use uv.
-# Only targets that actually work are listed. SSOT also names `record` and `replay`; they are
-# added by task T25 when the commands behind them exist.
+# Only targets that actually work are listed.
 
 .PHONY: help dev backend frontend install lint typecheck test test-backend test-frontend \
-        build contracts contracts-check check graph fixtures gates
+        build contracts contracts-check check graph fixtures gates docker
 
 help:
-	@echo "Targets: install dev demo backend frontend lint typecheck test build contracts contracts-check check graph fixtures gates"
+	@echo "Targets: install dev demo backend frontend lint typecheck test build contracts contracts-check check graph fixtures gates docker"
 
 install:
 	uv sync
@@ -41,7 +40,7 @@ test-frontend:
 
 test: test-backend test-frontend
 
-# Fixture corpus suite (SSOT 16.2): origins, conflicts, coverage and verifier on the 14 documents.
+# Fixture corpus suite: origins, conflicts, coverage and verifier on the 14 documents.
 fixtures:
 	uv run pytest tests/fixtures
 
@@ -61,8 +60,12 @@ contracts:
 contracts-check:
 	uv run python -m contracts.schema_export --check
 
-# Canonical local quality gate (SSOT 13.1: never merge red).
+# Canonical local quality gate.
 check: lint contracts-check typecheck test build
+
+# Build and start the single-container deployment (API + UI on port 8000, data in a volume).
+docker:
+	docker compose up --build -d
 
 # Create or promote the preset admin account (prints a random password once).
 seed-admin:
