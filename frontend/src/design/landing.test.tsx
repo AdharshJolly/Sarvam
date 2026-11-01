@@ -48,8 +48,15 @@ describe("run form", () => {
   });
 
   test("explains both modes, including that replay only knows recorded questions", () => {
-    expect(html).toContain("Only questions recorded earlier");
+    expect(html).toContain("Other questions cannot be replayed");
     expect(html).toContain("several minutes");
+  });
+
+  test("starts on the free recorded demo until the server says live research is available", () => {
+    const radios = html.match(/<input type="radio"[^>]*>/g) ?? [];
+    expect(radios).toHaveLength(2);
+    expect(radios[0]).not.toContain("checked"); // LIVE
+    expect(radios[1]).toContain("checked"); // REPLAY
   });
 
   test("shows no validation error before the first submit", () => {

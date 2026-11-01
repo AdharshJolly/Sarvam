@@ -145,14 +145,21 @@ def create_app(settings: Settings | None = None, *, runner: Runner | None = None
         return result
 
     @api.get("/health")
-    def health(request: Request) -> dict[str, str]:
+    def health(request: Request) -> dict[str, str | bool]:
         journal = request.app.state.db.execute("PRAGMA journal_mode").fetchone()[0]
+        # A LIVE run needs an LLM key and a primary search key; without them it fails BLOCKED,
+        # so the UI disables LIVE and never starts on it.
+        live = bool(
+            settings.llm_api_key.get_secret_value() and settings.search_api_key.get_secret_value()
+        )
         return {
             "status": "ok",
             "service": "sarvam",
             "version": __version__,
             "env": settings.env,
             "db_journal_mode": journal,
+            "live_available": live,
+            "default_mode": "LIVE" if live and settings.mode == "live" else "REPLAY",
         }
 
     # ------------------------------------------------------------ auth routes

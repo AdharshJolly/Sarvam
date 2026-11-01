@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { env } from "../../config/env";
+import { USE_MOCK } from "../../config/env";
 import { formatRunCost, formatSeconds } from "../../lib/format";
 import {
   LG_MIN,
@@ -159,7 +159,7 @@ function Shell() {
         {runId && run ? nowText : ""}
       </div>
 
-      {env.useMock ? (
+      {USE_MOCK ? (
         <div className="mock-controls border-b border-warn-border bg-warn-bg px-4 py-2">
           <p className="font-bold text-warn-fg flex items-center gap-2" role="status">
             <Icon name="AlertTriangle" size={16} aria-hidden /> MOCK DATA: scripted fictional events in your browser, not a real research run.

@@ -1,7 +1,9 @@
 import type { Mode } from "@contracts/types";
 import { type FormEvent, useEffect, useRef, useState } from "react";
+import { api } from "../api/client";
+import { USE_MOCK } from "../config/env";
 import { clearDraft, peekDraft } from "../lib/digDeeper";
-import { CANONICAL_QUESTION } from "../mocks/scenarios";
+import { DEMO_QUESTION, type ServerModes, initialMode, isReplayMiss } from "../lib/runModes";
 import { errorText, useSession } from "../state/useRunSession";
 import { Banner } from "./ui/Banner";
 import { Button } from "./ui/Button";
@@ -9,23 +11,49 @@ import { Icon, type IconName } from "./ui/Icon";
 import { Input } from "./ui/input";
 
 const EXAMPLES = [
-  { label: "Canonical (Bengaluru scooters)", q: CANONICAL_QUESTION },
+  { label: "E-scooter subscriptions in Bengaluru", q: DEMO_QUESTION },
   { label: "EV fleet market", q: "Should we enter the Indian EV fleet market in 2027?" },
   { label: "Solar rooftop pricing", q: "What do residential rooftop solar systems cost in Karnataka and is demand growing?" },
 ];
 
-const MODES: Array<{ mode: Mode; icon: IconName; text: string }> = [
+const MODES: Array<{ mode: Mode; title: string; icon: IconName; text: string }> = [
   {
     mode: "LIVE",
+    title: "Live research",
     icon: "Activity",
-    text: "Runs the real pipeline now: searches the web and calls the model. Usually takes several minutes.",
+    text: "Searches the web and calls the model now. Usually takes several minutes and uses search and model credits.",
   },
   {
     mode: "REPLAY",
+    title: "Recorded demo",
     icon: "RotateCcw",
-    text: "Replays a recorded run: no network, no cost, works offline. Only questions recorded earlier can be replayed; anything else stops with a clear error.",
+    text: "Replays a recorded run of the e-scooter example: no network, no cost. Other questions cannot be replayed.",
   },
 ];
+
+const LIVE_UNAVAILABLE = "Not available on this server: no search or model keys are configured.";
+
+/** What the server can run. The in-browser mock can always "run" LIVE. Null until known or if health fails. */
+function useServerModes(): ServerModes | null {
+  const [modes, setModes] = useState<ServerModes | null>(
+    USE_MOCK ? { liveAvailable: true, defaultMode: "LIVE" } : null,
+  );
+  useEffect(() => {
+    if (USE_MOCK) return;
+    let active = true;
+    api
+      .health()
+      .then((h) => {
+        if (active) setModes({ liveAvailable: h.live_available, defaultMode: h.default_mode });
+      })
+      // Health failing leaves both modes enabled with REPLAY selected; starting a run then shows the real error.
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
+  return modes;
+}
 
 const MAX_QUESTION = 2000;
 
@@ -37,25 +65,35 @@ export function RunForm() {
   const [geography, setGeography] = useState(draft?.scope.geography ?? "");
   const [horizon, setHorizon] = useState(draft?.scope.time_horizon ?? "");
   const [constraints, setConstraints] = useState(draft?.scope.constraints ?? "");
-  const [mode, setMode] = useState<Mode>("LIVE");
+  const server = useServerModes();
+  const liveDisabled = server !== null && !server.liveAvailable;
+  const [mode, setMode] = useState<Mode>(() => initialMode(server, !!draft));
+  const [modeTouched, setModeTouched] = useState(false);
   const [busy, setBusy] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const questionRef = useRef<HTMLInputElement>(null);
 
-  // The recording matches the canonical question with an empty scope; anything else is a replay miss.
+  // Once the server answers, start on its default unless the user already picked a mode.
+  useEffect(() => {
+    if (server && !modeTouched) setMode(initialMode(server, !!draft));
+  }, [server, modeTouched, draft]);
+
+  // The recording matches the demo question with an empty scope; picking the demo fills it in.
   const chooseMode = (next: Mode) => {
+    if (next === "LIVE" && liveDisabled) return;
+    setModeTouched(true);
     setMode(next);
     if (next === "REPLAY") {
-      setQuestion(CANONICAL_QUESTION);
+      setQuestion(DEMO_QUESTION);
       setGeography("");
       setHorizon("");
       setConstraints("");
       setFieldError(null);
     }
   };
-  const replayMiss = mode === "REPLAY" && (question.trim() !== CANONICAL_QUESTION || !!(geography || horizon || constraints).trim());
+  const replayMiss = isReplayMiss(mode, question, { geography, time_horizon: horizon, constraints });
 
   // Debounced search animation while typing
   useEffect(() => {
@@ -257,24 +295,34 @@ export function RunForm() {
       {/* Mode Selector */}
       <fieldset className="flex flex-col gap-2">
         <legend className="label mb-1">
-          Execution Mode
+          Run type
         </legend>
         <div className="grid gap-3 sm:grid-cols-2">
           {MODES.map((m) => {
             const selected = mode === m.mode;
+            const disabled = m.mode === "LIVE" && liveDisabled;
             return (
               <label
                 key={m.mode}
-                className={`relative flex cursor-pointer flex-col rounded-xl border p-4 transition-all select-none ${
-                  selected
-                    ? "border-brand-secondary bg-brand-secondary/10 shadow-elevation ring-1 ring-brand-secondary"
-                    : "border-border-hairline bg-surface hover:border-border-strong hover:bg-surface-2"
+                className={`relative flex flex-col rounded-xl border p-4 transition-all select-none ${
+                  disabled
+                    ? "cursor-not-allowed border-border-hairline bg-surface opacity-60"
+                    : selected
+                      ? "cursor-pointer border-brand-secondary bg-brand-secondary/10 shadow-elevation ring-1 ring-brand-secondary"
+                      : "cursor-pointer border-border-hairline bg-surface hover:border-border-strong hover:bg-surface-2"
                 }`}
               >
-                <input type="radio" name="mode" className="sr-only" checked={selected} onChange={() => chooseMode(m.mode)} />
+                <input
+                  type="radio"
+                  name="mode"
+                  className="sr-only"
+                  checked={selected}
+                  disabled={disabled}
+                  onChange={() => chooseMode(m.mode)}
+                />
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-sm text-text">
-                    {m.mode}
+                    {m.title} <span className="mono font-normal text-text-muted">{m.mode}</span>
                   </span>
                   {selected ? (
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-secondary text-on-brand">
@@ -284,7 +332,7 @@ export function RunForm() {
                     <span className="h-4 w-4 rounded-full border border-border-strong" />
                   )}
                 </div>
-                <span className="mt-2 text-sm leading-relaxed text-text-muted">{m.text}</span>
+                <span className="mt-2 text-sm leading-relaxed text-text-muted">{disabled ? LIVE_UNAVAILABLE : m.text}</span>
               </label>
             );
           })}
@@ -293,8 +341,8 @@ export function RunForm() {
 
       {replayMiss ? (
         <Banner tone="warn">
-          REPLAY only has the recorded canonical question with an empty scope. This question or scope was never recorded,
-          so the run will stop with an error. Use the canonical example, or switch to LIVE.
+          The recorded demo only covers the e-scooter example with an empty scope, so this run would stop with an error.
+          {liveDisabled ? " Use the e-scooter example." : " Use the e-scooter example, or switch to live research."}
         </Banner>
       ) : null}
 

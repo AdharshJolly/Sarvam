@@ -12,6 +12,7 @@ import type {
   Budget,
   AuthResponse,
   ClaimEvidence,
+  Mode,
   ReportView,
   Run,
   RunCreate,
@@ -94,6 +95,10 @@ export interface Health {
   version: string;
   env: string;
   db_journal_mode: string;
+  /** The server has the provider keys a LIVE run needs. */
+  live_available: boolean;
+  /** The mode a new run starts on: LIVE only when live_available. */
+  default_mode: Mode;
 }
 
 /** The run-facing API surface. The mock implements the same interface (see src/mocks). */

@@ -23,6 +23,7 @@ import {
   mkSource,
   sequence,
 } from "./builders";
+import { DEMO_QUESTION } from "../lib/runModes";
 
 export type ScenarioId = "complete" | "insufficient" | "budget-wrapup" | "failure" | "replay";
 
@@ -46,8 +47,7 @@ export interface Scenario {
   reportAtEvent: number | null;
 }
 
-export const CANONICAL_QUESTION =
-  "Should a company launch an electric scooter subscription service in Bengaluru in 2027?";
+export const CANONICAL_QUESTION = DEMO_QUESTION;
 
 const BUDGET = {
   max_searches: 30,
