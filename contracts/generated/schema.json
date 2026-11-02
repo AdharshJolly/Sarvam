@@ -2718,6 +2718,15 @@
           ],
           "default": null,
           "title": "Budget"
+        },
+        "pinned_urls": {
+          "items": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Pinned Urls",
+          "type": "array"
         }
       },
       "required": [

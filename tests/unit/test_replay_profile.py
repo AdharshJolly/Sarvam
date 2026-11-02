@@ -33,6 +33,22 @@ def test_profile_overrides_request_shaping_knobs(tmp_path):
     assert run.budget.max_llm_calls == 150
 
 
+def test_recordings_without_a_fetch_reserve_replay_with_none(tmp_path):
+    (tmp_path / "MANIFEST.json").write_text(json.dumps({"knobs": KNOBS}), encoding="utf-8")
+    st, _ = apply_replay_profile(Settings(record_dir=tmp_path), make_run())
+    assert Settings().thresholds.followup_fetch_reserve == 0.25
+    assert st.thresholds.followup_fetch_reserve == 0.0
+    assert Settings().thresholds.demote_aggregators is True
+    assert st.thresholds.demote_aggregators is False
+
+
+def test_a_recorded_fetch_reserve_is_replayed(tmp_path):
+    knobs = {**KNOBS, "followup_fetch_reserve": 0.3}
+    (tmp_path / "MANIFEST.json").write_text(json.dumps({"knobs": knobs}), encoding="utf-8")
+    st, _ = apply_replay_profile(Settings(record_dir=tmp_path), make_run())
+    assert st.thresholds.followup_fetch_reserve == 0.3
+
+
 def test_without_a_manifest_settings_are_unchanged(tmp_path):
     original = Settings(record_dir=tmp_path)
     st, run = apply_replay_profile(original, make_run())

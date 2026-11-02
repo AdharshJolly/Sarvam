@@ -84,7 +84,8 @@ Not yet done: a live end-to-end run of the round loop against real providers (se
 are unmeasured), failure states end to end (T24), recorded canonical runs and offline replay (T25),
 the audit sheet (T23), README run command (T26), additions.
 
-Run execution: `POST /api/runs` creates the run and, outside the test env, starts `controller.run_research`
+Run execution: `POST /api/runs` creates the run (and stores any `pinned_urls` as `found` sources with no
+task, CL-20) and, outside the test env, starts `controller.run_research`
 as an asyncio task on its own DB connection. SSE (`GET /runs/{id}/events`) polls the events table on
 a separate connection and sends `id:` + `data:` frames only. Wrap-up (stop request, soft time, budget
 limit, provider outage) skips the remaining stages, scores coverage from what is stored (no LLM

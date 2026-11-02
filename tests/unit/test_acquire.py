@@ -223,7 +223,7 @@ def test_timeout_is_retried_exactly_once(tmp_path):
 
 def test_budget_error_surfaces_after_persisting_finished_fetches(tmp_path):
     f = FakeFetcher({U1: html_result(U1, ARTICLE), U2: html_result(U2, ARTICLE)})
-    env = Env(tmp_path, f, [U1, U2], budget=Budget(max_fetches=1))
+    env = Env(tmp_path, f, [U1, U2], budget=Budget(max_fetches=1, max_followup_rounds=0))
     with pytest.raises(BudgetExceeded) as ei:
         env.acquire()
     assert ei.value.limit == "max_fetches"
@@ -267,7 +267,7 @@ def test_retry_blocked_by_the_fetch_budget_fails_only_that_source(tmp_path):
     """Regression (live Gemini run): timeout retries used up the fetch cap and the BudgetExceeded
     ended the whole run with zero claims. The retry must be dropped, not the run."""
     f = FlakyFetcher(failures=5)
-    env = Env(tmp_path, f, [U1], budget=Budget(max_fetches=1))
+    env = Env(tmp_path, f, [U1], budget=Budget(max_fetches=1, max_followup_rounds=0))
     assert env.acquire() == 0  # no BudgetExceeded escapes
     s = env.source()
     assert (s.status, s.fail_reason) == ("SOURCE_UNAVAILABLE", "timeout") and f.calls == 1

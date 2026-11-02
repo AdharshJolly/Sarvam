@@ -8,9 +8,11 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+MAX_PINNED_URLS = 5  # pages a user can add to a run (CL-20)
 
 
 class Contract(BaseModel):
@@ -365,6 +367,18 @@ class RunCreate(Contract):
     scope: Scope = Field(default_factory=Scope)
     mode: Mode = Mode.LIVE
     budget: dict[str, int | float] | None = None
+    # CL-20: pages the user wants used as evidence. LIVE only; fetched first, never dropped.
+    # The count is checked in a validator: a schema maxItems would generate tuple types in TS.
+    pinned_urls: list[Annotated[str, Field(min_length=1, max_length=2000)]] = Field(
+        default_factory=list
+    )
+
+    @field_validator("pinned_urls")
+    @classmethod
+    def _at_most_max_pinned(cls, urls: list[str]) -> list[str]:
+        if len(urls) > MAX_PINNED_URLS:
+            raise ValueError(f"at most {MAX_PINNED_URLS} pages can be added to a run")
+        return urls
 
 
 class BudgetUsage(Contract):

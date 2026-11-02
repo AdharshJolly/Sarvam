@@ -3,6 +3,7 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 import { api } from "../api/client";
 import { USE_MOCK } from "../config/env";
 import { clearDraft, peekDraft } from "../lib/digDeeper";
+import { MAX_PINNED, parsePinned } from "../lib/pinned";
 import { DEMO_QUESTION, type ServerModes, initialMode, isReplayMiss } from "../lib/runModes";
 import { errorText, useSession } from "../state/useRunSession";
 import { Banner } from "./ui/Banner";
@@ -65,6 +66,10 @@ export function RunForm() {
   const [geography, setGeography] = useState(draft?.scope.geography ?? "");
   const [horizon, setHorizon] = useState(draft?.scope.time_horizon ?? "");
   const [constraints, setConstraints] = useState(draft?.scope.constraints ?? "");
+  const [pinnedText, setPinnedText] = useState("");
+  const [pinnedChecked, setPinnedChecked] = useState(false); // errors show after leaving the box or on submit
+  const pinned = parsePinned(pinnedText);
+  const pinnedError = pinnedChecked ? pinned.error : null;
   const server = useServerModes();
   const liveDisabled = server !== null && !server.liveAvailable;
   const [mode, setMode] = useState<Mode>(() => initialMode(server, !!draft));
@@ -115,6 +120,11 @@ export function RunForm() {
       questionRef.current?.focus();
       return;
     }
+    if (mode === "LIVE" && pinned.error) {
+      setPinnedChecked(true);
+      document.getElementById("pinned")?.focus();
+      return;
+    }
     setBusy(true);
     setFieldError(null);
     setError(null);
@@ -127,6 +137,7 @@ export function RunForm() {
           time_horizon: horizon.trim() || null,
           constraints: constraints.trim() || null,
         },
+        ...(mode === "LIVE" && pinned.urls.length ? { pinned_urls: pinned.urls } : {}),
       });
       clearDraft();
     } catch (err) {
@@ -338,6 +349,40 @@ export function RunForm() {
           })}
         </div>
       </fieldset>
+
+      {mode === "LIVE" ? (
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between">
+            <label htmlFor="pinned" className="label text-text-muted">
+              Pages to include
+            </label>
+            <span className="text-sm text-text-muted">Optional, up to {MAX_PINNED}</span>
+          </div>
+          <textarea
+            id="pinned"
+            rows={3}
+            value={pinnedText}
+            placeholder={"One web address per line, e.g. a report or policy PDF you trust\nhttps://example.gov.in/ev-policy.pdf"}
+            onChange={(e) => setPinnedText(e.target.value)}
+            onBlur={() => setPinnedChecked(true)}
+            aria-invalid={pinnedError ? true : undefined}
+            aria-describedby="pinned-help"
+            className={`w-full rounded-lg border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-muted focus-visible:border-brand-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-secondary/20 ${
+              pinnedError ? "border-bad-fg" : "border-border-hairline"
+            }`}
+          />
+          {pinnedError ? (
+            <p id="pinned-help" role="alert" className="flex items-center gap-1.5 text-sm font-semibold text-bad-fg">
+              <Icon name="XOctagon" size={14} aria-hidden /> {pinnedError}
+            </p>
+          ) : (
+            <p id="pinned-help" className="text-sm text-text-muted">
+              These pages are always fetched and checked against every part of the question. Sites that block automated
+              requests will still show as unavailable.
+            </p>
+          )}
+        </div>
+      ) : null}
 
       {replayMiss ? (
         <Banner tone="warn">

@@ -341,6 +341,7 @@ export type Mode1 = ("LIVE" | "REPLAY")
 export type Budget1 = ({
 [k: string]: number
 } | null)
+export type PinnedUrls = string[]
 export type Message = string
 export type Question3 = string
 export type Id21 = string
@@ -1230,6 +1231,7 @@ question: Question2
 scope?: Scope
 mode?: Mode1
 budget?: Budget1
+pinned_urls?: PinnedUrls
 }
 /**
  * This interface was referenced by `SarvamContracts`'s JSON-Schema

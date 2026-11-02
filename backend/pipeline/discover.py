@@ -49,6 +49,17 @@ REPORT_DOMAINS = (
 BLOG_DOMAINS = (
     "blogspot.com", "medium.com", "substack.com", "wordpress.com", "reddit.com", "quora.com",
 )  # fmt: skip
+# Secondary sources: paywalled market-research teasers, company-data directories and
+# encyclopedias. They restate numbers from elsewhere, so they rank last within their tier (CL-19).
+AGGREGATOR_DOMAINS = (
+    "grandviewresearch.com", "mordorintelligence.com", "researchandmarkets.com",
+    "straitsresearch.com", "fortunebusinessinsights.com", "marqstats.com", "marketsandmarkets.com",
+    "alliedmarketresearch.com", "precedenceresearch.com", "imarcgroup.com", "6wresearch.com",
+    "expertmarketresearch.com", "kenresearch.com", "techsciresearch.com", "giiresearch.com",
+    "marketresearchfuture.com", "transparencymarketresearch.com", "verifiedmarketresearch.com",
+    "tracxn.com", "cbinsights.com", "crunchbase.com", "zoominfo.com", "pitchbook.com",
+    "linkedin.com", "wikipedia.org",
+)  # fmt: skip
 
 
 def canonicalize_url(url: str) -> str:
@@ -87,6 +98,27 @@ def classify(url: str) -> tuple[SourceType, int, str]:
     if any(word in re.split(r"[/\-_.]", path) for word in COMPANY_PATH_WORDS):
         return SourceType.COMPANY_PRIMARY, 1, host
     return SourceType.UNKNOWN, 3, host
+
+
+def pinned_sources(urls: list[str]) -> list[tuple[str, str]]:
+    """(url, canonical url) for the pages a user added, duplicates dropped, in the given order.
+
+    Raises ValueError naming the first URL that is not an absolute http(s) URL with a host.
+    """
+    out: dict[str, str] = {}
+    for raw in urls:
+        url = raw.strip()
+        parts = urlsplit(url)
+        if parts.scheme.lower() not in ("http", "https") or not parts.hostname:
+            raise ValueError(f"not a web address: {url[:200]!r}")
+        out.setdefault(canonicalize_url(url), url)
+    return [(url, canonical) for canonical, url in out.items()]
+
+
+def is_aggregator(url: str) -> bool:
+    """A secondary source that restates other sources' numbers (ranked last within its tier)."""
+    host = (urlsplit(url).hostname or "").lower().removeprefix("www.")
+    return _host_in(host, AGGREGATOR_DOMAINS)
 
 
 def _tokens(text: str) -> list[str]:
@@ -140,6 +172,10 @@ async def run_discover(
         PhaseEnteredPayload(phase=Phase.DISCOVER, reason=reason),
         round=round,
     )
+    if round == 0:  # pages the user added were stored when the run was created (CL-20)
+        for source in repo.list_sources(conn, run_id):
+            if source.task_id is None:
+                em.emit(EventType.SOURCE_FOUND, SourceFoundPayload(source=source), round=round)
     slots = {s.id: s for s in repo.list_slots(conn, run_id)}
     tasks = repo.list_tasks(conn, run_id, status="pending", round=round)
     budget_error: BudgetExceeded | None = None
@@ -230,7 +266,9 @@ def _store_sources(
         seen.add(canonical)
         stype, tier, domain = classify(item.hit.url)
         candidates.append((tier, canonical, item.hit.url, stype, domain, item))
-    candidates.sort(key=lambda c: c[0])  # stable: authority tier first, then provider order
+    # Stable: authority tier first, aggregators last within a tier, then provider order.
+    demote = settings.thresholds.demote_aggregators
+    candidates.sort(key=lambda c: (c[0], demote and is_aggregator(c[2])))
     count = 0
     for tier, canonical, url, stype, domain, item in candidates[
         : settings.thresholds.sources_per_task

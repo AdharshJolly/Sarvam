@@ -113,6 +113,9 @@ def apply_replay_profile(settings: Settings, run: Run) -> tuple[Settings, Run]:
         update={
             "passages_per_slot_source": knobs["passages_per_slot"],
             "extractor_min_overlap": knobs["extractor_min_overlap"],
+            # Recordings made before CL-19 fetched every source in round 0.
+            "followup_fetch_reserve": knobs.get("followup_fetch_reserve", 0.0),
+            "demote_aggregators": knobs.get("demote_aggregators", False),
         }
     )
     settings = settings.model_copy(

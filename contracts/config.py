@@ -49,6 +49,10 @@ class Thresholds(BaseModel):
     # B-35: an extractor job for a source's OTHER slots needs this many slot words in its best
     # passage (0 = off; the own slot is never gated). Offline: 3 skips ~21% of passages, loses ~4%.
     extractor_min_overlap: int = Field(default=0, ge=0)
+    # CL-19: share of max_fetches round 0 leaves for follow-up rounds (0 = fetch everything found).
+    followup_fetch_reserve: float = Field(default=0.25, ge=0.0, le=0.9)
+    # CL-19: discovery ranks market-research teasers, directories and encyclopedias last in a tier.
+    demote_aggregators: bool = True
     source_char_cap: int = 60_000  # 5.1
     queries_per_task: int = 2  # FR-04, CL-05
     results_per_query: int = 6  # CL-05
@@ -180,6 +184,9 @@ class Settings(BaseModel):
                 ),
                 extractor_min_overlap=int(
                     get("EXTRACTOR_MIN_OVERLAP", str(d.thresholds.extractor_min_overlap))
+                ),
+                followup_fetch_reserve=float(
+                    get("FOLLOWUP_FETCH_RESERVE", str(d.thresholds.followup_fetch_reserve))
                 ),
             ),
             fetch_concurrency=int(get("FETCH_CONCURRENCY", str(d.fetch_concurrency))),

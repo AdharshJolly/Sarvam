@@ -5,12 +5,18 @@ import pytest
 from backend.gateway import BudgetExceeded, GatewayError
 from backend.gateway.core import ToolGateway
 from backend.gateway.search import SearchHit
-from backend.pipeline.discover import canonicalize_url, classify, queries_for, run_discover
+from backend.pipeline.discover import (
+    canonicalize_url,
+    classify,
+    is_aggregator,
+    queries_for,
+    run_discover,
+)
 from backend.store import repo
 from backend.store.db import init_db
 from backend.store.emit import Emitter
 from backend.store.events import read_events
-from contracts.config import Settings
+from contracts.config import Settings, Thresholds
 from contracts.events import EventType
 from contracts.models import Budget, FailureType, Mode, Plan, Scope
 from tests.support.data import plan_dict
@@ -167,6 +173,58 @@ def test_each_task_keeps_four_sources_ranked_by_tier(tmp_path):
         (2, "reuters.com"),
     ]
     assert all(s.task_id == "T1" and s.status == "found" for s in sources)
+
+
+AGGREGATOR_HITS = [
+    "https://www.grandviewresearch.com/industry-analysis/e-scooter",
+    "https://en.wikipedia.org/wiki/Yulu",
+    "https://www.linkedin.com/pulse/scooters",
+    "https://random.example/a",
+    "https://tracxn.com/d/companies/bounce",
+    "https://another.example/b",
+]
+
+
+def run_aggregator_task(tmp_path, *, demote: bool) -> list[str]:
+    first_task = "electric scooter subscription Demand 1"
+    env = Env(tmp_path, FakeSearch(script={first_task: [hit(u) for u in AGGREGATOR_HITS]}))
+    env.settings = env.settings.model_copy(
+        update={"thresholds": Thresholds(demote_aggregators=demote)}
+    )
+    env.run()
+    return [s.domain for s in repo.list_sources(env.conn, "R1")]
+
+
+def test_aggregators_rank_last_within_their_tier(tmp_path):
+    assert run_aggregator_task(tmp_path, demote=True) == [
+        "random.example",
+        "another.example",
+        "grandviewresearch.com",
+        "en.wikipedia.org",
+    ]
+
+
+def test_without_demotion_provider_order_is_kept(tmp_path):
+    assert run_aggregator_task(tmp_path, demote=False) == [
+        "grandviewresearch.com",
+        "en.wikipedia.org",
+        "linkedin.com",
+        "random.example",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("url", "expected"),
+    [
+        ("https://www.mordorintelligence.com/x", True),
+        ("https://in.linkedin.com/company/yulu", True),
+        ("https://en.wikipedia.org/wiki/Bengaluru", True),
+        ("https://www.livemint.com/x", False),
+        ("https://notwikipedia.org/x", False),
+    ],
+)
+def test_is_aggregator(url, expected):
+    assert is_aggregator(url) is expected
 
 
 def test_non_http_hits_are_dropped_and_provider_text_is_kept(tmp_path):

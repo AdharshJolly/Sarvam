@@ -244,11 +244,11 @@ Deterministic modules are tested against a 14-document fixture corpus with expec
 
 ## Scope and roadmap
 
-**In the MVP:** question intake, planner with slots, HTML and PDF search/fetch/extraction, passages, quote-verified claims, independent verification, origin clustering, numeric conflicts, coverage matrix, one to two challenge rounds, stop policy with reason, verified report with certainty labels, live event stream UI, hard budgets, typed failures, record/replay.
+**In the MVP:** question intake, planner with slots, up to five pages the user adds to a live run, HTML and PDF search/fetch/extraction, passages, quote-verified claims, independent verification, origin clustering, numeric conflicts, coverage matrix, one to two challenge rounds, stop policy with reason, verified report with certainty labels, live event stream UI, hard budgets, typed failures, record/replay.
 
-**Non-goals:** proving objective truth or replacing analysts; a single opaque confidence score; enterprise search, connectors, authentication, multi-user or monitoring; infrastructure beyond SQLite and one process; agent frameworks; PDF ingestion, vector retrieval and graph visualization in the MVP.
+**Non-goals:** proving objective truth or replacing analysts; a single opaque confidence score; enterprise search, connectors, authentication, multi-user or monitoring; infrastructure beyond SQLite and one process; agent frameworks; vector retrieval and graph visualization in the MVP.
 
-**Roadmap:** baseline comparison against a naive single-pass run, print-ready export, full decision sensitivity, cost/latency panel, prompt-injection demo, human source pinning, run diff, a larger golden set, freshness flags.
+**Roadmap:** baseline comparison against a naive single-pass run, print-ready export, full decision sensitivity, cost/latency panel, prompt-injection demo, run diff, a larger golden set, freshness flags.
 
 ## Project status
 

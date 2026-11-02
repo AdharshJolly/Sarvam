@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import math
 import sqlite3
 from datetime import datetime
 
@@ -48,6 +49,42 @@ async def _fetch(gateway: ToolGateway, url: str) -> GatewayResult[FetchResult] |
         return exc
 
 
+def _round_sources(conn: sqlite3.Connection, run_id: str, round: int) -> list[Source]:
+    """`found` sources, in source order, except those of another round's tasks (round-0 pages
+    held back for the reserve are not fetched by a later round)."""
+    other = {t.id for t in repo.list_tasks(conn, run_id) if t.round != round}
+    return [s for s in repo.list_sources(conn, run_id, status="found") if s.task_id not in other]
+
+
+def _allowance(gateway: ToolGateway, settings: Settings, round: int) -> tuple[int | None, int]:
+    """(fetches round 0 may use, fetches held back), or (None, 0) when nothing is held back."""
+    budget = gateway.budget
+    share = settings.thresholds.followup_fetch_reserve
+    if round != 0 or budget.max_followup_rounds == 0 or share <= 0:
+        return None, 0
+    reserve = math.ceil(budget.max_fetches * share)
+    return max(0, budget.max_fetches - reserve - gateway.usage().fetches), reserve
+
+
+def _pick(sources: list[Source], limit: int) -> list[Source]:
+    """At most `limit` sources: pages the user added (no task, CL-20) first, then each task's best
+    (discovery stores them best first) in turn, so every slot gets evidence before any slot gets
+    its fourth page. Returned in source order."""
+    pinned = [s.id for s in sources if s.task_id is None]
+    chosen: set[str] = set(pinned[:limit])
+    queues: dict[str, list[Source]] = {}
+    for s in sources:
+        if s.task_id is not None:
+            queues.setdefault(s.task_id, []).append(s)
+    depth = 0
+    while len(chosen) < limit and any(depth < len(q) for q in queues.values()):
+        for q in queues.values():
+            if depth < len(q) and len(chosen) < limit:
+                chosen.add(q[depth].id)
+        depth += 1
+    return [s for s in sources if s.id in chosen]
+
+
 async def run_acquire(
     gateway: ToolGateway,
     conn: sqlite3.Connection,
@@ -58,10 +95,20 @@ async def run_acquire(
     round: int = 0,
     reason: str = "Fetching the discovered pages and extracting their text.",
 ) -> int:
-    """ACQUIRE phase for sources still in `found`. Returns the number of sources fetched.
+    """ACQUIRE phase for this round's sources still in `found`. Returns the number fetched.
 
-    BudgetExceeded is re-raised after the in-flight fetches finish and are persisted.
+    Round 0 leaves `followup_fetch_reserve` of the fetch budget for follow-up rounds (CL-19); the
+    sources it does not fetch stay `found`. BudgetExceeded is re-raised after the in-flight fetches
+    finish and are persisted.
     """
+    found = _round_sources(conn, run_id, round)
+    allowance, reserve = _allowance(gateway, settings, round)
+    sources = found if allowance is None else _pick(found, allowance)
+    if reserve:
+        reason = (
+            f"Fetching {len(sources)} of {len(found)} discovered pages; {reserve} fetches are "
+            "held back for follow-up research."
+        )
     em.emit(
         EventType.PHASE_ENTERED,
         PhaseEnteredPayload(phase=Phase.ACQUIRE, reason=reason),
@@ -156,7 +203,6 @@ async def run_acquire(
     # only then are timeouts retried (in source order) with what is left. Concurrency changes how
     # fast this happens, never which requests are made, so a replay reproduces a live run (FR-26).
     # Results are stored and emitted in source order for the same reason.
-    sources = repo.list_sources(conn, run_id, status="found")
     outcomes = list(await asyncio.gather(*(_fetch(gateway, s.url) for s in sources)))
     retry = [
         i
@@ -165,6 +211,8 @@ async def run_acquire(
         and not isinstance(r, BudgetExceeded)
         and r.message == "timeout"
     ]
+    if allowance is not None:  # retries never spend the follow-up reserve
+        retry = retry[: max(0, allowance - len(sources))]
     again = await asyncio.gather(*(_fetch(gateway, sources[i].url) for i in retry))
     for i, result in zip(retry, again, strict=True):
         # No budget left for the single permitted retry: give up on this source only, never the run.

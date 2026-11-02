@@ -110,6 +110,7 @@ export function SourcesTable({
                   {s.domain || domainOf(s.url)}
                 </a>
                 {slotBySource?.[s.id] ? <span className="text-sm text-text-muted"> ({slotBySource[s.id]})</span> : null}
+                {s.task_id === null ? <span className="ml-1.5"><Badge>Added by you</Badge></span> : null}
               </td>
               <td className="p-2">
                 <Badge>{s.source_type ?? "unknown"}</Badge>

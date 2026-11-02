@@ -28,6 +28,7 @@ from backend.admin import actions as admin_actions
 from backend.admin.router import build_admin_router
 from backend.controller import RunHandle, run_research
 from backend.pipeline.claims import locate_quote
+from backend.pipeline.discover import classify, pinned_sources
 from backend.store import repo
 from backend.store.db import connect, init_db
 from backend.store.emit import Emitter
@@ -39,6 +40,7 @@ from contracts.models import (
     Budget,
     ClaimEvidence,
     FailureType,
+    Mode,
     ReportView,
     Run,
     RunCreate,
@@ -270,6 +272,15 @@ def create_app(settings: Settings | None = None, *, runner: Runner | None = None
         question = body.question.strip()
         if not question:
             raise HTTPException(status_code=422, detail="question must not be blank")
+        if body.pinned_urls and body.mode is Mode.REPLAY:
+            raise HTTPException(
+                status_code=422,
+                detail="Pages can be added to live research only; a recorded demo replays as is",
+            )
+        try:
+            pinned = pinned_sources(body.pinned_urls)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
         conn = request.app.state.db
         base_budget = admin_actions.stored_default_budget(conn) or settings.budget
         try:
@@ -323,6 +334,19 @@ def create_app(settings: Settings | None = None, *, runner: Runner | None = None
                     "budget": json.loads(run.budget.model_dump_json()),
                 },
             )
+            for url, canonical in pinned:  # announced by DISCOVER (CL-20)
+                stype, tier, domain = classify(url)
+                repo.insert_source(
+                    conn,
+                    run.id,
+                    url=url,
+                    canonical_url=canonical,
+                    domain=domain,
+                    publisher=domain,
+                    source_type=stype.value,
+                    authority_tier=tier,
+                    task_id=None,
+                )
         except sqlite3.Error as exc:
             conn.rollback()
             raise HTTPException(status_code=500, detail="run could not be persisted") from exc
