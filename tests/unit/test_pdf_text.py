@@ -5,7 +5,13 @@ from datetime import UTC, datetime
 import pytest
 
 from backend.pipeline.pdftext import UnreadablePdf, clean_pdf, clean_pdf_isolated, reflow
-from tests.support.pdf import crashing_worker, hanging_worker, make_pdf
+from tests.support.pdf import (
+    crashing_worker,
+    hanging_worker,
+    make_pdf,
+    malformed_worker,
+    pickle_worker,
+)
 
 CAP = 60_000
 
@@ -113,3 +119,24 @@ def test_a_pdf_that_parses_forever_is_killed_and_unreadable():
 def test_a_worker_that_dies_without_answering_is_unreadable():
     with pytest.raises(UnreadablePdf, match="worker"):
         asyncio.run(clean_pdf_isolated(b"%PDF", CAP, target=crashing_worker))
+
+
+def test_a_reply_with_the_wrong_shape_is_unreadable():
+    with pytest.raises(UnreadablePdf, match="malformed"):
+        asyncio.run(clean_pdf_isolated(b"%PDF", CAP, target=malformed_worker))
+
+
+def test_the_parent_never_unpickles_worker_output():
+    with pytest.raises(UnreadablePdf, match="malformed"):
+        asyncio.run(clean_pdf_isolated(b"%PDF", CAP, target=pickle_worker))
+
+
+def test_a_worker_that_cannot_start_is_unreadable(monkeypatch):
+    import multiprocessing.context
+
+    def boom(self):
+        raise OSError("too many processes")
+
+    monkeypatch.setattr(multiprocessing.context.SpawnProcess, "start", boom)
+    with pytest.raises(UnreadablePdf, match="could not start"):
+        asyncio.run(clean_pdf_isolated(b"%PDF", CAP))

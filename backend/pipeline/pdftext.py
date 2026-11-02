@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import asyncio
 import io
+import json
 import logging
 import multiprocessing
 import re
@@ -182,43 +183,80 @@ def _limit_memory() -> None:
 
 
 def _worker(conn: Connection, body: bytes, char_cap: int) -> None:
-    """Child process: parse and send ("ok", text, iso date) or ("unreadable", reason)."""
+    """Child process: parse, then send one JSON message (never pickle) and exit.
+
+    {"status": "ok", "text": str, "published": iso str | null} or {"status": "unreadable",
+    "reason": str}.
+    """
     _limit_memory()
     try:
         text, published = clean_pdf(body, char_cap)
-        conn.send(("ok", text, published.isoformat() if published else None))
+        msg = {"status": "ok", "text": text, "published": published and published.isoformat()}
     except UnreadablePdf as exc:
-        conn.send(("unreadable", str(exc)))
+        msg = {"status": "unreadable", "reason": str(exc)}
     except Exception as exc:  # any parser crash is an unreadable PDF, reported to the parent
-        conn.send(("unreadable", type(exc).__name__))
+        msg = {"status": "unreadable", "reason": type(exc).__name__}
+    try:
+        conn.send_bytes(json.dumps(msg).encode("utf-8"))
     finally:
         conn.close()
+
+
+def _parse_reply(raw: bytes) -> tuple[str, datetime | None]:
+    """Validate the worker's JSON reply. The worker parses hostile input, so its reply is untrusted:
+    JSON only (unpickling could run code), and the shape is checked before anything is used."""
+    try:
+        msg = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError) as exc:
+        raise UnreadablePdf("malformed worker reply") from exc
+    if not isinstance(msg, dict):
+        raise UnreadablePdf("malformed worker reply")
+    if msg.get("status") == "unreadable" and isinstance(msg.get("reason"), str):
+        raise UnreadablePdf(msg["reason"][:200])
+    text, published = msg.get("text"), msg.get("published")
+    if msg.get("status") != "ok" or not isinstance(text, str):
+        raise UnreadablePdf("malformed worker reply")
+    if published is None:
+        return text, None
+    if not isinstance(published, str):
+        raise UnreadablePdf("malformed worker reply")
+    try:
+        return text, datetime.fromisoformat(published)
+    except ValueError as exc:
+        raise UnreadablePdf("malformed worker reply") from exc
 
 
 def _run_isolated(
     body: bytes, char_cap: int, timeout: float, target: Callable[..., None]
 ) -> tuple[str, datetime | None]:
+    """Any failure to start, hear from or read the worker is an unreadable PDF for this source
+    only; it never escapes to fail the run."""
     ctx = multiprocessing.get_context("spawn")  # never fork a process that has threads
-    parent, child = ctx.Pipe(duplex=False)
-    proc = ctx.Process(target=target, args=(child, body, char_cap), daemon=True)
-    proc.start()
-    child.close()
     try:
+        parent, child = ctx.Pipe(duplex=False)
+    except OSError as exc:
+        raise UnreadablePdf(f"worker could not start: {exc}") from exc
+    proc = ctx.Process(target=target, args=(child, body, char_cap), daemon=True)
+    try:
+        try:
+            proc.start()
+        except (OSError, RuntimeError, ValueError) as exc:
+            raise UnreadablePdf(f"worker could not start: {exc}") from exc
+        finally:
+            child.close()
         if not parent.poll(timeout):
             raise UnreadablePdf(f"timeout after {timeout:g}s")
-        try:
-            msg = parent.recv()
-        except EOFError as exc:
-            raise UnreadablePdf("worker exited without a result") from exc
+        # Cap the reply at what a capped text can be (4 bytes a char in UTF-8, plus JSON escaping).
+        raw = parent.recv_bytes(maxlength=8 * char_cap + 4096)
+    except (EOFError, OSError) as exc:  # exited without replying, broken pipe, or reply too long
+        raise UnreadablePdf("worker exited without a result") from exc
     finally:
         parent.close()
         if proc.is_alive():
             proc.kill()
-        proc.join(5)
-    if msg[0] != "ok":
-        raise UnreadablePdf(msg[1])
-    _, text, published = msg
-    return text, datetime.fromisoformat(published) if published else None
+        if proc.pid is not None:
+            proc.join(5)
+    return _parse_reply(raw)
 
 
 async def clean_pdf_isolated(

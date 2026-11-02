@@ -74,3 +74,15 @@ def make_pdf(pages: list[list[str]], creation_date: str | None = None) -> bytes:
     out += f"trailer\n<< /Size {size} /Root 1 0 R /Info {info_id} 0 R >>\n".encode()
     out += f"startxref\n{xref}\n%%EOF\n".encode()
     return bytes(out)
+
+
+def malformed_worker(conn, body: bytes, char_cap: int) -> None:
+    """Sends a well-formed JSON message with the wrong shape."""
+    conn.send_bytes(b'{"status": "ok", "text": 42}')
+    conn.close()
+
+
+def pickle_worker(conn, body: bytes, char_cap: int) -> None:
+    """Sends a pickled object instead of JSON: the parent must not unpickle it."""
+    conn.send(("ok", "text", None))
+    conn.close()
