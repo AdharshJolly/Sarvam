@@ -1,9 +1,11 @@
+import asyncio
+import time
 from datetime import UTC, datetime
 
 import pytest
 
-from backend.pipeline.pdftext import UnreadablePdf, clean_pdf, reflow
-from tests.support.pdf import make_pdf
+from backend.pipeline.pdftext import UnreadablePdf, clean_pdf, clean_pdf_isolated, reflow
+from tests.support.pdf import crashing_worker, hanging_worker, make_pdf
 
 CAP = 60_000
 
@@ -86,3 +88,28 @@ def test_a_pdf_without_text_gives_empty_text():
 def test_bytes_that_are_not_a_pdf_are_unreadable():
     with pytest.raises(UnreadablePdf):
         clean_pdf(b"<html>not a pdf</html>", CAP)
+
+
+# ---------------------------------------------------------------- isolation (untrusted input)
+
+
+def test_isolated_extraction_gives_the_same_result_as_in_process():
+    pdf = make_pdf([["Electric scooter sales rose to", "1.2 million units."]], "D:20250314000000Z")
+    assert asyncio.run(clean_pdf_isolated(pdf, CAP)) == clean_pdf(pdf, CAP)
+
+
+def test_isolated_extraction_reports_unreadable_bytes():
+    with pytest.raises(UnreadablePdf):
+        asyncio.run(clean_pdf_isolated(b"not a pdf", CAP))
+
+
+def test_a_pdf_that_parses_forever_is_killed_and_unreadable():
+    start = time.monotonic()
+    with pytest.raises(UnreadablePdf, match="timeout"):
+        asyncio.run(clean_pdf_isolated(b"%PDF", CAP, timeout=1.0, target=hanging_worker))
+    assert time.monotonic() - start < 15
+
+
+def test_a_worker_that_dies_without_answering_is_unreadable():
+    with pytest.raises(UnreadablePdf, match="worker"):
+        asyncio.run(clean_pdf_isolated(b"%PDF", CAP, target=crashing_worker))

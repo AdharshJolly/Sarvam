@@ -3,14 +3,22 @@
 PDF extraction keeps the visual line breaks of the page. Passages are built from lines, so a
 sentence split across two lines would be cut in half and a verbatim quote of it would fail the
 quote guard. `reflow` rejoins those lines with a conservative rule and leaves headings alone.
+
+PDFs are untrusted input and parsing one can take unbounded CPU and memory, so ACQUIRE calls
+`clean_pdf_isolated`: each PDF is parsed in a separate process that is killed after a time limit
+(and, on Linux, capped in address space). A killed or crashed worker is an unreadable PDF.
 """
 
 from __future__ import annotations
 
+import asyncio
 import io
 import logging
+import multiprocessing
 import re
+from collections.abc import Callable
 from datetime import UTC, datetime
+from multiprocessing.connection import Connection
 
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
@@ -157,3 +165,71 @@ def clean_pdf(body: bytes, char_cap: int) -> tuple[str, datetime | None]:
     parts = [t for t in (reflow(p) for p in drop_running_lines(raw)) if t]
     text = "\n".join(parts)[:char_cap].strip()
     return text, _published(reader)
+
+
+# ---------------------------------------------------------------- isolation
+
+PDF_TIMEOUT_SECONDS = 30.0  # wall clock per PDF, including process start
+PDF_MEMORY_BYTES = 1024 * 1024 * 1024  # address-space cap for the worker (Linux only)
+
+
+def _limit_memory() -> None:
+    try:
+        import resource  # POSIX only; on Windows only the time limit applies
+    except ImportError:
+        return
+    resource.setrlimit(resource.RLIMIT_AS, (PDF_MEMORY_BYTES, PDF_MEMORY_BYTES))
+
+
+def _worker(conn: Connection, body: bytes, char_cap: int) -> None:
+    """Child process: parse and send ("ok", text, iso date) or ("unreadable", reason)."""
+    _limit_memory()
+    try:
+        text, published = clean_pdf(body, char_cap)
+        conn.send(("ok", text, published.isoformat() if published else None))
+    except UnreadablePdf as exc:
+        conn.send(("unreadable", str(exc)))
+    except Exception as exc:  # any parser crash is an unreadable PDF, reported to the parent
+        conn.send(("unreadable", type(exc).__name__))
+    finally:
+        conn.close()
+
+
+def _run_isolated(
+    body: bytes, char_cap: int, timeout: float, target: Callable[..., None]
+) -> tuple[str, datetime | None]:
+    ctx = multiprocessing.get_context("spawn")  # never fork a process that has threads
+    parent, child = ctx.Pipe(duplex=False)
+    proc = ctx.Process(target=target, args=(child, body, char_cap), daemon=True)
+    proc.start()
+    child.close()
+    try:
+        if not parent.poll(timeout):
+            raise UnreadablePdf(f"timeout after {timeout:g}s")
+        try:
+            msg = parent.recv()
+        except EOFError as exc:
+            raise UnreadablePdf("worker exited without a result") from exc
+    finally:
+        parent.close()
+        if proc.is_alive():
+            proc.kill()
+        proc.join(5)
+    if msg[0] != "ok":
+        raise UnreadablePdf(msg[1])
+    _, text, published = msg
+    return text, datetime.fromisoformat(published) if published else None
+
+
+async def clean_pdf_isolated(
+    body: bytes,
+    char_cap: int,
+    timeout: float = PDF_TIMEOUT_SECONDS,
+    *,
+    target: Callable[..., None] = _worker,
+) -> tuple[str, datetime | None]:
+    """`clean_pdf` in a killable child process, without blocking the event loop.
+
+    `target` exists for tests (a worker that hangs or crashes).
+    """
+    return await asyncio.to_thread(_run_isolated, body, char_cap, timeout, target)

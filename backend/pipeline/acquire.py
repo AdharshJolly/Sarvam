@@ -9,12 +9,13 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import sqlite3
+from datetime import datetime
 
 from backend.gateway import BudgetExceeded, GatewayError
 from backend.gateway.core import GatewayResult, ToolGateway
 from backend.gateway.fetch import FetchResult
 from backend.pipeline.extract import clean_html
-from backend.pipeline.pdftext import UnreadablePdf, clean_pdf
+from backend.pipeline.pdftext import UnreadablePdf, clean_pdf_isolated
 from backend.store import repo
 from backend.store.emit import Emitter
 from contracts.config import Settings
@@ -27,6 +28,7 @@ from contracts.events import (
 from contracts.models import FailureType, Phase, Source, SourceStatus
 
 PROVIDER_TEXT_MIN_WORDS = 100  # usable provider-supplied cleaned text
+PDF_WORKERS = 2  # PDF parser processes at once
 
 
 def _provider_text(settings: Settings, run_id: str, source: Source) -> str | None:
@@ -135,16 +137,16 @@ async def run_acquire(
         folder = settings.artifact_dir / run_id
         folder.mkdir(parents=True, exist_ok=True)
         (folder / f"{source.id}.raw.{'pdf' if is_pdf else 'html'}").write_bytes(res.body)
-        cap = settings.thresholds.source_char_cap
         empty_reason = "empty_extraction"
         if is_pdf:
             empty_reason = "pdf_no_text"  # scanned or image-only: no text layer to quote from
-            try:
-                text, published = clean_pdf(res.body, cap)
-            except UnreadablePdf:
+            parsed = pdf_texts[source.id]
+            if isinstance(parsed, UnreadablePdf):
                 text, published, empty_reason = "", None, "pdf_unreadable"
+            else:
+                text, published = parsed
         else:
-            text, published = clean_html(res.text(), cap)
+            text, published = clean_html(res.text(), settings.thresholds.source_char_cap)
         if text:
             store_text(source, text, published, None, metrics)
         elif not use_provider_text(source, metrics):
@@ -167,6 +169,24 @@ async def run_acquire(
     for i, result in zip(retry, again, strict=True):
         # No budget left for the single permitted retry: give up on this source only, never the run.
         outcomes[i] = outcomes[i] if isinstance(result, BudgetExceeded) else result
+    # PDFs are parsed in killable worker processes (untrusted input), a few at a time, before the
+    # results are stored in source order.
+    pdf_slots = asyncio.Semaphore(PDF_WORKERS)
+
+    async def parse_pdf(body: bytes) -> tuple[str, datetime | None] | UnreadablePdf:
+        async with pdf_slots:
+            try:
+                return await clean_pdf_isolated(body, settings.thresholds.source_char_cap)
+            except UnreadablePdf as exc:
+                return exc
+
+    pdf_jobs = {
+        s.id: r.value.body
+        for s, r in zip(sources, outcomes, strict=True)
+        if isinstance(r, GatewayResult) and r.value.content_type == "application/pdf"
+    }
+    parsed_pdfs = await asyncio.gather(*(parse_pdf(b) for b in pdf_jobs.values()))
+    pdf_texts = dict(zip(pdf_jobs, parsed_pdfs, strict=True))
     for source, result in zip(sources, outcomes, strict=True):
         settle(source, result)
     if budget_error is not None:
