@@ -14,6 +14,7 @@ from backend.gateway import BudgetExceeded, GatewayError
 from backend.gateway.core import GatewayResult, ToolGateway
 from backend.gateway.fetch import FetchResult
 from backend.pipeline.extract import clean_html
+from backend.pipeline.pdftext import UnreadablePdf, clean_pdf
 from backend.store import repo
 from backend.store.emit import Emitter
 from contracts.config import Settings
@@ -130,15 +131,24 @@ async def run_acquire(
             mark_failed(source, exc.failure, why)
             return
         res, metrics = result.value, result.metrics
-        html = res.text()
+        is_pdf = res.content_type == "application/pdf"
         folder = settings.artifact_dir / run_id
         folder.mkdir(parents=True, exist_ok=True)
-        (folder / f"{source.id}.raw.html").write_bytes(res.body)
-        text, published = clean_html(html, settings.thresholds.source_char_cap)
+        (folder / f"{source.id}.raw.{'pdf' if is_pdf else 'html'}").write_bytes(res.body)
+        cap = settings.thresholds.source_char_cap
+        empty_reason = "empty_extraction"
+        if is_pdf:
+            empty_reason = "pdf_no_text"  # scanned or image-only: no text layer to quote from
+            try:
+                text, published = clean_pdf(res.body, cap)
+            except UnreadablePdf:
+                text, published, empty_reason = "", None, "pdf_unreadable"
+        else:
+            text, published = clean_html(res.text(), cap)
         if text:
             store_text(source, text, published, None, metrics)
         elif not use_provider_text(source, metrics):
-            mark_failed(source, FailureType.SOURCE_EMPTY, "empty_extraction")
+            mark_failed(source, FailureType.SOURCE_EMPTY, empty_reason)
 
     # Fetch budget is spent in a fixed order: every source is fetched once (in source order), and
     # only then are timeouts retried (in source order) with what is left. Concurrency changes how

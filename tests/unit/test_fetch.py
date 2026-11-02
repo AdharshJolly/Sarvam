@@ -67,12 +67,55 @@ def test_http_error_statuses_are_source_unavailable():
     )
 
 
-def test_non_html_is_source_empty():
-    fails(
-        lambda r: html(ctype="application/pdf"),
+def test_accept_header_asks_for_html_and_pdf():
+    seen = {}
+
+    def handler(req):
+        seen["accept"] = req.headers["accept"]
+        return html()
+
+    fetch(handler, "http://public.example/a")
+    assert "text/html" in seen["accept"] and "application/pdf" in seen["accept"]
+
+
+def test_pdf_is_accepted_as_bytes():
+    body = b"%PDF-1.4 binary \x00\xff"
+    res = fetch(
+        lambda r: httpx.Response(200, content=body, headers={"content-type": "application/pdf"}),
         "http://public.example/x.pdf",
+    )
+    assert res.content_type == "application/pdf" and res.body == body
+
+
+def test_other_content_types_are_source_empty():
+    fails(
+        lambda r: html(ctype="image/png"),
+        "http://public.example/x.png",
         FailureType.SOURCE_EMPTY,
-        "non_html",
+        "unsupported_type",
+    )
+
+
+def test_pdfs_get_their_own_size_limit():
+    policy = SSRFPolicy(max_response_bytes=100, max_pdf_bytes=1000)
+    pdf = httpx.Response(
+        200, content=b"%PDF" + b"x" * 500, headers={"content-type": "application/pdf"}
+    )
+    assert len(fetch(lambda r: pdf, "http://public.example/x.pdf", policy).body) == 504
+    fails(
+        lambda r: html("x" * 500),
+        "http://public.example/",
+        FailureType.SOURCE_UNAVAILABLE,
+        "too_large",
+        policy,
+    )
+    big_pdf = httpx.Response(200, content=b"x" * 1500, headers={"content-type": "application/pdf"})
+    fails(
+        lambda r: big_pdf,
+        "http://public.example/y.pdf",
+        FailureType.SOURCE_UNAVAILABLE,
+        "too_large",
+        policy,
     )
 
 

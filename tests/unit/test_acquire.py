@@ -6,6 +6,7 @@ import pytest
 
 from backend.gateway import BudgetExceeded, GatewayError
 from backend.gateway.core import ToolGateway
+from backend.gateway.fetch import FetchResult
 from backend.pipeline.acquire import run_acquire
 from backend.pipeline.extract import run_extract
 from backend.store import repo
@@ -16,6 +17,7 @@ from contracts.config import Settings, Thresholds
 from contracts.events import EventType
 from contracts.models import Budget, FailureType, Mode
 from tests.support.fakes import FakeFetcher, html_result
+from tests.support.pdf import make_pdf
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "html"
 ARTICLE = (FIXTURES / "article.html").read_text(encoding="utf-8")
@@ -140,17 +142,62 @@ def test_short_provider_text_is_not_good_enough(tmp_path):
     assert env.source().status == "SOURCE_EMPTY"
 
 
-def test_non_html_is_source_empty_with_or_without_fallback(tmp_path):
-    non_html = GatewayError(FailureType.SOURCE_EMPTY, "non_html")
-    env = Env(tmp_path, FakeFetcher({U1: non_html}), [U1])
+def test_unsupported_type_is_source_empty_with_or_without_fallback(tmp_path):
+    unsupported_type = GatewayError(FailureType.SOURCE_EMPTY, "unsupported_type")
+    env = Env(tmp_path, FakeFetcher({U1: unsupported_type}), [U1])
     env.acquire()
-    assert (env.source().status, env.source().fail_reason) == ("SOURCE_EMPTY", "non_html")
-    env2 = Env(tmp_path / "b", FakeFetcher({U1: non_html}), [U1])
+    assert (env.source().status, env.source().fail_reason) == ("SOURCE_EMPTY", "unsupported_type")
+    env2 = Env(tmp_path / "b", FakeFetcher({U1: unsupported_type}), [U1])
     folder = env2.settings.artifact_dir / "R1"
     folder.mkdir(parents=True)
     (folder / f"{env2.sources[0].id}.provider.txt").write_text(PROVIDER_TEXT, encoding="utf-8")
     env2.acquire()
     assert env2.source().status == "fetched"
+
+
+def pdf_result(url: str, body: bytes) -> FetchResult:
+    return FetchResult(
+        url=url, final_url=url, status_code=200, content_type="application/pdf", body=body
+    )
+
+
+PDF_LINES = [
+    "Karnataka offers a road tax exemption for",
+    "electric two-wheelers registered before 2030.",
+]
+
+
+def test_pdf_is_fetched_as_reflowed_text_with_its_creation_date(tmp_path):
+    body = make_pdf([PDF_LINES], creation_date="D:20250314000000Z")
+    env = Env(tmp_path, FakeFetcher({U1: pdf_result(U1, body)}), [U1])
+    assert env.acquire() == 1
+    s = env.source()
+    text = env.art(f"{s.id}.txt").read_text(encoding="utf-8")
+    assert s.status == "fetched" and s.fail_reason is None
+    assert " ".join(PDF_LINES) in text.split("\n")
+    assert s.published_at.date().isoformat() == "2025-03-14"
+    assert env.art(f"{s.id}.raw.pdf").read_bytes() == body
+    assert not env.art(f"{s.id}.raw.html").exists()
+
+
+def test_pdf_passages_hold_whole_sentences(tmp_path):
+    env = Env(tmp_path, FakeFetcher({U1: pdf_result(U1, make_pdf([PDF_LINES]))}), [U1])
+    env.acquire()
+    run_extract(env.conn, env.em, env.settings, "R1")
+    passages = repo.list_passages(env.conn, env.sources[0].id)
+    assert any(" ".join(PDF_LINES) in p.text for p in passages)
+
+
+def test_pdf_without_text_is_source_empty_and_says_why(tmp_path):
+    env = Env(tmp_path, FakeFetcher({U1: pdf_result(U1, make_pdf([[]]))}), [U1])
+    assert env.acquire() == 0
+    assert (env.source().status, env.source().fail_reason) == ("SOURCE_EMPTY", "pdf_no_text")
+
+
+def test_unreadable_pdf_is_source_empty_and_says_why(tmp_path):
+    env = Env(tmp_path, FakeFetcher({U1: pdf_result(U1, b"%PDF-1.4 truncated")}), [U1])
+    assert env.acquire() == 0
+    assert (env.source().status, env.source().fail_reason) == ("SOURCE_EMPTY", "pdf_unreadable")
 
 
 class FlakyFetcher:

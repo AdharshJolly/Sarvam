@@ -1,4 +1,4 @@
-"""Fetch (FR-06). HTML only in the MVP; every hop goes through the SSRF guard."""
+"""Fetch (FR-06). HTML and PDF pages; every hop goes through the SSRF guard."""
 
 from __future__ import annotations
 
@@ -45,7 +45,8 @@ def _unavailable(reason: str) -> GatewayError:
 
 class HttpFetcher:
     """httpx-based fetcher. Reasons: http_<code>, timeout, too_many_redirects, ssrf_blocked,
-    too_large, dns_failure, connection_error (SOURCE_UNAVAILABLE) and non_html (SOURCE_EMPTY)."""
+    too_large, dns_failure, connection_error (SOURCE_UNAVAILABLE) and unsupported_type
+    (SOURCE_EMPTY). PDFs get their own, larger size limit."""
 
     def __init__(
         self,
@@ -69,7 +70,7 @@ class HttpFetcher:
                 await client.aclose()
 
     async def _fetch(self, client: httpx.AsyncClient, url: str) -> FetchResult:
-        headers = {"User-Agent": self._policy.user_agent, "Accept": "text/html"}
+        headers = {"User-Agent": self._policy.user_agent, "Accept": self._policy.accept_header}
         current = url
         for _ in range(self._policy.max_redirects + 1):
             try:
@@ -92,15 +93,20 @@ class HttpFetcher:
                         raise _unavailable(f"http_{resp.status_code}")
                     ctype = resp.headers.get("content-type", "").split(";")[0].strip().lower()
                     if ctype not in self._policy.allowed_content_types:
-                        raise GatewayError(FailureType.SOURCE_EMPTY, "non_html")
+                        raise GatewayError(FailureType.SOURCE_EMPTY, "unsupported_type")
+                    limit = (
+                        self._policy.max_pdf_bytes
+                        if ctype == "application/pdf"
+                        else self._policy.max_response_bytes
+                    )
                     declared = resp.headers.get("content-length")
                     if declared and declared.isdigit():
-                        if int(declared) > self._policy.max_response_bytes:
+                        if int(declared) > limit:
                             raise _unavailable("too_large")
                     body = bytearray()
                     async for chunk in resp.aiter_bytes():
                         body.extend(chunk)
-                        if len(body) > self._policy.max_response_bytes:
+                        if len(body) > limit:
                             raise _unavailable("too_large")
                     return FetchResult(
                         url=url,

@@ -232,7 +232,7 @@ Contracts are canonical. Never edit `contracts/generated/` by hand, and record a
 
 ## Security
 
-Fetches go through an SSRF guard: http/https only, private, loopback, link-local and metadata addresses blocked, limited redirects, timeout, size cap, HTML only. Retrieved text is treated as untrusted data and isolated from instructions; extraction and verification calls have no tools, and outputs are schema-validated. Secrets live only in environment variables. See [docs/architecture/security.md](docs/architecture/security.md) for what is implemented versus planned.
+Fetches go through an SSRF guard: http/https only, private, loopback, link-local and metadata addresses blocked, limited redirects, timeout, size cap, HTML and PDF only. Retrieved text is treated as untrusted data and isolated from instructions; extraction and verification calls have no tools, and outputs are schema-validated. Secrets live only in environment variables. See [docs/architecture/security.md](docs/architecture/security.md) for what is implemented versus planned.
 
 ## Failure handling
 
@@ -244,11 +244,11 @@ Deterministic modules are tested against a 14-document fixture corpus with expec
 
 ## Scope and roadmap
 
-**In the MVP:** question intake, planner with slots, HTML search/fetch/extraction, passages, quote-verified claims, independent verification, origin clustering, numeric conflicts, coverage matrix, one to two challenge rounds, stop policy with reason, verified report with certainty labels, live event stream UI, hard budgets, typed failures, record/replay.
+**In the MVP:** question intake, planner with slots, HTML and PDF search/fetch/extraction, passages, quote-verified claims, independent verification, origin clustering, numeric conflicts, coverage matrix, one to two challenge rounds, stop policy with reason, verified report with certainty labels, live event stream UI, hard budgets, typed failures, record/replay.
 
 **Non-goals:** proving objective truth or replacing analysts; a single opaque confidence score; enterprise search, connectors, authentication, multi-user or monitoring; infrastructure beyond SQLite and one process; agent frameworks; PDF ingestion, vector retrieval and graph visualization in the MVP.
 
-**Roadmap:** baseline comparison against a naive single-pass run, print-ready export, full decision sensitivity, cost/latency panel, prompt-injection demo, human source pinning, PDF ingestion, run history and diff, a larger golden set, freshness flags.
+**Roadmap:** baseline comparison against a naive single-pass run, print-ready export, full decision sensitivity, cost/latency panel, prompt-injection demo, human source pinning, run diff, a larger golden set, freshness flags.
 
 ## Project status
 

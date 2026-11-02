@@ -65,7 +65,14 @@ class SSRFPolicy(BaseModel):
     max_redirects: int = 3
     timeout_seconds: float = 12.0
     max_response_bytes: int = 3 * 1024 * 1024
-    allowed_content_types: tuple[str, ...] = ("text/html", "application/xhtml+xml")
+    # Reports and government documents are PDFs and often larger than a web page (CL-18).
+    max_pdf_bytes: int = 15 * 1024 * 1024
+    allowed_content_types: tuple[str, ...] = (
+        "text/html",
+        "application/xhtml+xml",
+        "application/pdf",
+    )
+    accept_header: str = "text/html,application/xhtml+xml,application/pdf;q=0.9,*/*;q=0.1"
     block_private_ranges: bool = True  # loopback, private, link-local, metadata endpoints
     user_agent: str = "SarvamResearchBot/0.1 (evidence-first research agent)"
 
