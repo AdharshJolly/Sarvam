@@ -12,14 +12,18 @@ PDFs are untrusted input and parsing one can take unbounded CPU and memory, so A
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import io
 import json
 import logging
 import multiprocessing
+import os
 import re
+import tempfile
 from collections.abc import Callable
 from datetime import UTC, datetime
 from multiprocessing.connection import Connection
+from multiprocessing.connection import wait as mp_wait
 
 from pypdf import PdfReader
 from pypdf.errors import PdfReadError
@@ -182,14 +186,16 @@ def _limit_memory() -> None:
     resource.setrlimit(resource.RLIMIT_AS, (PDF_MEMORY_BYTES, PDF_MEMORY_BYTES))
 
 
-def _worker(conn: Connection, body: bytes, char_cap: int) -> None:
-    """Child process: parse, then send one JSON message (never pickle) and exit.
+def _worker(conn: Connection, path: str, char_cap: int) -> None:
+    """Child process: read the PDF from `path`, parse, send one JSON message (never pickle), exit.
 
     {"status": "ok", "text": str, "published": iso str | null} or {"status": "unreadable",
     "reason": str}.
     """
     _limit_memory()
     try:
+        with open(path, "rb") as fh:
+            body = fh.read()
         text, published = clean_pdf(body, char_cap)
         msg = {"status": "ok", "text": text, "published": published and published.isoformat()}
     except UnreadablePdf as exc:
@@ -230,13 +236,33 @@ def _run_isolated(
     body: bytes, char_cap: int, timeout: float, target: Callable[..., None]
 ) -> tuple[str, datetime | None]:
     """Any failure to start, hear from or read the worker is an unreadable PDF for this source
-    only; it never escapes to fail the run."""
+    only; it never escapes to fail the run.
+
+    The PDF goes to the worker as a temporary file, not as a process argument: spawn writes the
+    arguments into a pipe during `start()`, and a large body blocks that write when the child dies
+    while starting up, which no timeout covers. The wait ends as soon as the worker replies or
+    exits, so a dead worker is reported at once instead of after the full timeout.
+    """
+    try:
+        fd, path = tempfile.mkstemp(prefix="sarvam-pdf-", suffix=".pdf")
+        with os.fdopen(fd, "wb") as fh:
+            fh.write(body)
+    except OSError as exc:
+        raise UnreadablePdf(f"worker could not start: {exc}") from exc
+    try:
+        return _parse_reply(_exchange(path, char_cap, timeout, target))
+    finally:
+        with contextlib.suppress(OSError):
+            os.remove(path)
+
+
+def _exchange(path: str, char_cap: int, timeout: float, target: Callable[..., None]) -> bytes:
     ctx = multiprocessing.get_context("spawn")  # never fork a process that has threads
     try:
         parent, child = ctx.Pipe(duplex=False)
     except OSError as exc:
         raise UnreadablePdf(f"worker could not start: {exc}") from exc
-    proc = ctx.Process(target=target, args=(child, body, char_cap), daemon=True)
+    proc = ctx.Process(target=target, args=(child, path, char_cap), daemon=True)
     try:
         try:
             proc.start()
@@ -244,10 +270,13 @@ def _run_isolated(
             raise UnreadablePdf(f"worker could not start: {exc}") from exc
         finally:
             child.close()
-        if not parent.poll(timeout):
+        ready = mp_wait([parent, proc.sentinel], timeout)
+        if not ready:
             raise UnreadablePdf(f"timeout after {timeout:g}s")
+        if parent not in ready and not parent.poll(0):
+            raise UnreadablePdf("worker exited without a result")
         # Cap the reply at what a capped text can be (4 bytes a char in UTF-8, plus JSON escaping).
-        raw = parent.recv_bytes(maxlength=8 * char_cap + 4096)
+        return parent.recv_bytes(maxlength=8 * char_cap + 4096)
     except (EOFError, OSError) as exc:  # exited without replying, broken pipe, or reply too long
         raise UnreadablePdf("worker exited without a result") from exc
     finally:
@@ -256,7 +285,6 @@ def _run_isolated(
             proc.kill()
         if proc.pid is not None:
             proc.join(5)
-    return _parse_reply(raw)
 
 
 async def clean_pdf_isolated(

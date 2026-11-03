@@ -1,0 +1,10 @@
+{
+  "attempt": 0,
+  "error": {
+    "failure": "SOURCE_UNAVAILABLE",
+    "message": "too_large"
+  },
+  "key": {
+    "url": "https://www.acma.in/uploads/otherdocmanager/Final_State%20policies_Compendium_Merged_31_12_2019.pdf"
+  }
+}

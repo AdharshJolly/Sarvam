@@ -121,6 +121,36 @@ def test_a_worker_that_dies_without_answering_is_unreadable():
         asyncio.run(clean_pdf_isolated(b"%PDF", CAP, target=crashing_worker))
 
 
+def test_a_dead_worker_is_reported_at_once_not_after_the_timeout():
+    start = time.monotonic()
+    with pytest.raises(UnreadablePdf, match="worker exited"):
+        asyncio.run(clean_pdf_isolated(b"%PDF", CAP, timeout=30.0, target=crashing_worker))
+    assert time.monotonic() - start < 15
+
+
+def test_the_pdf_body_is_never_a_process_argument_and_its_temp_file_is_removed(monkeypatch):
+    """Spawn writes process arguments into a pipe inside start(); a large body there blocks
+    forever when the child dies while starting up. Only small arguments may cross."""
+    import multiprocessing.context
+    import os
+
+    seen: list[tuple] = []
+    real_start = multiprocessing.context.SpawnProcess.start
+
+    def spy(self):
+        seen.append(self._args)
+        return real_start(self)
+
+    monkeypatch.setattr(multiprocessing.context.SpawnProcess, "start", spy)
+    body = make_pdf([["A sentence on a page."]]) + b"%" * 2_000_000
+    text, _ = asyncio.run(clean_pdf_isolated(body, CAP))
+    assert "A sentence on a page." in text
+    (args,) = seen
+    assert not any(isinstance(a, bytes | bytearray) for a in args)
+    path = args[1]
+    assert isinstance(path, str) and not os.path.exists(path)
+
+
 def test_a_reply_with_the_wrong_shape_is_unreadable():
     with pytest.raises(UnreadablePdf, match="malformed"):
         asyncio.run(clean_pdf_isolated(b"%PDF", CAP, target=malformed_worker))

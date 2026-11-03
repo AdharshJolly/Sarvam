@@ -1,0 +1,10 @@
+{
+  "attempt": 0,
+  "error": {
+    "failure": "SOURCE_UNAVAILABLE",
+    "message": "connection_error"
+  },
+  "key": {
+    "url": "https://industries.karnataka.gov.in/storage/pdf-files/8211.pdf"
+  }
+}

@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 
-def hanging_worker(conn, body: bytes, char_cap: int) -> None:
+def hanging_worker(conn, path: str, char_cap: int) -> None:
     """Stands in for a PDF that takes forever to parse (spawned in a child process by tests)."""
     import time
 
     time.sleep(60)
 
 
-def crashing_worker(conn, body: bytes, char_cap: int) -> None:
+def crashing_worker(conn, path: str, char_cap: int) -> None:
     """Stands in for a worker killed by its memory limit: exits without sending a result."""
     import os
 
@@ -76,13 +76,13 @@ def make_pdf(pages: list[list[str]], creation_date: str | None = None) -> bytes:
     return bytes(out)
 
 
-def malformed_worker(conn, body: bytes, char_cap: int) -> None:
+def malformed_worker(conn, path: str, char_cap: int) -> None:
     """Sends a well-formed JSON message with the wrong shape."""
     conn.send_bytes(b'{"status": "ok", "text": 42}')
     conn.close()
 
 
-def pickle_worker(conn, body: bytes, char_cap: int) -> None:
+def pickle_worker(conn, path: str, char_cap: int) -> None:
     """Sends a pickled object instead of JSON: the parent must not unpickle it."""
     conn.send(("ok", "text", None))
     conn.close()
