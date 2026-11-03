@@ -4,6 +4,10 @@ Every critical slot that is not GREEN gets one follow-up task, using the first q
 has not been tried for that slot. Which strategies are tried is read from the stored task queries:
 a strategy counts as tried when its query is (nearly) the same word set as an existing query.
 The ladder depends on why the slot is not GREEN.
+
+Focused queries (CL-23) start from the slot's own initial search query instead of its title, keep
+only attribute words a search engine can use (no unit ids such as "pct" or "inr") and add the
+question's place.
 """
 
 from __future__ import annotations
@@ -22,6 +26,12 @@ LADDERS: dict[str, tuple[str, ...]] = {
     "thin": ("independent_verification", "primary_source", "attributes", "recent"),
 }
 _STOP = {"a", "an", "and", "are", "for", "in", "of", "on", "or", "the", "to", "with"}
+# Attribute-id words that only name a unit or a data type; they make a search worse.
+_UNIT_WORDS = {
+    "pct", "percent", "inr", "usd", "rs", "eur", "num", "count", "value", "amount", "total",
+    "per", "yr", "yoy", "mo", "qty", "id", "flag", "bool",
+}  # fmt: skip
+HEAD_WORDS = 6  # words kept from the slot's search query, so every strategy adds new words
 
 
 @dataclass(frozen=True)
@@ -62,6 +72,44 @@ def build_query(strategy: str, slot_name: str, attributes: list[str], scope: Sco
     return " ".join(f"{templates[strategy]} {place}".split())
 
 
+FOCUSED_TEMPLATES = {
+    "attributes": "{head} {attrs}",
+    "primary_source": "{head} official report",
+    "independent_verification": "{head} industry analysis",
+    "conflict_resolution": "{head} {attrs} official figure",
+    "recent": "{head} latest news",
+}
+
+
+def focused_query(
+    strategy: str, seed: str, attributes: list[str], place_names: tuple[str, ...]
+) -> str:
+    """Gap query from the slot's own search query (CL-23). Empty when the strategy adds no word.
+
+    The seed loses stop words and place words and is cut to HEAD_WORDS, the strategy's words are
+    added and the place goes last; repeated words are dropped (case-insensitive).
+    """
+    place_low = {w.lower() for w in place_names}
+    head = [
+        w
+        for w in re.findall(r"[A-Za-z0-9][\w-]*", seed)
+        if w.lower() not in _STOP and w.lower() not in place_low
+    ][:HEAD_WORDS]
+    attr_words = [
+        w
+        for a in attributes[:3]
+        for w in a.replace("_", " ").split()
+        if w.lower() not in _UNIT_WORDS and w.lower() not in _STOP
+    ]
+    if strategy == "attributes" and not attr_words:
+        return ""
+    text = FOCUSED_TEMPLATES[strategy].format(head=" ".join(head), attrs=" ".join(attr_words))
+    words: dict[str, str] = {}
+    for w in [*text.split(), *place_names]:
+        words.setdefault(w.lower(), w)
+    return " ".join(words.values())
+
+
 def ladder_for(cell: CellResult) -> tuple[str, ...]:
     if cell.state is CoverageState.RED:
         return LADDERS["red"]
@@ -76,8 +124,15 @@ def generate_gap_tasks(
     cells: list[CellResult],
     existing_queries: dict[str, list[str]],
     scope: Scope,
+    *,
+    seeds: dict[str, str] | None = None,
+    place_names: tuple[str, ...] = (),
 ) -> list[GapTask]:
-    """One task per critical, non-GREEN slot; none when every strategy was already tried."""
+    """One task per critical, non-GREEN slot; none when every strategy was already tried.
+
+    With `seeds` (slot id -> its initial search query, CL-23) the queries are focused ones; a slot
+    without a seed falls back to its name.
+    """
     by_slot = {c.slot_id: c for c in cells}
     tasks: list[GapTask] = []
     for slot in slots:
@@ -86,8 +141,12 @@ def generate_gap_tasks(
             continue
         tried = list(existing_queries.get(slot.id, []))
         for strategy in ladder_for(cell):
-            query = build_query(strategy, slot.name, attributes.get(slot.id, []), scope)
-            if not is_tried(query, tried):
+            attrs = attributes.get(slot.id, [])
+            if seeds is None:
+                query = build_query(strategy, slot.name, attrs, scope)
+            else:
+                query = focused_query(strategy, seeds.get(slot.id, slot.name), attrs, place_names)
+            if query and not is_tried(query, tried):
                 tasks.append(
                     GapTask(
                         slot.id,

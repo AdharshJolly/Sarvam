@@ -139,8 +139,14 @@ def build_usage(
         elapsed = (
             datetime.fromisoformat(agg["t1"]) - datetime.fromisoformat(agg["t0"])
         ).total_seconds()
+    # A blocked task emits task.started twice (start, then the reason); count each task once.
+    tasks = conn.execute(
+        "SELECT COUNT(DISTINCT json_extract(payload_json, '$.task_id')) FROM events"
+        " WHERE run_id=? AND type=?",
+        (run_id, EventType.TASK_STARTED.value),
+    ).fetchone()[0]
     return BudgetUsage(
-        searches=counts.get(EventType.TASK_STARTED.value, 0) * t.queries_per_task,
+        searches=tasks * t.queries_per_task,
         fetches=counts.get(EventType.SOURCE_FETCHED.value, 0)
         + counts.get(EventType.SOURCE_FAILED.value, 0),
         llm_calls=agg["llm"] or 0,

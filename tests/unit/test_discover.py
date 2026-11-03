@@ -281,3 +281,98 @@ def test_searches_count_against_the_budget_and_budget_error_surfaces(tmp_path):
         env.run()
     assert ei.value.limit == "max_searches" and env.gateway.usage().searches == 3
     assert len(repo.list_sources(env.conn, "R1")) >= 1  # finished work was persisted first
+
+
+class DownSearch(FakeSearch):
+    """Every query fails as if the provider (or the network path to it) is unreachable."""
+
+    async def search(self, query, *, max_results=8):
+        self.calls.append(query)
+        raise GatewayError(FailureType.BLOCKED, "fake-search request failed: ConnectError")
+
+
+def test_a_total_search_outage_blocks_every_task_then_surfaces_as_blocked(tmp_path):
+    env = Env(tmp_path, DownSearch())
+    with pytest.raises(GatewayError) as ei:
+        env.run()
+    assert ei.value.failure is FailureType.BLOCKED and "every search" in ei.value.message
+    assert all(t.status == "blocked" for t in repo.list_tasks(env.conn, "R1"))
+    blocked = [
+        e
+        for e in read_events(env.conn, "R1")
+        if e.type is EventType.TASK_STARTED and "blocked" in e.payload["reason"]
+    ]
+    assert len(blocked) == len(repo.list_tasks(env.conn, "R1"))  # each task still says why
+
+
+def test_empty_results_are_not_an_outage(tmp_path):
+    env = Env(tmp_path, FakeSearch(default=[]))
+    assert env.run() == 0
+    assert all(t.status == "done" for t in repo.list_tasks(env.conn, "R1"))
+
+
+def test_a_budget_stop_wins_over_an_outage(tmp_path):
+    env = Env(tmp_path, DownSearch(), budget=Budget(max_searches=3))
+    with pytest.raises(BudgetExceeded):
+        env.run()
+
+
+def test_an_outage_with_user_pages_in_round_0_lets_the_run_read_them(tmp_path):
+    env = Env(tmp_path, DownSearch())
+    repo.insert_source(
+        env.conn,
+        "R1",
+        url="https://pinned.example/a",
+        canonical_url="https://pinned.example/a",
+        domain="pinned.example",
+        publisher="pinned.example",
+        source_type="unknown",
+        authority_tier=3,
+        task_id=None,
+    )
+    assert env.run() == 0  # no raise: the pinned page is still worth fetching
+    assert all(t.status == "blocked" for t in repo.list_tasks(env.conn, "R1"))
+
+
+# CL-23: the question's place ranks local hits first
+PLACE_HITS = [
+    "https://a.example/us-scooters",
+    "https://b.example/uk-scooters",
+    "https://c.example/de-scooters",
+    "https://d.example/fr-scooters",
+    "https://e.example/bengaluru-scooters",
+]
+
+
+def run_place_task(tmp_path, *, question: str, rank: bool) -> list[str]:
+    first_task = "electric scooter subscription Demand 1"
+    env = Env(tmp_path, FakeSearch(script={first_task: [hit(u) for u in PLACE_HITS]}, default=[]))
+    env.conn.execute("UPDATE runs SET question = ? WHERE id = 'R1'", (question,))
+    env.conn.commit()
+    env.settings = env.settings.model_copy(update={"thresholds": Thresholds(rank_by_place=rank)})
+    env.run()
+    return [s.domain for s in repo.list_sources(env.conn, "R1")]
+
+
+def test_hits_that_name_the_place_rank_first(tmp_path):
+    got = run_place_task(tmp_path, question="Launch scooters in Bengaluru?", rank=True)
+    assert got[0] == "e.example" and len(got) == 4
+
+
+@pytest.mark.parametrize(
+    ("question", "rank"), [("Launch scooters in Bengaluru?", False), ("Launch scooters?", True)]
+)
+def test_provider_order_is_kept_without_place_ranking_or_a_place(tmp_path, question, rank):
+    got = run_place_task(tmp_path, question=question, rank=rank)
+    assert got == ["a.example", "b.example", "c.example", "d.example"]
+
+
+def test_the_second_query_uses_the_place_from_the_question():
+    from contracts.models import EvidenceSlot, Task
+
+    task = Task(id="T1", run_id="R", slot_id="D1S1", query_text="scooter subscription price")
+    slot = EvidenceSlot(
+        id="D1S1", run_id="R", dimension_id="D1", name="Competitor pricing", description="d"
+    )
+    second = queries_for(task, slot, Scope(), 2, place_names=("Bengaluru",))[1]
+    assert "bengaluru" in second.split()

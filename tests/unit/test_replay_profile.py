@@ -40,6 +40,11 @@ def test_recordings_without_a_fetch_reserve_replay_with_none(tmp_path):
     assert st.thresholds.followup_fetch_reserve == 0.0
     assert Settings().thresholds.demote_aggregators is True
     assert st.thresholds.demote_aggregators is False
+    # CL-23 knobs: on by default, off for recordings that predate them
+    d = Settings().thresholds
+    assert (d.rank_by_place, d.focused_queries, d.cross_slot_min_overlap) == (True, True, 2)
+    t = st.thresholds
+    assert (t.rank_by_place, t.focused_queries, t.cross_slot_min_overlap) == (False, False, 0)
 
 
 def test_a_recorded_fetch_reserve_is_replayed(tmp_path):

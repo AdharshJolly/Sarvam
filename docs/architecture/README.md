@@ -89,4 +89,5 @@ task, CL-20) and, outside the test env, starts `controller.run_research`
 as an asyncio task on its own DB connection. SSE (`GET /runs/{id}/events`) polls the events table on
 a separate connection and sends `id:` + `data:` frames only. Wrap-up (stop request, soft time, budget
 limit, provider outage) skips the remaining stages, scores coverage from what is stored (no LLM
-calls) and synthesizes from the evidence already stored.
+calls) and synthesizes from the evidence already stored. A round in which every search fails counts as a provider outage
+(CL-21): tasks are marked blocked and the run ends `blocked`, never as a researched `INSUFFICIENT`.

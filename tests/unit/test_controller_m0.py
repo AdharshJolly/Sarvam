@@ -195,3 +195,26 @@ def test_verifier_step_failures_leave_claims_unjudged_visibly_and_uncited(tmp_pa
     warn = [e for e in events if e.type is EventType.BUDGET_WARNING]
     assert any(e.payload["limit"] == "verifier_unverified_claims" for e in warn)
     assert report.citations == []
+
+
+def test_a_total_search_outage_ends_the_run_as_blocked_not_insufficient(tmp_path):
+    from tests.support.fakes import FakeSearch
+
+    class DownSearch(FakeSearch):
+        async def search(self, query, *, max_results=8):
+            self.calls.append(query)
+            raise GatewayError(FailureType.BLOCKED, "fake-search request failed: ConnectError")
+
+    deps = scenario_deps()
+    deps.search = DownSearch()
+    env = Env(tmp_path)
+    run, events, report = env.run(deps)
+    assert run.status == "completed" and run.termination_reason == "blocked"
+    assert phases(events) == ["PLAN", "DISCOVER", "ANALYZE", "STOP_POLICY", "SYNTHESIZE"]
+    assert not any(
+        e.type is EventType.PHASE_ENTERED and e.payload["phase"] == "CHALLENGE" for e in events
+    )
+    tasks = repo.list_tasks(env.conn, "R1")
+    usage = repo.build_usage(env.conn, "R1")
+    assert usage.searches == len(tasks) * 2  # blocked tasks are not counted twice
+    assert report is not None

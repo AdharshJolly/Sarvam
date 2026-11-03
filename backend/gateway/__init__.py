@@ -8,6 +8,7 @@ enforces budgets, the SSRF guard, concurrency limits, typed errors and record/re
 from __future__ import annotations
 
 import re
+import ssl
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -104,4 +105,23 @@ def http_failure(provider: str, exc: Exception) -> GatewayError:
             f"{provider} returned HTTP {code}",
             transient=code in (500, 502, 503, 504),
         )
+    if _tls_untrusted(exc):
+        # Not transient: the same certificate comes back on every retry. Usually a network proxy
+        # that inspects HTTPS. Verification stays on; the message says what to fix.
+        return GatewayError(
+            FailureType.BLOCKED,
+            f"{provider} TLS certificate could not be verified"
+            " (a network proxy may be intercepting HTTPS)",
+        )
     return GatewayError(FailureType.STEP_FAILED, f"{provider} request failed: {type(exc).__name__}")
+
+
+def _tls_untrusted(exc: BaseException) -> bool:
+    seen: BaseException | None = exc
+    for _ in range(5):  # walk a short cause chain
+        if seen is None:
+            return False
+        if isinstance(seen, ssl.SSLCertVerificationError):
+            return True
+        seen = seen.__cause__ or seen.__context__
+    return False

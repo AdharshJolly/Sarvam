@@ -53,6 +53,14 @@ class Thresholds(BaseModel):
     followup_fetch_reserve: float = Field(default=0.25, ge=0.0, le=0.9)
     # CL-19: discovery ranks market-research teasers, directories and encyclopedias last in a tier.
     demote_aggregators: bool = True
+    # CL-23: discovery ranks hits that mention the question's place (or its region) first.
+    rank_by_place: bool = True
+    # CL-23: follow-up and second queries start from the slot's own search query plus the place,
+    # not the slot title plus raw attribute ids.
+    focused_queries: bool = True
+    # CL-23: a batched claim may cite another slot's passage from the same batch when the passage
+    # shares this many slot words (0 = only the slot's own ranked passages).
+    cross_slot_min_overlap: int = Field(default=2, ge=0)
     source_char_cap: int = 60_000  # 5.1
     queries_per_task: int = 2  # FR-04, CL-05
     results_per_query: int = 6  # CL-05

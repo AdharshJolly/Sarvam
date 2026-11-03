@@ -164,11 +164,8 @@ def _relevant_slots(
     pinned = own_slot_id is None
     out: list[tuple[int, int, EvidenceSlot, list[Passage]]] = []
     for order, slot in enumerate(slots):
-        query = set(slot_query_tokens(slot)) - STOP_WORDS
         top = rank_passages(slot, passages, k)
-        overlap = max(
-            (len(query & (set(re.findall(r"\w+", p.text.lower())))) for p in top), default=0
-        )
+        overlap = max((slot_overlap(slot, p) for p in top), default=0)
         is_own = slot.id == own_slot_id
         if overlap > 0 and (pinned or is_own or overlap >= min_other_overlap):
             rank = -overlap if pinned else (0 if is_own else 1)
@@ -231,13 +228,21 @@ def batch_payload(batch: Batch, *, legacy: bool) -> dict[str, Any]:
     }
 
 
+def slot_overlap(slot: EvidenceSlot, passage: Passage) -> int:
+    """Content words the slot's search words share with the passage."""
+    query = set(slot_query_tokens(slot)) - STOP_WORDS
+    return len(query & set(re.findall(r"\w+", passage.text.lower())))
+
+
 def validate_batch_draft(
-    draft: ClaimDraft, batch: Batch, fuzzy: float
+    draft: ClaimDraft, batch: Batch, fuzzy: float, cross_slot_min_overlap: int = 0
 ) -> tuple[EvidenceSlot | None, str | None]:
     """Slot the claim belongs to and a rejection reason (None when valid). Deterministic.
 
     The claim's own `slot_id` must be in the batch and its passage must be one of the passages
-    ranked for THAT slot; the remaining checks (quote guard, attributes) use that slot.
+    ranked for THAT slot, or (CL-23, `cross_slot_min_overlap` > 0) another passage of the batch
+    that shares at least that many slot words. The remaining checks (quote guard, attributes) use
+    that slot.
     """
     by_slot = {slot.id: (slot, top) for slot, top in batch.entries}
     if draft.slot_id not in by_slot:
@@ -245,7 +250,11 @@ def validate_batch_draft(
     slot, top = by_slot[draft.slot_id]
     unique = {p.id: p for p in batch.passages}
     if draft.passage_id in unique and draft.passage_id not in {p.id for p in top}:
-        return slot, "passage_not_allowed_for_slot"
+        allowed = cross_slot_min_overlap > 0 and (
+            slot_overlap(slot, unique[draft.passage_id]) >= cross_slot_min_overlap
+        )
+        if not allowed:
+            return slot, "passage_not_allowed_for_slot"
     return slot, validate_draft(draft, slot, unique, fuzzy)
 
 
@@ -330,7 +339,9 @@ async def run_claims(
                 why = validate_draft(draft, slot, {p.id: p for p in top}, t.quote_fuzzy_ratio)
                 claim_slot_id, known = slot.id, {p.id for p in top}
             else:
-                _, why = validate_batch_draft(draft, batch, t.quote_fuzzy_ratio)
+                _, why = validate_batch_draft(
+                    draft, batch, t.quote_fuzzy_ratio, t.cross_slot_min_overlap
+                )
                 claim_slot_id, known = draft.slot_id, {p.id for p in batch.passages}
             if why is not None:
                 em.emit(

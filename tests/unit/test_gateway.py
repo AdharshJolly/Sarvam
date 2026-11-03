@@ -209,3 +209,18 @@ def test_5xx_overload_is_marked_transient_and_other_statuses_are_not():
     assert failure(503).transient and failure(500).transient and failure(504).transient
     assert not failure(400).transient and not failure(404).transient
     assert failure(503).failure is FailureType.STEP_FAILED
+
+
+def test_an_untrusted_tls_certificate_is_named_and_not_retried():
+    import ssl
+
+    from backend.gateway import http_failure
+
+    cause = ssl.SSLCertVerificationError(1, "certificate verify failed: unable to get local issuer")
+    exc = httpx.ConnectError("[SSL: CERTIFICATE_VERIFY_FAILED]")
+    exc.__cause__ = cause
+    err = http_failure("tavily", exc)
+    assert err.failure is FailureType.BLOCKED and not err.transient
+    assert "certificate" in err.message and "tavily" in err.message
+    plain = http_failure("tavily", httpx.ConnectError("refused"))
+    assert plain.failure is FailureType.STEP_FAILED and "ConnectError" in plain.message

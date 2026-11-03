@@ -14,6 +14,7 @@ from backend.intel.coverage import (
 )
 from backend.intel.gaps import (
     build_query,
+    focused_query,
     generate_gap_tasks,
     is_tried,
     ladder_for,
@@ -230,3 +231,39 @@ def test_no_task_when_every_strategy_was_already_tried():
 def test_is_tried_ignores_case_order_and_stop_words():
     assert is_tried("Pricing of the Plan in Bengaluru", ["bengaluru plan pricing"])
     assert not is_tried("pricing plan official source", ["pricing plan"])
+
+
+# CL-23: focused gap queries
+SEED = "electric scooter subscription monthly price Bengaluru 2027 plans"
+
+
+def test_focused_query_drops_unit_ids_and_keeps_the_place_last():
+    q = focused_query("attributes", SEED, ["churn_rate_pct", "monthly_price_inr"], ("Bengaluru",))
+    words = q.split()
+    assert "pct" not in words and "inr" not in words
+    assert {"churn", "rate", "monthly", "price"} <= set(words)
+    assert words[-1] == "Bengaluru" and words.count("Bengaluru") == 1
+    assert words[:6] == ["electric", "scooter", "subscription", "monthly", "price", "2027"]
+
+
+def test_focused_attributes_strategy_is_skipped_without_usable_attributes():
+    assert focused_query("attributes", SEED, ["value_pct"], ("Bengaluru",)) == ""
+    assert focused_query("recent", SEED, [], ()).endswith("latest news")
+
+
+def test_focused_gap_tasks_use_the_seed_and_walk_the_ladder():
+    slots, cells = [slot("S1")], [cell_for(R)]
+    attrs = {"S1": ["value_pct"]}  # no usable attribute words: "attributes" is skipped
+    seeds = {"S1": SEED}
+    tried: list[str] = []
+    strategies = []
+    for _ in range(4):
+        tasks = generate_gap_tasks(
+            slots, attrs, cells, {"S1": tried}, Scope(), seeds=seeds, place_names=("Bengaluru",)
+        )
+        if not tasks:
+            break
+        strategies.append(tasks[0].strategy)
+        assert "electric scooter subscription" in tasks[0].query and "Bengaluru" in tasks[0].query
+        tried.append(tasks[0].query)
+    assert strategies == ["primary_source", "independent_verification", "recent"]

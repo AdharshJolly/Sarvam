@@ -35,6 +35,7 @@ from backend.intel.gaps import generate_gap_tasks
 from backend.intel.keys import id_number
 from backend.intel.numeric import normalize_value
 from backend.intel.origins import ClaimFact, OriginInput
+from backend.intel.place import place_of
 from backend.store import repo
 from backend.store.emit import Emitter
 from contracts.config import Settings
@@ -58,6 +59,7 @@ from contracts.models import (
     Phase,
     Scope,
     Task,
+    TaskKind,
     Verdict,
 )
 
@@ -481,18 +483,41 @@ def update_coverage(
 
 
 def create_gap_tasks(
-    conn: sqlite3.Connection, run_id: str, scope: Scope, *, round: int, limit: int | None = None
+    conn: sqlite3.Connection,
+    run_id: str,
+    scope: Scope,
+    *,
+    round: int,
+    limit: int | None = None,
+    focused: bool = False,
+    question: str = "",
 ) -> list[Task]:
     """Store one follow-up task per critical slot that is not GREEN (FR-14). The tasks are
     `pending`, kind `gap`, in `round`; DISCOVER picks them up like any other task. With `limit`
-    (what the search budget can still pay for) RED slots come first, then AMBER, in slot order."""
+    (what the search budget can still pay for) RED slots come first, then AMBER, in slot order.
+    `focused` (CL-23) builds the queries from each slot's initial search query and the question's
+    place."""
     cells, _ = compute_run_coverage(conn, run_id)
     slots = _coverage_slots(conn, run_id)
     attributes = {s.id: s.attributes for s in repo.list_slots(conn, run_id)}
     queries: dict[str, list[str]] = {}
+    seeds: dict[str, str] = {}
     for t in repo.list_tasks(conn, run_id):
         queries.setdefault(t.slot_id, []).append(t.query_text)
-    made = generate_gap_tasks(slots, attributes, cells, queries, scope)
+        if t.kind is TaskKind.INITIAL:
+            seeds.setdefault(t.slot_id, t.query_text)
+    if focused:
+        made = generate_gap_tasks(
+            slots,
+            attributes,
+            cells,
+            queries,
+            scope,
+            seeds=seeds,
+            place_names=place_of(question, scope).names,
+        )
+    else:
+        made = generate_gap_tasks(slots, attributes, cells, queries, scope)
     if limit is not None:
         red = {c.slot_id for c in cells if c.state.value == "RED"}
         made = sorted(made, key=lambda g: g.slot_id not in red)[: max(limit, 0)]

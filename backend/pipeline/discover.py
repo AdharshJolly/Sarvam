@@ -15,6 +15,7 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from backend.gateway import BudgetExceeded, CallMetrics, GatewayError
 from backend.gateway.core import ToolGateway
 from backend.gateway.search import SearchHit
+from backend.intel.place import Place, place_of
 from backend.store import repo
 from backend.store.emit import Emitter
 from contracts.config import Settings
@@ -24,7 +25,7 @@ from contracts.events import (
     SourceFoundPayload,
     TaskStartedPayload,
 )
-from contracts.models import EvidenceSlot, Phase, Scope, SourceType, Task
+from contracts.models import EvidenceSlot, FailureType, Phase, Scope, SourceType, Task
 
 TRACKING_PARAMS = {"gclid", "fbclid", "ref", "mc_cid", "mc_eid"}
 DEFAULT_PORTS = {"http": 80, "https": 443}
@@ -125,11 +126,17 @@ def _tokens(text: str) -> list[str]:
     return [w for w in re.findall(r"[a-z0-9]+", text.lower()) if w not in STOP_WORDS]
 
 
-def second_query(task_query: str, slot_name: str, scope: Scope) -> str:
-    """A differently phrased query: slot name, then the keywords reversed, then the place."""
+def second_query(
+    task_query: str, slot_name: str, scope: Scope, place_names: tuple[str, ...] = ()
+) -> str:
+    """A differently phrased query: slot name, then the keywords reversed, then the place.
+
+    `place_names` (CL-23) is the question's place; without it the scope's geography or time
+    horizon is used.
+    """
     base = _tokens(task_query)
     slot = _tokens(slot_name)
-    place = _tokens(scope.geography or scope.time_horizon or "")
+    place = _tokens(" ".join(place_names) or scope.geography or scope.time_horizon or "")
     rest = [w for w in reversed(base) if w not in slot and w not in place]
     tokens = list(dict.fromkeys([*slot, *rest, *place]))
     if set(tokens) == set(base):  # never the same query after normalisation
@@ -137,10 +144,16 @@ def second_query(task_query: str, slot_name: str, scope: Scope) -> str:
     return " ".join(tokens)
 
 
-def queries_for(task: Task, slot: EvidenceSlot | None, scope: Scope, count: int) -> list[str]:
+def queries_for(
+    task: Task,
+    slot: EvidenceSlot | None,
+    scope: Scope,
+    count: int,
+    place_names: tuple[str, ...] = (),
+) -> list[str]:
     out = [task.query_text]
     if count > 1:
-        out.append(second_query(task.query_text, slot.name if slot else "", scope))
+        out.append(second_query(task.query_text, slot.name if slot else "", scope, place_names))
     return out[:count]
 
 
@@ -164,7 +177,9 @@ async def run_discover(
     """DISCOVER phase for the pending tasks of `round`. Returns the number of new sources stored.
 
     A failed search blocks only its own task. BudgetExceeded is re-raised after every task that
-    could finish has been persisted, so the controller can take the wrap-up path.
+    could finish has been persisted, so the controller can take the wrap-up path. When every
+    search of the round failed (a provider or network outage), a BLOCKED GatewayError is raised
+    the same way, except in round 0 when the user added pages that can still be read.
     """
     t = settings.thresholds
     em.emit(
@@ -172,12 +187,17 @@ async def run_discover(
         PhaseEnteredPayload(phase=Phase.DISCOVER, reason=reason),
         round=round,
     )
+    any_pinned = False
     if round == 0:  # pages the user added were stored when the run was created (CL-20)
         for source in repo.list_sources(conn, run_id):
             if source.task_id is None:
+                any_pinned = True
                 em.emit(EventType.SOURCE_FOUND, SourceFoundPayload(source=source), round=round)
     slots = {s.id: s for s in repo.list_slots(conn, run_id)}
     tasks = repo.list_tasks(conn, run_id, status="pending", round=round)
+    run = repo.get_run(conn, run_id)
+    place = place_of(run.question if run else "", scope)
+    place_names = place.names if t.focused_queries else ()
     budget_error: BudgetExceeded | None = None
     stored = 0
 
@@ -196,7 +216,7 @@ async def run_discover(
         )
 
     async def search(task: Task) -> list:
-        queries = queries_for(task, slots.get(task.slot_id), scope, t.queries_per_task)
+        queries = queries_for(task, slots.get(task.slot_id), scope, t.queries_per_task, place_names)
         return await asyncio.gather(
             *(gateway.search(q, max_results=t.results_per_query) for q in queries),
             return_exceptions=True,
@@ -230,7 +250,9 @@ async def run_discover(
                 round=round,
             )
             return
-        stored += _store_sources(conn, em, settings, run_id, task, found, round)
+        stored += _store_sources(
+            conn, em, settings, run_id, task, found, round, place if t.rank_by_place else None
+        )
         repo.set_task_status(conn, run_id, task.id, "done")
 
     # Searches run concurrently, but everything stored or emitted happens in task order after they
@@ -243,7 +265,29 @@ async def run_discover(
         persist(task, results)
     if budget_error is not None:
         raise budget_error
+    outage = _total_outage(outcomes)
+    if outage is not None and not (round == 0 and any_pinned):
+        # No search answered at all: the run cannot learn anything new, so it must not be
+        # reported as researched-but-insufficient. The controller wraps up as BLOCKED.
+        raise GatewayError(
+            FailureType.BLOCKED,
+            f"every search in round {round} failed: {outage.message or outage.failure.value}",
+        )
     return stored
+
+
+def _total_outage(outcomes: list[list]) -> GatewayError | None:
+    """The first BLOCKED error when the round searched and not one query succeeded, else None.
+
+    An empty result list is an answer (nothing found), not an outage.
+    """
+    results = [res for task_results in outcomes for res in task_results]
+    if not results or any(not isinstance(res, BaseException) for res in results):
+        return None
+    return next(
+        (r for r in results if isinstance(r, GatewayError) and r.failure is FailureType.BLOCKED),
+        None,
+    )
 
 
 def _store_sources(
@@ -254,6 +298,7 @@ def _store_sources(
     task: Task,
     found: list[_Found],
     round: int,
+    place: Place | None = None,
 ) -> int:
     candidates: list[tuple[int, str, str, SourceType, str, _Found]] = []
     seen: set[str] = set()
@@ -266,9 +311,15 @@ def _store_sources(
         seen.add(canonical)
         stype, tier, domain = classify(item.hit.url)
         candidates.append((tier, canonical, item.hit.url, stype, domain, item))
-    # Stable: authority tier first, aggregators last within a tier, then provider order.
+    # Stable: hits about the question's place first (CL-23, when `place` is given), then
+    # authority tier, aggregators last within a tier, then provider order.
     demote = settings.thresholds.demote_aggregators
-    candidates.sort(key=lambda c: (c[0], demote and is_aggregator(c[2])))
+
+    def local(c: tuple) -> bool:
+        hit = c[5].hit
+        return place is not None and place.is_local(hit.url, f"{hit.title} {hit.snippet}")
+
+    candidates.sort(key=lambda c: (not local(c), c[0], demote and is_aggregator(c[2])))
     count = 0
     for tier, canonical, url, stype, domain, item in candidates[
         : settings.thresholds.sources_per_task

@@ -116,6 +116,10 @@ def apply_replay_profile(settings: Settings, run: Run) -> tuple[Settings, Run]:
             # Recordings made before CL-19 fetched every source in round 0.
             "followup_fetch_reserve": knobs.get("followup_fetch_reserve", 0.0),
             "demote_aggregators": knobs.get("demote_aggregators", False),
+            # Recordings made before CL-23 had none of these.
+            "rank_by_place": knobs.get("rank_by_place", False),
+            "focused_queries": knobs.get("focused_queries", False),
+            "cross_slot_min_overlap": knobs.get("cross_slot_min_overlap", 0),
         }
     )
     settings = settings.model_copy(
@@ -348,7 +352,13 @@ async def run_research(
             except GatewayError:
                 return TerminationReason.BLOCKED
             gaps = create_gap_tasks(
-                conn, run_id, run.scope, round=round, limit=capacity - len(attacks)
+                conn,
+                run_id,
+                run.scope,
+                round=round,
+                limit=capacity - len(attacks),
+                focused=settings.thresholds.focused_queries,
+                question=run.question,
             )
             em.emit(
                 EventType.ROUND_STARTED,

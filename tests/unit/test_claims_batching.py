@@ -31,7 +31,9 @@ NON_NUMERIC = dict(attribute=None, value=None, entity=None, unit=None, period=No
 class BatchEnv(Env):
     """One source with several passages (task T1 -> slot D1S1)."""
 
-    def __init__(self, tmp_path, *, batch, k=5, texts=(DEMAND, COMPETE, REGULATE), budget=None):
+    def __init__(
+        self, tmp_path, *, batch, k=5, texts=(DEMAND, COMPETE, REGULATE), budget=None, overlap=2
+    ):
         super().__init__(tmp_path, texts=(), budget=budget)
         self.settings = Settings(
             env="test",
@@ -40,7 +42,7 @@ class BatchEnv(Env):
             llm_model_fast="fast-m",
             llm_model_strong="strong-m",
             extractor_batch_size=batch,
-            thresholds=Thresholds(passages_per_slot_source=k),
+            thresholds=Thresholds(passages_per_slot_source=k, cross_slot_min_overlap=overlap),
         )
         self.source_ids: list[str] = []
         self.add_source(texts)
@@ -167,8 +169,9 @@ def test_shared_passages_are_sent_once(tmp_path):
 
 
 # E. slot / passage attribution
-def test_claim_on_a_passage_not_allowed_for_its_slot_is_rejected(tmp_path):
-    env = BatchEnv(tmp_path, batch=3, k=1)
+@pytest.mark.parametrize("overlap", [0, 50])  # off, or more shared slot words than pb has
+def test_claim_on_a_passage_not_allowed_for_its_slot_is_rejected(tmp_path, overlap):
+    env = BatchEnv(tmp_path, batch=3, k=1, overlap=overlap)
     pa, pb = env.passages[0].id, env.passages[1].id
     llm = reply([claim("D1S1", pb, Q_COMPETE, **NON_NUMERIC)])  # pb is D2S1's passage, not D1S1's
     assert env.run(llm) == 0
@@ -176,6 +179,29 @@ def test_claim_on_a_passage_not_allowed_for_its_slot_is_rejected(tmp_path):
     (ev,) = env.events(EventType.CLAIM_REJECTED)
     assert ev.payload["slot_id"] == "D1S1" and ev.payload["passage_id"] == pb and pa
     assert repo.list_claims(env.conn, "R1") == []
+
+
+def test_claim_on_another_slots_passage_is_kept_when_it_shares_slot_words(tmp_path):
+    # CL-23: pb is ranked for D2S1 only, but it shares "monthly price fleet size" with D1S1
+    env = BatchEnv(tmp_path, batch=3, k=1)
+    pb = env.passages[1].id
+    llm = reply([claim("D1S1", pb, Q_COMPETE, **NON_NUMERIC)])
+    assert env.run(llm) == 1
+    assert stored(env) == [("D1S1", pb)] and reasons(env) == []
+
+
+def test_a_passage_outside_the_batch_is_never_allowed(tmp_path):
+    env = BatchEnv(tmp_path, batch=3, k=1)
+    env.add_source((DEMAND + " Extra.",))
+    other = env.passages[3].id  # another source's passage, so in another batch
+
+    def respond(messages):
+        own = other in messages[1]["content"]
+        return json.dumps({"claims": [] if own else [claim("D1S1", other)]})
+
+    env.run(FakeLLM({"extractor.v1": respond}))
+    assert reasons(env)  # rejected, whatever the overlap
+    assert all(p != other for _, p in stored(env))
 
 
 def test_slot_outside_the_batch_is_rejected(tmp_path):

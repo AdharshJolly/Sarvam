@@ -9,6 +9,7 @@ import re
 from backend.controller import RunnerDeps
 from backend.gateway import GatewayError
 from backend.gateway.search import SearchHit
+from backend.intel.gaps import focused_query
 from backend.pipeline.claims import quote_in_passage
 from backend.pipeline.discover import second_query
 from contracts.models import FailureType, Scope
@@ -112,8 +113,9 @@ class CorpusSearch(FakeSearch):
     """A provider that finds the pages relevant to each slot: the fixtures whose seeded claims
     target the slot (plus F14 for charging infrastructure). A query is matched to its task by text
     (the task query or its differently phrased second query). Pages held back from round 0 are
-    found by follow-up queries: a gap query that names a slot finds that slot's held-back pages, any
-    other follow-up query (a challenge) finds `challenge_hits`."""
+    found by follow-up queries: a gap query that names a slot, or (CL-23) starts with the head of
+    the slot's task query, finds that slot's held-back pages; any other follow-up query (a
+    challenge) finds `challenge_hits`."""
 
     def __init__(
         self,
@@ -122,6 +124,7 @@ class CorpusSearch(FakeSearch):
         followup_by_slot: dict[str, list[SearchHit]] | None = None,
         slot_names: dict[str, str] | None = None,
         challenge_hits: list[SearchHit] | None = None,
+        slot_heads: dict[str, str] | None = None,
     ):
         super().__init__()
         self.hits_by_slot = hits_by_slot
@@ -129,6 +132,7 @@ class CorpusSearch(FakeSearch):
         self.followup_by_slot = followup_by_slot or {}
         self.slot_names = slot_names or {}
         self.challenge_hits = challenge_hits or []
+        self.slot_heads = slot_heads or {}
 
     async def search(self, query: str, *, max_results: int = 8) -> list[SearchHit]:
         self.calls.append(query)
@@ -136,6 +140,9 @@ class CorpusSearch(FakeSearch):
             return list(self.hits_by_slot.get(self.slot_of_query[query], []))
         for slot_id, name in self.slot_names.items():
             if name.lower() in query.lower():
+                return list(self.followup_by_slot.get(slot_id, []))
+        for slot_id, head in self.slot_heads.items():
+            if query.lower().startswith(head.lower()):
                 return list(self.followup_by_slot.get(slot_id, []))
         return list(self.challenge_hits)
 
@@ -164,11 +171,19 @@ def corpus_deps(
     slot_names = {s["id"]: s["name"] for d in plan["dimensions"] for s in d["slots"]}
     hits_by_slot["D4S2"] = [hit_of["F14"]]  # the page that answers 403
     slot_of_query: dict[str, str] = {}
+    slot_heads: dict[str, str] = {}
+    place = ("Bengaluru",)  # the corpus question's place
     for dim in plan["dimensions"]:
         for slot in dim["slots"]:
+            slot_heads[slot["id"]] = focused_query(
+                "primary_source", slot["tasks"][0]["query"], [], ()
+            )
+            slot_heads[slot["id"]] = slot_heads[slot["id"]].removesuffix(" official report")
             for task in slot["tasks"]:
                 slot_of_query[task["query"]] = slot["id"]
-                slot_of_query[second_query(task["query"], slot["name"], Scope())] = slot["id"]
+                for names in ((), place):  # second query without and with the place (CL-23)
+                    second = second_query(task["query"], slot["name"], Scope(), names)
+                    slot_of_query[second] = slot["id"]
     pages = {}
     for fid, d in docs.items():
         if d["fetch"] == "403":
@@ -192,6 +207,7 @@ def corpus_deps(
             followup_by_slot,
             slot_names,
             [hit_of[f] for f in sorted(challenge_pages)],
+            slot_heads,
         ),
         fetcher=FakeFetcher(pages),
         llm=FakeLLM(script, tokens=10, cost_usd=0.001),
