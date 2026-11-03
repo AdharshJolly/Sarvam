@@ -83,19 +83,19 @@ export function PricingPage() {
           <div className="grid gap-4 sm:grid-cols-3 text-center">
             <div className="p-4 rounded-lg bg-surface border border-border-hairline">
               <p className="text-sm text-text-muted">Searches</p>
-              <p className="font-mono text-xl font-bold text-text mt-1">22 of 24</p>
+              <p className="font-mono text-xl font-bold text-text mt-1">24 of 24</p>
             </div>
             <div className="p-4 rounded-lg bg-surface border border-border-hairline">
               <p className="text-sm text-text-muted">Page fetches</p>
-              <p className="font-mono text-xl font-bold text-text mt-1">40 of 40</p>
+              <p className="font-mono text-xl font-bold text-text mt-1">38 of 40</p>
             </div>
             <div className="p-4 rounded-lg bg-surface border border-border-hairline">
               <p className="text-sm text-text-muted">Model calls and tokens</p>
-              <p className="font-mono text-xl font-bold text-text mt-1">53 / 155k</p>
+              <p className="font-mono text-xl font-bold text-text mt-1">20 / 69k</p>
             </div>
           </div>
           <p className="text-sm text-text-muted leading-relaxed mt-4">
-            Money cost is not shown because the model provider did not report one and no price is configured. Replay mode costs nothing.
+            Estimated model cost was about $0.03, from list prices for the models used. Search provider charges are separate. Replay mode costs nothing.
           </p>
         </section>
       </main>
