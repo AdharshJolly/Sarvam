@@ -91,11 +91,11 @@ export function PricingPage() {
             </div>
             <div className="p-4 rounded-lg bg-surface border border-border-hairline">
               <p className="text-sm text-text-muted">Model calls and tokens</p>
-              <p className="font-mono text-xl font-bold text-text mt-1">20 / 69k</p>
+              <p className="font-mono text-xl font-bold text-text mt-1">31 / 89k</p>
             </div>
           </div>
           <p className="text-sm text-text-muted leading-relaxed mt-4">
-            Estimated model cost was about $0.03, from list prices for the models used. Search provider charges are separate. Replay mode costs nothing.
+            Estimated model cost was about $0.04, from list prices for the models used. Search provider charges are separate. Replay mode costs nothing.
           </p>
         </section>
       </main>

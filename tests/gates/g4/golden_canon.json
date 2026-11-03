@@ -1,5 +1,5 @@
 {
- "label": "canon-r5",
+ "label": "canon-r6",
  "question": "Should a company launch an electric scooter subscription service in Bengaluru in 2027?",
  "knobs": {
   "compact_json": true,
@@ -10,6 +10,9 @@
   "followup_fetch_reserve": 0.25,
   "demote_aggregators": true,
   "llm_concurrency": 2,
+  "rank_by_place": true,
+  "focused_queries": true,
+  "cross_slot_min_overlap": 2,
   "models": [
    "gemini-3.1-flash-lite",
    "gemini-3.6-flash"
@@ -27,49 +30,50 @@
  "runs": [
   {
    "run_id": "R1",
-   "wall_seconds": 108.0,
+   "wall_seconds": 184.7,
    "status": "completed",
-   "stop_state": "INSUFFICIENT",
-   "termination_reason": "no_marginal_gain",
+   "stop_state": "SUFFICIENT_WITH_CAVEATS",
+   "termination_reason": "budget",
    "searches": 24,
    "fetches": 38,
-   "llm_calls_budget_counter": 20,
-   "total_tokens": 68888,
-   "cost_usd": 0.031808,
+   "llm_calls_budget_counter": 31,
+   "total_tokens": 89067,
+   "cost_usd": 0.041627,
    "claims": {
-    "supported": 18
+    "supported": 38
    },
    "coverage_last_round": {
-    "AMBER": 2,
+    "AMBER": 4,
     "GREEN": 4,
-    "RED": 4
+    "RED": 2
    },
    "rounds": 1,
    "events": {
     "budget.warning": 2,
     "challenge.created": 1,
     "challenge.outcome": 1,
-    "claim.created": 18,
-    "claim.rejected": 7,
-    "claim.verified": 18,
-    "coverage.updated": 2,
-    "origin.updated": 26,
-    "passages.created": 28,
-    "phase.entered": 16,
+    "claim.created": 38,
+    "claim.rejected": 1,
+    "claim.verified": 38,
+    "conflict.detected": 2,
+    "coverage.updated": 3,
+    "origin.updated": 25,
+    "passages.created": 30,
+    "phase.entered": 17,
     "plan.created": 1,
     "report.draft": 1,
     "report.verified": 1,
     "round.started": 1,
     "run.completed": 1,
-    "source.failed": 10,
-    "source.fetched": 28,
+    "source.failed": 8,
+    "source.fetched": 30,
     "source.found": 48,
     "stop.decided": 1,
     "task.started": 12
    },
    "report_verified": {
     "dropped_count": 0,
-    "certainty_state": "INSUFFICIENT"
+    "certainty_state": "SUFFICIENT_WITH_CAVEATS"
    }
   }
  ]

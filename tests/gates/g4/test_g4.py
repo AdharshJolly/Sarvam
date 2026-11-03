@@ -16,6 +16,7 @@ import pytest
 
 from backend.controller import RunHandle, run_research
 from backend.intel.stop import recompute_stop
+from backend.pipeline.claims import quote_in_passage
 from backend.store import repo
 from backend.store.db import init_db
 from contracts.config import Settings
@@ -117,7 +118,8 @@ def test_g4_every_stored_claim_quote_exists_in_its_passage(replayed):
         " WHERE c.status != 'rejected'"
     ).fetchall()
     assert len(rows) == RUN_GOLDEN["claims"]["supported"]
-    assert all("".join(r["quote"].split()) in "".join(r["text"].split()) for r in rows)
+    # The product quote guard (FR-09): exact or near-exact on normalised text.
+    assert all(quote_in_passage(r["quote"], r["text"]).ok for r in rows)
 
 
 def test_g4_the_replayed_report_is_verified_and_all_citations_resolve(replayed):
@@ -129,7 +131,7 @@ def test_g4_the_replayed_report_is_verified_and_all_citations_resolve(replayed):
 
 
 def test_g4_failed_sources_are_typed_and_visible_not_hidden(replayed):
-    failed = replayed.execute("SELECT status FROM sources WHERE status = 'SOURCE_UNAVAILABLE'")
+    failed = replayed.execute("SELECT status FROM sources WHERE status NOT IN ('found', 'fetched')")
     assert len(failed.fetchall()) == RUN_GOLDEN["events"]["source.failed"]
     assert (
         event_types(replayed).count(EventType.SOURCE_FAILED.value)

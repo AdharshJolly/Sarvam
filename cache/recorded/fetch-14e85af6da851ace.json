@@ -1,0 +1,10 @@
+{
+  "attempt": 0,
+  "error": {
+    "failure": "SOURCE_UNAVAILABLE",
+    "message": "http_429"
+  },
+  "key": {
+    "url": "https://www.youtube.com/watch?v=v5J3qfGT5ss"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "attempt": 0,
+  "error": {
+    "failure": "SOURCE_UNAVAILABLE",
+    "message": "http_403"
+  },
+  "key": {
+    "url": "https://www.niti.gov.in/sites/default/files/2022-06/ForecastingPenetration-ofElectric2W_28-06.pdf"
+  }
+}

@@ -1,12 +1,12 @@
 {
- "label": "canon-r5",
+ "label": "canon-r6",
  "question": "Should a company launch an electric scooter subscription service in Bengaluru in 2027?",
  "scope": {
   "geography": null,
   "time_horizon": null,
   "constraints": null
  },
- "note": "Recorded live 2 Nov 2026. REPLAY applies these knobs automatically; the question and an empty scope must match exactly.",
+ "note": "Recorded live 3 Nov 2026. REPLAY applies these knobs automatically; the question and an empty scope must match exactly.",
  "knobs": {
   "compact_json": true,
   "passages_per_slot": 5,
@@ -15,6 +15,9 @@
   "extractor_min_overlap": 3,
   "followup_fetch_reserve": 0.25,
   "demote_aggregators": true,
+  "rank_by_place": true,
+  "focused_queries": true,
+  "cross_slot_min_overlap": 2,
   "budget": {
    "max_searches": 24,
    "max_fetches": 40,
