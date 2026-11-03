@@ -244,13 +244,15 @@ Deterministic modules are tested against a 14-document fixture corpus with expec
 
 ## Scope and roadmap
 
-**In the MVP:** question intake, planner with slots, up to five pages the user adds to a live run, HTML and PDF search/fetch/extraction, passages, quote-verified claims, independent verification, origin clustering, numeric conflicts, coverage matrix, one to two challenge rounds, stop policy with reason, verified report with certainty labels, live event stream UI, hard budgets, typed failures, record/replay.
+**Built:** question intake; a planner with decision dimensions and evidence slots; up to five pages the user adds to a live run; HTML and PDF search, fetch and extraction; place-aware ranking of search results; passages and quote-verified claims; independent verification; origin clustering; numeric conflicts; the coverage matrix; one to two challenge rounds with focused follow-up queries; a stop policy with a stated reason; a verified report with certainty labels and a print layout; a live event stream; hard budgets with live budget meters; typed failures; record and replay. Around the research engine: user accounts, server-side run history, an admin console with runs, users, costs and activity, and a single-container Docker deployment.
 
-**Non-goals:** proving objective truth or replacing analysts; a single opaque confidence score; enterprise search, connectors, authentication, multi-user or monitoring; infrastructure beyond SQLite and one process; agent frameworks; vector retrieval and graph visualization in the MVP.
+**Non-goals:** proving objective truth or replacing analysts; a single opaque confidence score; enterprise search and third-party connectors; agent frameworks; vector retrieval.
 
-**Roadmap:** baseline comparison against a naive single-pass run, print-ready export, full decision sensitivity, cost/latency panel, prompt-injection demo, run diff, a larger golden set, freshness flags.
+**Roadmap:** better planner instructions (topics that public sources can answer, named competitors in searches); a higher size limit for government PDFs; a baseline comparison against a naive single-pass run; full decision sensitivity; run diff; a larger golden set; freshness flags.
 
 ## Project status
+
+In active development. The research engine, the web app and the Docker deployment work end to end, and an offline replay of the canonical recorded run (`cache/recorded/`) passes every gate in `make check`. The current work is research quality; see the [change log](docs/decisions/README.md) for what changed and why.
 
 ## Documentation
 

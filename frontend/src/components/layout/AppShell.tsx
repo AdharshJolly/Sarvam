@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState, type ReactNode } from "react";
 import { USE_MOCK } from "../../config/env";
 import { formatRunCost, formatSeconds } from "../../lib/format";
 import {
@@ -39,17 +39,23 @@ import { BottomTabBar } from "./BottomTabBar";
 import { CenterTabs, type TabId } from "./CenterTabs";
 import { EvidenceDrawer } from "./EvidenceDrawer";
 import { LeftRail, RailContent } from "./LeftRail";
-import { SignInPage } from "../auth/SignInPage";
-import { RegisterPage } from "../auth/RegisterPage";
-import { WorkspacePage } from "../workspace/WorkspacePage";
-import { HistoryPage } from "../history/HistoryPage";
-import { AdminConsole } from "../admin-portal/AdminConsole";
-import { AccountPage } from "../account/AccountPage";
-import { PrivacyPolicyPage } from "../legal/PrivacyPolicyPage";
-import { TermsPage } from "../legal/TermsPage";
-import { CookiePolicyPage } from "../legal/CookiePolicyPage";
 import { CookieBanner } from "../ui/CookieBanner";
 import { useAuth } from "../../state/useAuth";
+
+// Pages off the run view load on first visit, so the run view's bundle stays small.
+const SignInPage = lazy(() => import("../auth/SignInPage").then((m) => ({ default: m.SignInPage })));
+const RegisterPage = lazy(() => import("../auth/RegisterPage").then((m) => ({ default: m.RegisterPage })));
+const WorkspacePage = lazy(() => import("../workspace/WorkspacePage").then((m) => ({ default: m.WorkspacePage })));
+const HistoryPage = lazy(() => import("../history/HistoryPage").then((m) => ({ default: m.HistoryPage })));
+const AdminConsole = lazy(() => import("../admin-portal/AdminConsole").then((m) => ({ default: m.AdminConsole })));
+const AccountPage = lazy(() => import("../account/AccountPage").then((m) => ({ default: m.AccountPage })));
+const PrivacyPolicyPage = lazy(() => import("../legal/PrivacyPolicyPage").then((m) => ({ default: m.PrivacyPolicyPage })));
+const TermsPage = lazy(() => import("../legal/TermsPage").then((m) => ({ default: m.TermsPage })));
+const CookiePolicyPage = lazy(() => import("../legal/CookiePolicyPage").then((m) => ({ default: m.CookiePolicyPage })));
+
+function PageFallback(): ReactNode {
+  return <SkeletonLines rows={6} label="Loading page" />;
+}
 
 function Shell() {
   const { user, loading: authLoading } = useAuth();
@@ -106,16 +112,19 @@ function Shell() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
-  if (page === "signin") return <SignInPage />;
-  if (page === "register") return <RegisterPage />;
-  if (page === "workspace") return <WorkspacePage />;
-  if (page === "history") return <HistoryPage />;
-  if (page === "console") return <AdminConsole />;
-  if (page === "account") return <AccountPage />;
-  if (page === "privacy") return <PrivacyPolicyPage />;
-  if (page === "terms") return <TermsPage />;
-  if (page === "cookies") return <CookiePolicyPage />;
-
+  const offRunPage: Partial<Record<PageId, ReactNode>> = {
+    signin: <SignInPage />,
+    register: <RegisterPage />,
+    workspace: <WorkspacePage />,
+    history: <HistoryPage />,
+    console: <AdminConsole />,
+    account: <AccountPage />,
+    privacy: <PrivacyPolicyPage />,
+    terms: <TermsPage />,
+    cookies: <CookiePolicyPage />,
+  };
+  const pageView = offRunPage[page];
+  if (pageView) return <Suspense fallback={<PageFallback />}>{pageView}</Suspense>;
 
   const setTab = (t: TabId) => {
     if (runId) window.location.hash = buildHash(runId, t);

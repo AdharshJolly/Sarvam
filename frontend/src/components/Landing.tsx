@@ -632,16 +632,6 @@ export function Landing() {
             <span className="font-semibold text-brand">Verdict</span>
           </div>
         </div>
-
-        <div>
-          <a
-            href="#/architecture"
-            className="text-sm font-semibold text-brand hover:underline inline-flex items-center gap-1.5"
-          >
-            <span>Explore the methodology</span>
-            <Icon name="ArrowRight" size={14} aria-hidden />
-          </a>
-        </div>
       </section>
 
       {/* 7. SECTION: FINAL CTA */}
